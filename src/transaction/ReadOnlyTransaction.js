@@ -106,7 +106,7 @@ export default class ReadOnlyTransaction {
    * @param {function()} listener The listener to register.
    */
   addCompleteListener(listener) {
-    addListener(this[FIELDS.completeListeners], listener)
+    this[FIELDS.completeListeners].add(listener)
   }
 
   /**
@@ -119,7 +119,7 @@ export default class ReadOnlyTransaction {
    * @param {function()} listener The listener to register.
    */
   addAbortListener(listener) {
-    addListener(this[FIELDS.abortListeners], listener)
+    this[FIELDS.abortListeners].add(listener)
   }
 
   /**
@@ -134,7 +134,7 @@ export default class ReadOnlyTransaction {
    * @param {function(Error)} listener The listener to register.
    */
   addErrorListener(listener) {
-    addListener(this[FIELDS.errorListeners], listener)
+    this[FIELDS.errorListeners].add(listener)
   }
 
   /**
@@ -163,19 +163,6 @@ export default class ReadOnlyTransaction {
 
     return objectStore
   }
-}
-
-/**
- * Adds the provided listener to the specified array of listeners. The listener
- * is added only if the array does not contain the listener already.
- *
- * @param {function(...*)[]} listeners The array of listeners to which the
- *        listener should be added.
- * @param {function(...*)} listener The listener to add to the array of
- *        listeners.
- */
-function addListener(listeners, listener) {
-  listeners.add(listener)
 }
 
 /**
