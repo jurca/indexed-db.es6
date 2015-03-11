@@ -1,0 +1,32 @@
+{
+  "name": "typed-enum",
+  "version": "0.1.1",
+  "description": "Enum factory in typed JavaScript",
+  "main": "dist/enum.js",
+  "scripts": {
+    "test": "mocha",
+    "build-module": "bin/build-module",
+    "compress": "uglifyjs dist/enum.js -mc -r require -o dist/enum.min.js --source-map dist/enum.min.map -p relative",
+    "build": "npm run build-module && npm test && npm run compress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hax/typed-enum.git"
+  },
+  "keywords": [
+    "enum",
+    "enumeration",
+    "constant"
+  ],
+  "author": "hax <johnhax@gmail.com>",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/hax/typed-enum/issues"
+  },
+  "devDependencies": {
+    "better-assert": "~1.0.0",
+    "mocha": "~1.16.2",
+    "uglify-js": "~2.4.8"
+  }
+}

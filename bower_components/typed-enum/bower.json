@@ -1,0 +1,23 @@
+{
+  "name": "typed-enum",
+  "version": "0.1.1",
+  "homepage": "https://github.com/hax/typed-enum",
+  "authors": [
+    "HE Shi-Jun <hax@heshijun.net>"
+  ],
+  "description": "Enum factory in typed JavaScript",
+  "main": "dist/enum.min.js",
+  "keywords": [
+    "enum",
+    "enumeration",
+    "constant"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "src",
+    "bin"
+  ]
+}
