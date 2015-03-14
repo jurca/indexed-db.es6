@@ -20,8 +20,10 @@ export default class AbstractBaseStorage {
    * Initializes the storage. The overriding implementation
    * should freeze the instance object once it is fully initialized.
    *
-   * @param {(IDBObjectStore|IDBIndex)} storage
-   * @param {function(this: ReadyOnlyCursor)} cursorConstructor
+   * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
+   *        storage or index.
+   * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
+   *        the cursor to use when traversing the storage records.
    */
   constructor(storage, cursorConstructor) {
     if (this.constructor === AbstractBaseStorage) {
