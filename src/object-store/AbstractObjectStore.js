@@ -80,7 +80,8 @@ export default class AbstractObjectStore {
   /**
    * Retrieves a single record identified by the specified primary key value.
    *
-   * @param {(boolean|number|string)} primaryKey
+   * @param {(boolean|number|string)} primaryKey The primary key value
+   *        identifying the record.
    * @return {Promise<?(boolean|number|string|Object)>} A promise that resolves
    *         to the record, or {@code null} if the record does not exist.
    */
@@ -125,6 +126,10 @@ export default class AbstractObjectStore {
    *         pointing to the first matched record.
    */
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
+    if (keyRange === null) {
+      keyRange = undefined
+    }
+
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let objectStore = this[FIELDS.objectStore]
     let request = objectStore.openCursor(keyRange, cursorDirection)
@@ -152,6 +157,10 @@ export default class AbstractObjectStore {
    *         pointing to the first matched record.
    */
   openKeyCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
+    if (keyRange === null) {
+      keyRange = undefined
+    }
+
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let objectStore = this[FIELDS.objectStore]
     let request = objectStore.openKeyCursor(keyRange, cursorDirection)
