@@ -86,7 +86,11 @@ export default class AbstractBaseStorage {
     let isCompoundKeyObject = (primaryKey instanceof Object) &&
         !(primaryKey instanceof IDBKeyRange)
     if (isCompoundKeyObject) {
-      primaryKey = normalizeCompoundObjectKey(primaryKey)
+      if (!(this.keyPath instanceof Array)) {
+        throw new Error("This storage does not use a compound key, but one " +
+            "was provided")
+      }
+      primaryKey = normalizeCompoundObjectKey(this.keyPath, primaryKey)
     }
 
     let request = this[FIELDS.storage].get(primaryKey)
@@ -158,4 +162,34 @@ export default class AbstractBaseStorage {
       request.onerror = () => reject(request.error)
     })
   }
+}
+
+/**
+ * Normalizes the provided compound key represented as an object into a
+ * compound key representation compatible with the Indexed DB.
+ *
+ * @param {string[]} keyPaths The key paths of this storage.
+ * @param {Object} key The compound key to normalize for use with the Indexed
+ *        DB.
+ * @return {Array<(number|string|Date|Array)>} Normalized compound key.
+ */
+function normalizeCompoundObjectKey(keyPaths, key) {
+  let normalizedKey = []
+
+  keyPaths.forEach((keyPath) => {
+    let keyValue = key
+
+    keyPath.split(".").forEach((fieldName) => {
+      if (!keyValue.hasOwnProperty(fieldName)) {
+        throw new Error(`The ${keyPath} key path is not defined in the ` +
+            "provided compound key")
+      }
+
+      keyValue = keyValue[fieldName]
+    })
+
+    normalizedKey.push(keyValue)
+  })
+
+  return normalizedKey
 }
