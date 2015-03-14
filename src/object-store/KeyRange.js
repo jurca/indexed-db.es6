@@ -22,8 +22,10 @@ export default class KeyRange {
    * equal to) the specified lower bound, and lower than (or, if specified,
    * equal to) the specified upper bound.
    *
-   * @param {*} lower The lower bound.
-   * @param {*} upper The upper bound.
+   * @param {(number|string|Date|Array)} lower The lower bound. Must be a valid
+   *        key.
+   * @param {(number|string|Date|Array)} upper The upper bound. Must be a valid
+   *        key.
    * @param {boolean=} lowerOpen If {@code true}, the lower bound will not be
    *        matched by the created key range. Defaults to {@code false}.
    * @param {boolean=} upperOpen If {@code true}, the upper bound will not be
@@ -37,7 +39,8 @@ export default class KeyRange {
    * Creates a new key range matching values greater than (or, if specified,
    * equal to) the specified value.
    *
-   * @param {*} bound The value to match.
+   * @param {(number|string|Date|Array)} bound The value to match. Must be a
+   *        valid key.
    * @param {boolean=} open If {@code true}, the value will not be matched by
    *        the created key range. Defaults to {@code false}.
    * @return {IDBKeyRange} The created key range.
@@ -50,7 +53,8 @@ export default class KeyRange {
    * Creates a new key range matching values lower than (or, if specified,
    * equal to) the specified value.
    *
-   * @param {*} bound The value to match.
+   * @param {(number|string|Date|Array)} bound The value to match. Must be a
+   *        valid key.
    * @param {boolean=} open If {@code true}, the value will not be matched by
    *        the created key range. Defaults to {@code false}.
    * @return {IDBKeyRange} The created key range.
@@ -62,7 +66,8 @@ export default class KeyRange {
   /**
    * Creates a new key range matching a single key value.
    *
-   * @param {*} expectedValue The value to match.
+   * @param {(number|string|Date|Array)} expectedValue The value to match. Must
+   *        be a valid key.
    * @return {IDBKeyRange} The created key range.
    */
   static only(expectedValue) {

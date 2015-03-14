@@ -99,7 +99,7 @@ export default class ReadOnlyCursor {
      * This field is {@code null} if the cursor has finished traversing the
      * records.
      *
-     * @type {?(boolean|number|string)}
+     * @type {?(number|string|Date|Array)}
      */
     this.key = cursor ? cursor.key : null
 
@@ -111,7 +111,7 @@ export default class ReadOnlyCursor {
      * This field is {@code null} if the cursor has finished traversing the
      * records.
      *
-     * @type {?(boolean|number|string)}
+     * @type {?(number|string|Date|Array)}
      */
     this.primaryKey = cursor ? cursor.primaryKey : null
 
@@ -120,7 +120,7 @@ export default class ReadOnlyCursor {
      * cursor has finished traversing the records or has been opened as a key
      * cursor.
      *
-     * @type {?(boolean|number|string|Object)}
+     * @type {*}
      */
     this.record = cursor.value || null
 
@@ -186,8 +186,10 @@ export default class ReadOnlyCursor {
    * Calling this method on a cursor that points after the last available
    * record in the sequence throws an error.
    *
-   * @param {(undefined|boolean|number|string)=} nextKey The next key to which
-   *        the cursor should iterate.
+   * @param {(undefined|number|string|Date|Array)=} nextKey The next key to
+   *        which the cursor should iterate. When set to {@code undefined}, the
+   *        cursor will advance to the next record. Defaults to
+   *        {@code undefined}.
    * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the next record.
    * @throw {Error} Thrown if the cursor is done traversing the record sequence

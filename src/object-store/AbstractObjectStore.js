@@ -47,10 +47,11 @@ export default class AbstractObjectStore {
 
     /**
      * The keypath of this object store, specified as a sequence of field names
-     * joined by dots (if the object store uses in-line keys), or {@code null}
-     * if this object store uses out-of-line keys.
+     * joined by dots (if the object store uses in-line keys), or an array of
+     * field names if the object store uses a compound key, or {@code null} if
+     * this object store uses out-of-line keys.
      *
-     * @type {?string}
+     * @type {?(string|string[])}
      */
     this.keyPath = objectStore.keyPath || null
 
@@ -80,10 +81,15 @@ export default class AbstractObjectStore {
   /**
    * Retrieves a single record identified by the specified primary key value.
    *
-   * @param {(boolean|number|string)} primaryKey The primary key value
-   *        identifying the record.
-   * @return {Promise<?(boolean|number|string|Object)>} A promise that resolves
-   *         to the record, or {@code null} if the record does not exist.
+   * if the primary key is an {@codelink IDBKeyRange} instance, the method
+   * retrieves the first record matching the key range.
+   *
+   * @param {(number|string|Date|Array|IDBKeyRange)} primaryKey The primary key
+   *        value identifying the record.
+   * @return {Promise<*>} A promise that resolves to the record, or
+   *         {@code undefined} if the record does not exist. The also promise
+   *         resolves to {@code undefined} if the record exists, but it is the
+   *         {@code undefined} value.
    */
   get(primaryKey) {
     let request = this[FIELDS.objectStore].get(primaryKey)

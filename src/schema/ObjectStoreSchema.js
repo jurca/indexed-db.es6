@@ -34,22 +34,19 @@ export default class ObjectStoreSchema {
     /**
      * Specified the path to the record field containing the record primary
      * key. The field path is a sequence of field names joined by dots, for
-     * example {@code "id"} or {@code "foo.bar.primaryKeyField"}.
+     * example {@code "id"} or {@code "foo.bar.primaryKeyField"}, or an array
+     * of field paths if the object store uses a compound key.
      *
      * When specified (a non-empty string), the records of this object store
      * must be objects (that can be structure-cloned, see below) and their
      * primary keys are stored in the field specified by this field path (also
      * referred to as storing the primary key in-line).
      *
-     * When set to an empty string ({@code ""}), the records may be any value
-     * that can be structure-cloned (a super-set of JSON, see
-     * https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/The_structured_clone_algorithm
-     * or
-     * http://www.w3.org/html/wg/drafts/html/master/infrastructure.html#safe-passing-of-structured-data)
-     * and the primary key is stored outside of the records (also referred to
-     * as storing the primary key out-of-line).
+     * When set to an empty string ({@code ""}), the primary key is stored
+     * outside of the records (also referred to as storing the primary key
+     * out-of-line).
      *
-     * @type {string}
+     * @type {(string|string[])}
      */
     this.keyPath = keyPath
 
