@@ -84,14 +84,26 @@ export default class AbstractObjectStore {
    * if the primary key is an {@codelink IDBKeyRange} instance, the method
    * retrieves the first record matching the key range.
    *
-   * @param {(number|string|Date|Array|IDBKeyRange)} primaryKey The primary key
-   *        value identifying the record.
+   * There are the following ways of specifying a compound key:
+   * - An array of primary key field values. The values must be specified in
+   *   the same order as the key paths of this object store.
+   * - An {@code Object<string, (number|string|Date|Array)>} object specifying
+   *   only the primary key field values.
+   *
+   * @param {(number|string|Date|Array|Object|IDBKeyRange)} primaryKey The
+   *        primary key value identifying the record.
    * @return {Promise<*>} A promise that resolves to the record, or
    *         {@code undefined} if the record does not exist. The also promise
    *         resolves to {@code undefined} if the record exists, but it is the
    *         {@code undefined} value.
    */
   get(primaryKey) {
+    let isCompoundKeyObject = (primaryKey instanceof Object) &&
+        !(primaryKey instanceof IDBKeyRange)
+    if (isCompoundKeyObject) {
+      primaryKey = normalizeCompoundObjectKey(primaryKey)
+    }
+
     let request = this[FIELDS.objectStore].get(primaryKey)
 
     return new Promise((resolve, reject) => {
@@ -178,4 +190,30 @@ export default class AbstractObjectStore {
       request.onerror = () => reject(request.error)
     })
   }
+}
+
+/**
+ * @param {string[]} keyPaths
+ * @param {Object} key
+ * @return {Array<(number|string|Date|Array)>} Normalized compound key
+ */
+function normalizeCompoundObjectKey(keyPaths, key) {
+  let normalizedKey = []
+
+  keyPaths.forEach((keyPath) => {
+    let keyValue = key
+
+    keyPath.split(".").forEach((fieldName) => {
+      if (!keyValue.hasOwnProperty(fieldName)) {
+        throw new Error(`The ${keyPath} key path is not defined in the ` +
+            "provided compound key")
+      }
+
+      keyValue = keyValue[fieldName]
+    })
+
+    normalizedKey.push(keyValue)
+  })
+
+  return normalizedKey
 }
