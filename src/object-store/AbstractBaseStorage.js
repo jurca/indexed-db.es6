@@ -24,9 +24,9 @@ export default class AbstractBaseStorage {
    * @param {function(this: ReadyOnlyCursor)} cursorConstructor
    */
   constructor(storage, cursorConstructor) {
-    if (this.constructor === AbstractStorage) {
-      throw new Error("THe AbstractStorage class is abstract and must be " +
-          "overridden")
+    if (this.constructor === AbstractBaseStorage) {
+      throw new Error("THe AbstractBaseStorage class is abstract and must " +
+          "be overridden")
     }
 
     /**
