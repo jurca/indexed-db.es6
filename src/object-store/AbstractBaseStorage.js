@@ -17,8 +17,8 @@ const FIELDS = Object.freeze({
  */
 export default class AbstractBaseStorage {
   /**
-   * Initializes the storage. The overriding implementation
-   * should freeze the instance object once it is fully initialized.
+   * Initializes the storage. The overriding implementation should freeze the
+   * instance object once it is fully initialized.
    *
    * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
    *        store or index.
