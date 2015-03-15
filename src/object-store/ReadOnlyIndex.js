@@ -14,8 +14,7 @@ const FIELDS = Object.freeze({
  */
 export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
   /**
-   * Initializes the read-only storage. The overriding implementation should
-   * freeze the instance object once it is fully initialized.
+   * Initializes the read-only index.
    *
    * @param {IDBIndex} storage The native Indexed DB index.
    * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
@@ -63,6 +62,10 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
      * @type {function(this: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
+
+    if (this.constructor === ReadOnlyIndex) {
+      Object.freeze(this)
+    }
   }
 
   /**
@@ -117,9 +120,10 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
   }
 
   /**
-   * Opens a read-only cursor that traverses the records of this storage,
+   * Opens a read-only cursor that traverses the records of this index,
    * resolving to the traversed records.
    *
+   * @override
    * @param {?(IDBKeyRange)} keyRange A key range to use to filter the records
    *        by matching the values of their primary keys against this key
    *        range.
@@ -154,11 +158,12 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
   }
 
   /**
-   * Opens a read-only cursor that traverses the records of this storage,
+   * Opens a read-only cursor that traverses the records of this index,
    * resolving only the primary keys of the records.
    *
    * The {@code record} field of the cursor will always be {@code null}.
    *
+   * @override
    * @param {?(IDBKeyRange)} keyRange A key range to use to filter the records
    *        by matching the values of their primary keys against this key
    *        range.
