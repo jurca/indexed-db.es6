@@ -21,7 +21,7 @@ export default class AbstractBaseStorage {
    * should freeze the instance object once it is fully initialized.
    *
    * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
-   *        storage or index.
+   *        store or index.
    * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
    */
