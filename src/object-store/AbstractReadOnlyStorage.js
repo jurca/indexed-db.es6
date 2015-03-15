@@ -10,7 +10,7 @@ import RecordList from "./RecordList"
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
   unique: Symbol("unique"),
-  storageFactoy: Symbol("storageFactoy")
+  storageFactory: Symbol("storageFactory")
 })
 
 /**
@@ -27,9 +27,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        store or index.
    * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
+   * @param {function(): AbstractReadOnlyStorage} A function that creates a new
+   *        read-only transaction and returns a new storage accessor for this
+   *        storage each time it is invoked.
    */
-  constructor(storage, cursorConstructor) {
-    super(storage, cursorConstructor, storageFactoy)
+  constructor(storage, cursorConstructor, storageFactory) {
+    super(storage, cursorConstructor)
 
     if (this.constructor === AbstractReadOnlyStorage) {
       throw new Error("The AbstractReadOnlyStorage class is abstract and " +
@@ -52,12 +55,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
     this[FIELDS.unique] = storage instanceof IDBObjectStore || storage.unique
 
     /**
-     * A function that creates a new read-only transaction and returns this
-     * storage accessor each time it is invoked.
+     * A function that creates a new read-only transaction and returns a new
+     * storage accessor for this storage each time it is invoked.
      *
      * @type {function(): AbstractReadOnlyStorage}
      */
-    this[FIELDS.storageFactoy] = storageFactoy
+    this[FIELDS.storageFactory] = storageFactory
   }
 
   /**
