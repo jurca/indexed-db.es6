@@ -2,9 +2,13 @@
 import ObjectStore from "../object-store/ReadOnlyObjectStore"
 import ReadOnlyTransaction from "./ReadOnlyTransaction"
 
+/**
+ * Private field symbols.
+ */
 const FIELDS = Object.freeze({
-  objectStores: Symbol("objectStores"),
-  transaction: Symbol("transaction")
+  transaction: Symbol("transaction"),
+  transactionFactory: Symbol("transactionFactory"),
+  objectStores: Symbol("objectStores")
 })
 
 /**
@@ -15,9 +19,13 @@ export default class Transaction extends ReadOnlyTransaction {
    * Initializes the read-write transaction.
    *
    * @param {IDBTransaction} transaction The IndexedDB native transaction.
+   * @param {function(string): ReadOnlyTransaction} transactionFactory The
+   *        factory function that creates a new read-only transaction with
+   *        access only the to the object store specified by the provided
+   *        argument every time the function is invoked.
    */
-  constructor(transaction) {
-    super(transaction)
+  constructor(transaction, transactionFactory) {
+    super(transaction, transactionFactory)
 
     /**
      * The native IndexedDB transaction object.
@@ -25,6 +33,15 @@ export default class Transaction extends ReadOnlyTransaction {
      * @type {IDBTransaction}
      */
     this[FIELDS.transaction] = transaction
+
+    /**
+     * The factory function that creates a new read-only transaction with
+     * access only the to the object store specified by the provided argument
+     * every time the function is invoked.
+     *
+     * @type {function(string): ReadOnlyTransaction}
+     */
+    this[FIELDS.transactionFactory] = transactionFactory
 
     /**
      * Cache of created object store instances. The keys are the names of the
@@ -50,8 +67,12 @@ export default class Transaction extends ReadOnlyTransaction {
       return this[FIELDS.objectStores].get(objectStoreName)
     }
 
+    let transactionFactory = () => {
+      return this[FIELDS.transactionFactory](objectStoreName)
+    }
+
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)
-    let objectStore = new ObjectStore(idbObjectStore)
+    let objectStore = new ObjectStore(idbObjectStore, transactionFactory)
     this[FIELDS.objectStores].set(objectStoreName, objectStore)
 
     return objectStore

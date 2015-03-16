@@ -1,11 +1,13 @@
 
 import ReadOnlyObjectStore from "../object-store/ReadOnlyObjectStore"
+import ReadOnlyCursor from "./ReadOnlyCursor"
 
 /**
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
   transaction: Symbol("transaction"),
+  transactionFactory: Symbol("transactionFactory"),
   objectStores: Symbol("objectStores"),
   completeListeners: Symbol("completeListeners"),
   abortListeners: Symbol("abortListeners"),
@@ -20,14 +22,27 @@ export default class ReadOnlyTransaction {
    * Initializes the read-only transaction.
    *
    * @param {IDBTransaction} transaction The IndexedDB native transaction.
+   * @param {function(string): ReadOnlyTransaction} transactionFactory The
+   *        factory function that creates a new read-only transaction with
+   *        access only the to the object store specified by the provided
+   *        argument every time the function is invoked.
    */
-  constructor(transaction) {
+  constructor(transaction, transactionFactory) {
     /**
      * The native IndexedDB transaction object.
      *
      * @type {IDBTransaction}
      */
     this[FIELDS.transaction] = transaction
+
+    /**
+     * The factory function that creates a new read-only transaction with
+     * access only the to the object store specified by the provided argument
+     * every time the function is invoked.
+     *
+     * @type {function(string): ReadOnlyTransaction}
+     */
+    this[FIELDS.transactionFactory] = transactionFactory
 
     /**
      * Cache of created object store instances. The keys are the names of the
@@ -157,8 +172,16 @@ export default class ReadOnlyTransaction {
       return this[FIELDS.objectStores].get(objectStoreName)
     }
 
+    let transactionFactory = () => {
+      return this[FIELDS.transactionFactory](objectStoreName)
+    }
+
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)
-    let objectStore = new ReadOnlyObjectStore(idbObjectStore)
+    let objectStore = new ReadOnlyObjectStore(
+      idbObjectStore,
+      ReadOnlyCursor,
+      transactionFactory
+    )
     this[FIELDS.objectStores].set(objectStoreName, objectStore)
 
     return objectStore
