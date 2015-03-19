@@ -68,7 +68,7 @@ export default class Transaction extends ReadOnlyTransaction {
     }
 
     let transactionFactory = () => {
-      return this[FIELDS.transactionFactory](objectStoreName)
+      return this[FIELDS.transactionFactory].getObjectStore(objectStoreName)
     }
 
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)

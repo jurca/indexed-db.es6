@@ -100,7 +100,7 @@ export default class ReadOnlyTransaction {
     }
 
     this.addErrorListener((error) => {
-      if (this[FIELDS.errorListeners].length < 2) {
+      if (this[FIELDS.errorListeners].size < 2) {
         console.error("Encountered an uncaptured transaction-level error " +
             "while no error listeners were registered", error);
       }
@@ -173,7 +173,7 @@ export default class ReadOnlyTransaction {
     }
 
     let transactionFactory = () => {
-      return this[FIELDS.transactionFactory](objectStoreName)
+      return this[FIELDS.transactionFactory].getObjectStore(objectStoreName)
     }
 
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)
