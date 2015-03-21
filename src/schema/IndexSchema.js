@@ -16,7 +16,7 @@ export default class IndexSchema {
    *        specified a key path) resolves to an {@codelink Array}, the index
    *        will create an index entry for each element of the array.
    */
-  constructor(indexName, keyPaths, unique = false, multiEntry = false) {
+  constructor(indexName, keyPath, unique = false, multiEntry = false) {
     /**
      * The name of the index. The name must be unique among the indexes of the
      * object store.
@@ -33,7 +33,7 @@ export default class IndexSchema {
      *
      * @type {(string|string[])}
      */
-    this.keyPaths = keyPaths
+    this.keyPath = keyPath
 
     /**
      * When {@code true}, the index prevents creation and modification of

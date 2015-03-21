@@ -42,11 +42,12 @@ export default class ObjectStoreSchema {
      * primary keys are stored in the field specified by this field path (also
      * referred to as storing the primary key in-line).
      *
-     * When set to an empty string ({@code ""}), the primary key is stored
-     * outside of the records (also referred to as storing the primary key
-     * out-of-line).
+     * When set to an empty string ({@code ""}) or {@code null}, the primary
+     * key is stored outside of the records (also referred to as storing the
+     * primary key out-of-line). This allows to store non-object values as
+     * records.
      *
-     * @type {(string|string[])}
+     * @type {?(string|string[])}
      */
     this.keyPath = keyPath
 
