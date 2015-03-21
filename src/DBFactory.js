@@ -31,7 +31,7 @@ import Database from "./Database"
  * value from an object store, so such an operation may result in
  * {@code undefined} value even if the record exists.
  */
-export default class DBProvider {
+export default class DBFactory {
   /**
    * Opens a new connection to the database.
    *
