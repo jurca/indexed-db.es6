@@ -1,5 +1,6 @@
 
 import Database from "./Database"
+import DatabaseMigrator from "./migration/DatabaseMigrator"
 
 /**
  * Provider of connections to the database, manager of database versioning and
@@ -58,12 +59,15 @@ export default class DBFactory {
    *        At least one schema descriptor must be provided.
    */
   static open(databaseName, ...schemaDescriptors) {
-    let sortedSchemaDescriptors = schemaDescriptors.sort((d1, d2) => {
-      return d2.version - d1.version
+    if (!schemaDescriptors.length) {
+      throw new Error("The list of schema descriptors must not be empty")
+    }
+
+    let sortedSchemaDescriptors = schemaDescriptors.slice().sort((d1, d2) => {
+      return d1.version - d2.version
     })
 
     let requestedVersion = sortedSchemaDescriptors.slice().pop().version
-
     let request = indexedDB.open(databaseName, requestedVersion)
 
     return new Promise((resolve, reject) => {
@@ -72,10 +76,15 @@ export default class DBFactory {
         resolve(database)
       }
 
-      request.onupgradeneeded = () => {
+      request.onupgradeneeded = (event) => {
         let database = request.result
         let transaction = request.transaction
-        // TODO: execute upgrade
+
+        database.onerror = (errorEvent) => reject(errorEvent)
+
+        let migrator = new DatabaseMigrator(database, transaction,
+            sortedSchemaDescriptors, event.oldVersion)
+        migrator.executeMigration()
       }
 
       request.onerror = () => reject(request.error)
