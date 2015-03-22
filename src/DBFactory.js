@@ -57,6 +57,8 @@ export default class DBFactory {
    *        {@codelink UpgradedDatabaseSchema} instances. The order of the
    *        descriptors does not matter.
    *        At least one schema descriptor must be provided.
+   * @return {Promise<Database>} A promise that resolves to the database
+   *         connection.
    */
   static open(databaseName, ...schemaDescriptors) {
     if (!schemaDescriptors.length) {
