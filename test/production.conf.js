@@ -17,7 +17,7 @@ module.exports = function(config) {
     files: [
       {pattern: 'bower_components/typed-enum/dist/enum.js', included: false},
       {pattern: 'compiled/**/*.js', included: false},
-      {pattern: 'test/{**/*Spec,test-main}.js', included: false},
+      {pattern: 'test/**/*Spec.js', included: false},
       'test/test-main.js'
     ],
 
