@@ -4,7 +4,7 @@
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
   "main": "dist/indexed-db.es6.min.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "karma start test/production.conf.js"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,14 @@
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-watch": "^0.6.1",
-    "grunt-traceur": "^0.5.2"
+    "grunt-traceur": "^0.5.2",
+    "karma": "^0.12.31",
+    "karma-chrome-launcher": "^0.1.7",
+    "jasmine-core": "^2.2.0",
+    "karma-jasmine": "^0.3.5",
+    "requirejs": "^2.1.16",
+    "karma-requirejs": "^0.2.2",
+    "karma-traceur-preprocessor": "^0.4.0"
   },
   "dependencies": {
     "traceur": "0.0.86"
