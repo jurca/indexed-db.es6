@@ -17,7 +17,7 @@ const TRANSACTION_MODES = Object.freeze({
  */
 const FIELDS = Object.freeze({
   database: Symbol("database"),
-  versionChangeListeners: Symbols("versionChangeListeners")
+  versionChangeListeners: Symbol("versionChangeListeners")
 })
 
 /**

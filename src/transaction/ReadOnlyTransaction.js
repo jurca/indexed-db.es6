@@ -1,6 +1,6 @@
 
 import ReadOnlyObjectStore from "../object-store/ReadOnlyObjectStore"
-import ReadOnlyCursor from "./ReadOnlyCursor"
+import ReadOnlyCursor from "../object-store/ReadOnlyCursor"
 
 /**
  * Private field symbols.
