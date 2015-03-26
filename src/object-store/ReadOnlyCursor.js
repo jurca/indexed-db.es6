@@ -162,7 +162,7 @@ export default class ReadOnlyCursor {
 
     return new Promise((resolve, reject) => {
       this[FIELDS.request].onsuccess = () => {
-        resolve(new this.constructor(this[FIELDS.request]))
+        resolve(new (this.constructor)(this[FIELDS.request]))
       }
       this[FIELDS.request].onerror = () => reject(this[FIELDS.request].error)
 

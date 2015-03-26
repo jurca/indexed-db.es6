@@ -1,25 +1,40 @@
 
 import {isVersionValid, getDuplicitNames} from "./validation"
 
+const SKIP_RECORD = Object.freeze({})
+
+const DELETE_RECORD = Object.freeze({})
+
 /**
  * Descriptor of a database schema after an upgrade. Use this to specify the
  * database schema of databases that had its schema upgraded. Cannot be used
  * for the first version of the database.
  */
 export default class UpgradedDatabaseSchema {
+  static get SKIP_RECORD() {
+    return SKIP_RECORD
+  }
+  
+  static get DELETE_RECORD() {
+    return DELETE_RECORD
+  }
+  
   /**
    * Initializes the schema of an upgraded database.
    *
    * @param {number} version The version of the upgraded database schema. Must
    *        be a positive integer greater than 1.
-   * @param {function(ReadOnlyTransaction): *} before The callback to execute
-   *        before the database schema is upgraded.
+   * @param {?(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD|*)=})[]}
+   *        fetchBefore Object stores from which the records should be fetched
+   *        before the schema will be migrated, with optional record
+   *        preprocessing callbacks.
    * @param {ObjectStoreSchema} objectStores The schemas of the object stores
    *        in the upgraded database.
-   * @param {function(Transaction, *)} after The callback te exectue after the
-   *        database schema is upgraded.
+   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
+   *        after The callback te exectue after the database schema is
+   *        upgraded.
    */
-  constructor(version, before, objectStores, after = () => {}) {
+  constructor(version, fetchBefore, objectStores, after = () => {}) {
     if (!isVersionValid(version)) {
       throw new TypeError("The version must be a positive integer, " +
           `${version} provided`)
@@ -44,23 +59,27 @@ export default class UpgradedDatabaseSchema {
     this.version = version
 
     /**
-     * Callback to execute before the database schema is upgraded. The callback
-     * receives a read-only transaction for reading the data from the current
-     * data stores in the database that need to be modified or copied once the
-     * database structure is upgraded.
+     * Array of names of object stores from which all records should be fetched
+     * before performing the schema migration. The fetched records will then be
+     * passed to the after-migration callback.
+     * 
+     * Alternatively, the elements may be objects that specify the object name
+     * and a callback map/filter function executed to preprocess the records.
+     * The callback function will executed with the following arguments:
+     * - the record
+     * - the primary key of the record (will be frozen to prevent any
+     *   modifications)
+     * 
+     * The callback may return either the preprocessed record, or
+     * {@codelink UpgradedDatabaseSchema.SKIP_RECORD} to indicate that the
+     * record should be ommited from the records passed to the after-migration
+     * callback, or {@codelink UpgradedDatabaseSchema.DELETE_RECORD} to both
+     * omit the record from the records passed to the after-migration callback
+     * and delete the record.
      *
-     * Any data returned by this callback will be passed to the
-     * {@codelink after} callback as the second argument.
-     *
-     * Please note that the callback must request all the operations
-     * synchronously on its invokation, as the database structured will be
-     * modified right after the callback has been invoked, therefore waiting
-     * for some operations to finish before requesting more operations may lead
-     * to concurrency issues and data corruption.
-     *
-     * @type {function(ReadOnlyTransaction): *}
+     * @type {(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (*|UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD)=})[]}
      */
-    this.before = before || (() => {})
+    this.fetchBefore = fetchBefore || []
 
     /**
      * Definitions of the database object stores, describing the database
@@ -99,17 +118,20 @@ export default class UpgradedDatabaseSchema {
      * schema specified by the {@codelink objectStores}.
      *
      * The callback will receive a read-write transaction to the new database
-     * and the data returned by the {@codelink before} callback as arguments.
+     * and a map of object store names specifed in the {@codelink fetchBefore}
+     * to the preprocessed records fetched from the object stores.
+     * 
+     * If the callback returns a {@codelink Promise}, the database will wait
+     * for its completion before finishing the migration process. Due to how
+     * the transactions are processed by Indexed DB, the promise MUST resolve
+     * when it the last requested database operation is resolved and not after.
+     * Otherwise the transaction would be committed automatically and you will
+     * probably end up with a half-way done database schema migration if this
+     * is not the schema of the greatest defined database version.
      *
-     * Please note that the callback must request all the operations
-     * synchronously on its invokation, as it might not be the last database
-     * upgrade callback in the chain, and waiting for some operations to finish
-     * before requesting more operations may lead to concurrency issues and
-     * data corruption.
-     *
-     * @type {function(Transaction, *)}
+     * @type {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
      */
-    this.after = after
+    this.after = after || (() => {})
 
     Object.freeze(this)
   }
