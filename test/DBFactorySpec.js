@@ -10,16 +10,16 @@ describe("DBFactory", () => {
   afterEach((done) => {
     let request = indexedDB.deleteDatabase(DB_NAME)
     request.onsuccess = () => done()
-    request.onerror = () => done(request.error)
+    request.onerror = () => fail(request.error)
   })
 
   it("should connect to an existing database", (done) => {
     let request = indexedDB.open(DB_NAME, 1)
-    request.onerror = () => done(request.error)
-    request.onblocked = () => done(new Error("failed to create the database"))
+    request.onerror = () => fail(request.error)
+    request.onblocked = () => fail(new Error("failed to create the database"))
     request.onupgradeneeded = () => {
       let database = request.result
-      database.onerror = done
+      database.onerror = fail
       database.createObjectStore("testingStore")
     }
 
@@ -33,9 +33,8 @@ describe("DBFactory", () => {
         )
       ).then((database) => {
         database.close()
-      }).catch((error) => done(error))
-
-      done()
+        done()
+      }).catch((error) => fail(error))
     }
   })
 })
