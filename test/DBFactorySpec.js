@@ -2,6 +2,7 @@
 import DBFactory from "../compiled/DBFactory"
 import DatabaseSchema from "../compiled/schema/DatabaseSchema"
 import ObjectStoreSchema from "../compiled/schema/ObjectStoreSchema"
+import UpgradedDatabaseSchema from "../compiled/schema/UpgradedDatabaseSchema"
 
 describe("DBFactory", () => {
 
@@ -72,9 +73,12 @@ describe("DBFactory", () => {
       new DatabaseSchema(1,
         new ObjectStoreSchema(OBJECT_STORE_NAME, null, false)
       ),
-      new DatabaseSchema(1,
-        new ObjectStoreSchema(OBJECT_STORE_NAME, null, false),
-        new ObjectStoreSchema("some other object store", null, false)
+      new UpgradedDatabaseSchema(2,
+        [],
+        [
+          new ObjectStoreSchema(OBJECT_STORE_NAME, null, false),
+          new ObjectStoreSchema("some other object store", null, false)
+        ]
       )
     ).then((database) => {
       database.close()
