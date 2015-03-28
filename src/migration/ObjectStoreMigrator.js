@@ -57,7 +57,7 @@ export default class ObjectStoreMigrator {
     let schema = this[FIELDS.schema]
     let objectStore = this[FIELDS.objectStore]
     if (!objectStore) {
-      this[FIELDS.database].createObjectStore(schema.name, {
+      objectStore = this[FIELDS.database].createObjectStore(schema.name, {
         keyPath: schema.keyPath || null,
         autoIncrement: schema.autoIncrement
       })

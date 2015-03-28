@@ -136,6 +136,10 @@ function migrateDatabase(database, transaction, schemaDescriptors,
     return descriptor.version > currentVersion
   })
   
+  if (!descriptorsToProcess.length) {
+    return Promise.resolve(undefined)
+  }
+  
   return migrateDatabaseVersion(
     database,
     transaction,
