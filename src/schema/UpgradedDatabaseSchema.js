@@ -28,7 +28,7 @@ export default class UpgradedDatabaseSchema {
    *        fetchBefore Object stores from which the records should be fetched
    *        before the schema will be migrated, with optional record
    *        preprocessing callbacks.
-   * @param {ObjectStoreSchema} objectStores The schemas of the object stores
+   * @param {ObjectStoreSchema[]} objectStores The schemas of the object stores
    *        in the upgraded database.
    * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
    *        after The callback te exectue after the database schema is

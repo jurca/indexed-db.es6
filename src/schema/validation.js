@@ -13,10 +13,10 @@ export function isVersionValid(version) {
 /**
  * Tests the provided object store descriptors for name duplicities.
  *
- * @type {(ObjectStoreSchema[]|ObjectStoreSchemaDiff[]|IndexSchema[])}
- *       schemas The definitions of object stores to check for name
- *       duplicities.
- * @return {boolean}
+ * @type {(ObjectStoreSchema[]|IndexSchema[])} schemas The definitions of
+ *       object stores to check for name duplicities.
+ * @return {string[]} The names of schemas that have multiple occurrences in
+ *         the provided array.
  */
 export function getDuplicitNames(schemas) {
   let nameOccurrences = new Map()

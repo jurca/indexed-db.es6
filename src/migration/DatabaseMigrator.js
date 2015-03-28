@@ -49,7 +49,7 @@ export default class DatabaseMigrator {
         throw new TypeError("The schema descriptors of the upgraded " +
             "database versions must be UpgradedDatabaseSchema instances, " +
             `but the provided descriptor of version ${descriptor.version} ` +
-            "was not")
+            "was not an UpgradedDatabaseSchema instance")
       }
     })
     let isVersionValid = (currentVersion < 0) ||
