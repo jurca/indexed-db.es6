@@ -1,8 +1,21 @@
 
 import {isVersionValid, getDuplicitNames} from "./validation"
 
+/**
+ * Record preprocessors (used in the {@codelink fetchBefore}) return this token
+ * to exclude the current record from the record array passed to the
+ * after-migration callback.
+ * 
+ * @type {Object}
+ */
 const SKIP_RECORD = Object.freeze({})
 
+/**
+ * Record preprocessors (used in the {@codelink fetchBefore}) return this token
+ * to mark the record for deletion.
+ * 
+ * @type {Object}
+ */
 const DELETE_RECORD = Object.freeze({})
 
 /**
@@ -11,10 +24,30 @@ const DELETE_RECORD = Object.freeze({})
  * for the first version of the database.
  */
 export default class UpgradedDatabaseSchema {
+  /**
+   * Record preprocessors (used in the {@codelink fetchBefore}) return this
+   * token to exclude the current record from the record array passed to the
+   * after-migration callback.
+   * 
+   * The token is immutable.
+   * 
+   * @return {Object} Token returned by record preprocessors for records that
+   *         should be excluded from the record array passed to the
+   *         after-migration callback.
+   */
   static get SKIP_RECORD() {
     return SKIP_RECORD
   }
   
+  /**
+   * Record preprocessors (used in the {@codelink fetchBefore}) return this
+   * token to mark the record for deletion.
+   * 
+   * The token is immutable.
+   * 
+   * @return {Object} Token returned by record preprocessors for records that
+   *         should be deleted.
+   */
   static get DELETE_RECORD() {
     return DELETE_RECORD
   }
