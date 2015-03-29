@@ -7,7 +7,7 @@ The indexed-db.es6 is ES6-style wrapper of the native
 The indexed-db.es6 provides the following improvements and modifications over
 the native IndexedDB:
 
-- declarative schema
+- declarative schema with data-migration support
 - [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-oriented
   API
 - renaming of some declaratively-named methods (for example transaction) to
