@@ -21,8 +21,8 @@ import DatabaseMigrator from "./migration/DatabaseMigrator"
  *
  * Record keys can be {@code number}s (except for {@codelink NaN}),
  * {@code string}s, {@codelink Date} instances (unless the internal value is a
- * {@codelink NaN}) or {@code Array} objects. An {@codelink Array} is only a
- * valid key if every item in the array is defined and is a valid key (i.e.
+ * {@codelink NaN}) or {@codelink Array} objects. An {@codelink Array} is only
+ * a valid key if every item in the array is defined and is a valid key (i.e.
  * sparse arrays can not be valid keys) and if the {@codelink Array} doesn't
  * directly or indirectly contain itself. For more details, see
  * http://www.w3.org/TR/IndexedDB/#dfn-valid-key
