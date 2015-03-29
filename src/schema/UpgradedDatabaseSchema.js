@@ -98,8 +98,8 @@ export default class UpgradedDatabaseSchema {
      * Since changing the object store primary key path and
      * {@code autoIncrement} flag is not supported, such changes must be made
      * using the following steps:
-     * 1. fetch all records from the old data store using the
-     *    {@codelink before} callback
+     * 1. fetch all records from the old data store using
+     *    {@codelink beforeBefore}
      * 2. ommit the old data store in this array of object store schemas to
      *    destroy it
      * 3. create a new data store with the required properties by specifying it
