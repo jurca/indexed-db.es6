@@ -25,7 +25,7 @@ import DatabaseMigrator from "./migration/DatabaseMigrator"
  * valid key if every item in the array is defined and is a valid key (i.e.
  * sparse arrays can not be valid keys) and if the {@codelink Array} doesn't
  * directly or indirectly contain itself. For more details, see
- * http://w3c.github.io/IndexedDB/#dfn-valid-key
+ * http://www.w3.org/TR/IndexedDB/#dfn-valid-key
  *
  * While {@codelink Array}s containing {@codelink Array}s are considered to be
  * valid keys, some browsers do not process such keys properly when getting a

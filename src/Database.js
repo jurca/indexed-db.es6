@@ -124,7 +124,7 @@ export default class Database {
    * there are no pending requests to be fulfilled.
    *
    * The details of the transaction life cycle are available at
-   * http://w3c.github.io/IndexedDB/#dfn-transaction-lifetime.
+   * http://www.w3.org/TR/IndexedDB/#dfn-transaction-lifetime.
    *
    * @param {...string} objectStoreNames The names of the object stores the
    *        created transaction should have access to.
@@ -156,7 +156,7 @@ export default class Database {
    * are no pending requests to be fulfilled.
    *
    * The details of the transaction life cycle are available at
-   * http://w3c.github.io/IndexedDB/#dfn-transaction-lifetime.
+   * http://www.w3.org/TR/IndexedDB/#dfn-transaction-lifetime.
    *
    * @param {...string} objectStoreNames The names of the object stores the
    *        created transaction should have access to.
