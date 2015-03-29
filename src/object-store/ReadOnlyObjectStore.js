@@ -49,7 +49,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
      *
      * @type {string[]}
      */
-    this.indexNames = Object.freeze([].slice.call(storage.indexNames))
+    this.indexNames = Object.freeze(Array.from(storage.indexNames))
 
     /**
      * The native Indexed DB object store.

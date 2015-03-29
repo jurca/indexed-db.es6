@@ -53,7 +53,7 @@ export default class Database {
      * @type {string[]}
      */
     this.objectStoreNames =
-        Object.freeze([].slice.call(database.objectStoreNames))
+        Object.freeze(Array.from(database.objectStoreNames))
 
     /**
      * The native connection to the Indexed DB database.

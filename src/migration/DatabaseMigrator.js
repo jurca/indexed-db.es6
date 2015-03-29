@@ -193,7 +193,7 @@ function migrateDatabaseVersion(database, nativeTransaction, descriptor) {
  *        descriptor of the version to which the database is to be upgraded.
  */
 function upgradeSchema(database, nativeTransaction, descriptor) {
-  let objectStoreNames = [].slice.call(database.objectStoreNames)
+  let objectStoreNames = Array.from(database.objectStoreNames)
   let newObjectStoreNames = descriptor.objectStores.map((objectStore) => {
     return objectStore.name
   })

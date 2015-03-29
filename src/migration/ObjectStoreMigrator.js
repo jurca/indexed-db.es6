@@ -63,7 +63,7 @@ export default class ObjectStoreMigrator {
       })
     }
 
-    let indexNames = [].slice.call(objectStore.indexNames)
+    let indexNames = Array.from(objectStore.indexNames)
     indexNames.forEach((indexName) => {
       if (shouldDeleteIndex(objectStore, schema, indexName)) {
         objectStore.deleteIndex(indexName)
@@ -97,7 +97,7 @@ function shouldDeleteIndex(objectStore, schema, indexName) {
   let index = objectStore.index(indexName)
   let indexKeyPath = index.keyPath;
   if (indexKeyPath && (typeof indexKeyPath !== "string")) {
-    indexKeyPath = [].slice.call(indexKeyPath)
+    indexKeyPath = Array.from(indexKeyPath)
   }
   let serializedIndexKeyPath = JSON.stringify(indexKeyPath)
 
@@ -117,7 +117,7 @@ function shouldDeleteIndex(objectStore, schema, indexName) {
  * @param {IDBObjectStore} objectStore The native Indexed DB object store.
  */
 function createIndex(objectStore, indexSchema) {
-  let indexNames = [].slice.call(objectStore.indexNames)
+  let indexNames = Array.from(objectStore.indexNames)
 
   if (indexNames.indexOf(indexSchema.name) !== -1) {
     return
