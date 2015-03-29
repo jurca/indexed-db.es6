@@ -39,14 +39,14 @@ export default class AbstractBaseStorage {
      *
      * @type {?(string|string[])}
      */
-    this.keyPath = objectStore.keyPath || null
+    this.keyPath = storage.keyPath || null
 
     /**
      * The name of this object store.
      *
      * @type {string}
      */
-    this.name = objectStore.name
+    this.name = storage.name
 
     /**
      * The native IndexedDB storage access object - an object store or an

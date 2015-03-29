@@ -29,11 +29,6 @@ export default class ObjectStore extends ReadOnlyObjectStore {
   constructor(storage, transactionFactory) {
     super(storage, Cursor, transactionFactory)
 
-    if (this.constructor === AbstractReadWriteStorage) {
-      throw new Error("The AbstractReadWriteStorage is an abstract class " +
-          "and must be overridden")
-    }
-
     /**
      * The native Indexed DB object store used as the storage of records.
      *

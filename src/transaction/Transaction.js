@@ -1,5 +1,5 @@
 
-import ObjectStore from "../object-store/ReadOnlyObjectStore"
+import ObjectStore from "../object-store/ObjectStore"
 import ReadOnlyTransaction from "./ReadOnlyTransaction"
 
 /**
@@ -68,7 +68,7 @@ export default class Transaction extends ReadOnlyTransaction {
     }
 
     let transactionFactory = () => {
-      return this[FIELDS.transactionFactory].getObjectStore(objectStoreName)
+      return this[FIELDS.transactionFactory](objectStoreName)
     }
 
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)

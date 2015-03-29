@@ -122,7 +122,7 @@ export default class ReadOnlyCursor {
      *
      * @type {*}
      */
-    this.record = cursor.value || null
+    this.record = cursor ? (cursor.value || null) : null
 
     if (this.constructor === ReadOnlyCursor) {
       Object.freeze(this)
@@ -166,7 +166,7 @@ export default class ReadOnlyCursor {
       }
       this[FIELDS.request].onerror = () => reject(this[FIELDS.request].error)
 
-      this[FIELDS.request].resolve.advance(stepsCount)
+      this[FIELDS.request].result.advance(stepsCount)
       this[FIELDS.flags].hasAdvanced = true
     })
   }
@@ -210,7 +210,7 @@ export default class ReadOnlyCursor {
       }
       this[FIELDS.request].onerror = () => reject(this[FIELDS.request].error)
 
-      this[FIELDS.request].resolve.continue(nextKey)
+      this[FIELDS.request].result.continue(nextKey)
       this[FIELDS.flags].hasAdvanced = true
     })
   }

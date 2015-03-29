@@ -239,12 +239,12 @@ function fetchRecords(transaction, objectStores) {
   let normalizedObjectStores = normalizeFetchBeforeObjectStores(objectStores)
   
   return new Promise((resolveAll, rejectAll) => {
-    Promise.all(normalizedObjectStores).map((objectStore) => {
+    Promise.all(normalizedObjectStores.map((objectStore) => {
       return fetchObjectStoreRecords(
         transaction.getObjectStore(objectStore.objectStore),
         objectStore.preprocessor
       )
-    }).then((fetchedRecords) => {
+    })).then((fetchedRecords) => {
       let recordsMap = {}
       for (let i = 0; i < objectStores.length; i++) {
         recordsMap[normalizedObjectStores[i].objectStore] = fetchedRecords[i]
