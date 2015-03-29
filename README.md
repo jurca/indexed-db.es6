@@ -4,7 +4,7 @@ The indexed-db.es6 is ES6-style wrapper of the native
 [IndexedDB](http://www.w3.org/TR/IndexedDB/) HTML5
 [document-oriented database](http://en.wikipedia.org/wiki/Document-oriented_database).
 
-The indexed-db.es6 provided the following improvements and modifications over
+The indexed-db.es6 provides the following improvements and modifications over
 the native IndexedDB:
 
 - declarative schema
