@@ -69,7 +69,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
    *        record. This parameter must be specified only if this object store
    *        uses out-of-line keys and does not use a key generator.
-   * @return {Promise<(number|string|Date|Array)}
+   * @return {Promise<(number|string|Date|Array)>}
    */
   add(record, key = undefined) {
     return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
    *        record. This parameter must be specified only if this object store
    *        uses out-of-line keys.
-   * @return {Promise<(number|string|Date|Array)} A promise that resolves to
+   * @return {Promise<(number|string|Date|Array)>} A promise that resolves to
    *         the record key when the operation is successfuly queued.
    */
   put(record, key = undefined) {
