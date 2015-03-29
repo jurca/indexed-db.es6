@@ -15,9 +15,9 @@ describe("DatabaseMigrator", () => {
     request.onerror = () => fail(request.error)
   })
   
-  function connectForUpgrade() {
+  function connectForUpgrade(version = 2) {
     return new Promise((resolve, reject) => {
-      let request = indexedDB.open(DB_NAME, 2)
+      let request = indexedDB.open(DB_NAME, version)
       request.onerror = reject
       request.onblocked = reject
       request.onupgradeneeded = () => {
@@ -64,6 +64,129 @@ describe("DatabaseMigrator", () => {
       database.close()
       
       done()
+    }).catch(error => fail(error))
+  })
+  
+  it("should allow data migration", (done) => {
+    connectForUpgrade(1).then((connection) => {
+      let { database, transaction, request } = connection
+      
+      let migrator = new DatabaseMigrator(database, transaction, [
+        new DatabaseSchema(1,
+          new ObjectStoreSchema("fooBar", null, true)
+        )
+      ], 0)
+      
+      migrator.executeMigration()
+      
+      return new Promise((resolve) => {
+        request.onsuccess = () => resolve(request.result)
+      })
+    }).then((database) => {
+      let transaction = database.transaction("fooBar", "readwrite")
+      let objectStore = transaction.objectStore("fooBar")
+      
+      return new Promise((resolve) => {
+        let request = objectStore.add("this is OK")
+        request.onsuccess = () => {
+          request = objectStore.add("skip")
+          request.onsuccess = () => {
+            request = objectStore.add("delete")
+            request.onsuccess = () => {
+              request = objectStore.add({ someField: "this is also OK" })
+              request.onsuccess = () => {
+                transaction.oncomplete = () => {
+                  database.close()
+        
+                  resolve(connectForUpgrade(2))
+                }
+              }
+            }
+          }
+        }
+      })
+    }).then((connection) => {
+      let { database, transaction, request } = connection
+      
+      let migrator = new DatabaseMigrator(database, transaction, [
+        new DatabaseSchema(1,
+          new ObjectStoreSchema("fooBar", null, true)
+        ),
+        new UpgradedDatabaseSchema(2, [
+            {
+              objectStore: "fooBar",
+              preprocessor(record, key) {
+                if (record === "skip") {
+                  return UpgradedDatabaseSchema.SKIP_RECORD
+                }
+                if (record === "delete") {
+                  return UpgradedDatabaseSchema.DELETE_RECORD
+                }
+                return record
+              }
+            }
+          ], [
+            new ObjectStoreSchema("fooBar")
+          ], (transaction, records) => {
+            expect(records).toEqual({
+              fooBar: [
+                {
+                  key: 1,
+                  record: "this is OK"
+                },
+                {
+                  key: 4,
+                  record: {
+                    someField: "this is also OK"
+                  }
+                }
+              ]
+            })
+            
+            return new Promise((resolve) => {
+              let objectStore = transaction.getObjectStore("fooBar")
+              
+              resolve(objectStore.add({ anotherField: "another value" }))
+            })
+          }
+        )
+      ], 1)
+      
+      return migrator.executeMigration().then(() => {
+        return new Promise((resolve) => {
+          request.onsuccess = () => resolve(request.result)
+        })
+      })
+    }).then((database) => {
+      let transaction = database.transaction("fooBar")
+      let objectStore = transaction.objectStore("fooBar")
+      
+      return new Promise((resolve, reject) => {
+        let request = objectStore.count()
+        request.onsuccess = () => resolve({
+          database: database,
+          count: request.result
+        })
+        request.onerror = () => reject(request.error)
+      })
+    }).then((state) => {
+      let { database, count } = state
+      
+      expect(count).toBe(4)
+      
+      let transaction = database.transaction("fooBar")
+      let objectStore = transaction.objectStore("fooBar")
+      
+      let request = objectStore.get(5)
+      request.onsuccess = () => {
+        let record = request.result
+        expect(record).toEqual({ anotherField: "another value" })
+        
+        database.close()
+      
+        done()
+      }
+      request.onerror = () => fail(request.error)
     }).catch(error => fail(error))
   })
   
