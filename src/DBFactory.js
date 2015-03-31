@@ -3,6 +3,19 @@ import Database from "./Database"
 import DatabaseMigrator from "./migration/DatabaseMigrator"
 
 /**
+ * Registered listeners to be executed when a database schema migration is
+ * started. The listeners will be executed with the folowing arguments:
+ * 
+ * - database name
+ * - the version number from which the schema is being migrated
+ * - the version number to which the schema is being migrated
+ * - a promise that resolves when the migration is finished
+ * 
+ * @type {Set<function(string, number, number, Promise<undefined>)>}
+ */
+let migrationListeners = new Set()
+
+/**
  * Provider of connections to the database, manager of database versioning and
  * utility for deleting databases.
  *
@@ -73,27 +86,46 @@ export default class DBFactory {
     let request = indexedDB.open(databaseName, requestedVersion)
 
     return new Promise((resolve, reject) => {
+      let migrationPromiseResolver, migrationPromiseRejector;
+      let migrationPromise = new Promise((resolve, reject) => {
+        migrationPromiseResolver = resolve
+        migrationPromiseRejector = reject
+      })
+      
       request.onsuccess = () => {
+        migrationPromiseResolver()
         let database = new Database(request.result)
         resolve(database)
       }
 
       request.onupgradeneeded = (event) => {
+        executeMigrationListeners(databaseName, event.oldVersion,
+            requestedVersion, migrationPromise)
+        
         let database = request.result
         let transaction = request.transaction
 
-        database.onerror = (errorEvent) => reject(errorEvent)
+        database.onerror = (errorEvent) => {
+          reject(errorEvent)
+          migrationPromiseRejector(errorEvent)
+        }
 
         let migrator = new DatabaseMigrator(database, transaction,
             sortedSchemaDescriptors, event.oldVersion)
         migrator.executeMigration()
       }
 
-      request.onerror = () => reject(request.error)
-      request.onblocked = () => reject(new Error("A database upgrade was " +
-          "needed, but could not be performed, because the attempt was " +
-          "blocked by a connection that remained opened after receiving the " +
-          "notification"))
+      request.onerror = () => {
+        reject(request.error)
+        migrationPromiseRejector(request.error)
+      }
+      request.onblocked = () => {
+        let error = new Error("A database upgrade was needed, but could not " +
+            "be performed, because the attempt was blocked by a connection " +
+            "that remained opened after receiving the notification")
+        reject(error)
+        migrationPromiseRejector(error)
+      }
     })
   }
 
@@ -123,5 +155,58 @@ export default class DBFactory {
       request.onsuccess = (event) => resolve(event.oldVersion)
       request.onerror = (event) => reject(event)
     })
+  }
+  
+  /**
+   * Registers the specified listener to be executed whenever a database schema
+   * migration is started. The listeners will be executed with the folowing
+   * arguments:
+   * 
+   * - database name
+   * - the version number from which the schema is being migrated, set to 0 if
+   *   the database is being created
+   * - the version number to which the schema is being migrated
+   * - a promise that resolves when the migration is finished
+   * 
+   * Any error throw by the listener will be logged as a warning, but will not
+   * disrupt the execution of the remaining listeners.
+   * 
+   * @param {function(string, number, number, Promise<undefined>)} listener The
+   *        listener to register.
+   */
+  static addMigrationListener(listener) {
+    migrationListeners.add(listener)
+  }
+  
+  /**
+   * Unregisters the specified database schema migration listener. This method
+   * has no effect if the listener is not registered.
+   * 
+   * @param {function(string, number, number, Promise<undefined>)} listener The
+   *        listener to unregister.
+   */
+  static removeMigrationListener(listener) {
+    migrationListeners.delete(listener)
+  }
+}
+
+/**
+ * Executes the currently registered database schema migration listeners with
+ * the provided arguments.
+ * 
+ * @param {string} databaseName The name of the database being migrated.
+ * @param {number} the version number from which the schema is being migrated.
+ * @param {number} the version number to which the schema is being migrated.
+ * @param {Promise<undefined>} a promise that resolves when the migration is
+ *        finished.
+ */
+function executeMigrationListeners(databaseName, oldVersion, newVersion,
+    completionPromise) {
+  for (let listener of migrationListeners) {
+    try {
+      listener(databaseName, oldVersion, newVersion, completionPromise)
+    } catch (e) {
+      console.warn("A schema migration event listener threw an error", e);
+    }
   }
 }
