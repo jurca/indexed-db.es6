@@ -94,6 +94,7 @@ describe("DBFactory", () => {
       expect(newVersion).toBe(2)
       completionPromise.then(() => {
         migrationDone = true
+        DBFactory.removeMigrationListener(listener1)
         
         done()
       })
