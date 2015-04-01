@@ -85,4 +85,41 @@ describe("DBFactory", () => {
       done()
     }).catch((error) => fail(error))
   })
+  
+  it("should trigger the migration listeners", (done) => {
+    let migrationDone = false
+    let listener1 = (db, oldVersion, newVersion, completionPromise) => {
+      expect(db).toBe(DB_NAME)
+      expect(oldVersion).toBe(1)
+      expect(newVersion).toBe(2)
+      completionPromise.then(() => {
+        migrationDone = true
+        
+        done()
+      })
+      expect(migrationDone).toBeFalsy()
+    }
+    let listener2 = () => fail("The second listener was not unregistered")
+    
+    DBFactory.addMigrationListener(listener1)
+    DBFactory.addMigrationListener(listener2)
+    DBFactory.removeMigrationListener(listener2)
+    
+    DBFactory.open(DB_NAME,
+      new DatabaseSchema(1,
+        new ObjectStoreSchema(OBJECT_STORE_NAME, null, false)
+      ),
+      new UpgradedDatabaseSchema(2,
+        [],
+        [
+          new ObjectStoreSchema(OBJECT_STORE_NAME, null, false),
+          new ObjectStoreSchema("some other object store", null, false)
+        ]
+      )
+    ).then((database) => {
+      database.close()
+      
+      expect(migrationDone).toBeFalsy()
+    }).catch((error) => fail(error))
+  })
 })

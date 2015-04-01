@@ -13,7 +13,7 @@ import DatabaseMigrator from "./migration/DatabaseMigrator"
  * 
  * @type {Set<function(string, number, number, Promise<undefined>)>}
  */
-let migrationListeners = new Set()
+const migrationListeners = new Set()
 
 /**
  * Provider of connections to the database, manager of database versioning and
@@ -93,9 +93,9 @@ export default class DBFactory {
       })
       
       request.onsuccess = () => {
-        migrationPromiseResolver()
         let database = new Database(request.result)
         resolve(database)
+        migrationPromiseResolver()
       }
 
       request.onupgradeneeded = (event) => {
