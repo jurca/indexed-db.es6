@@ -66,10 +66,11 @@ export default class AbstractBaseStorage {
   }
 
   /**
-   * Retrieves a single record identified by the specified primary key value.
+   * Retrieves a single record identified by the specified key value.
    *
-   * if the primary key is an {@codelink IDBKeyRange} instance, the method
-   * retrieves the first record matching the key range.
+   * If the key is an {@codelink IDBKeyRange} instance, or the key value
+   * matches multiple records, the method retrieves the first record matching
+   * the key / key range.
    *
    * There are the following ways of specifying a compound key:
    * - An array of primary key field values. The values must be specified in
@@ -77,25 +78,25 @@ export default class AbstractBaseStorage {
    * - An {@code Object<string, (number|string|Date|Array)>} object specifying
    *   only the primary key field values.
    *
-   * @param {(number|string|Date|Array|Object|IDBKeyRange)} primaryKey The
-   *        primary key value identifying the record.
+   * @param {(number|string|Date|Array|Object|IDBKeyRange)} key The key value
+   *        identifying the record.
    * @return {Promise<*>} A promise that resolves to the record, or
    *         {@code undefined} if the record does not exist. The also promise
    *         resolves to {@code undefined} if the record exists, but it is the
    *         {@code undefined} value.
    */
-  get(primaryKey) {
-    let isCompoundKeyObject = (primaryKey instanceof Object) &&
-        !(primaryKey instanceof IDBKeyRange)
+  get(key) {
+    let isCompoundKeyObject = (key instanceof Object) &&
+        !(key instanceof IDBKeyRange)
     if (isCompoundKeyObject) {
       if (!(this.keyPath instanceof Array)) {
         throw new Error("This storage does not use a compound key, but one " +
             "was provided")
       }
-      primaryKey = normalizeCompoundObjectKey(this.keyPath, primaryKey)
+      key = normalizeCompoundObjectKey(this.keyPath, key)
     }
 
-    let request = this[FIELDS.storage].get(primaryKey)
+    let request = this[FIELDS.storage].get(key)
 
     return new Promise((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
