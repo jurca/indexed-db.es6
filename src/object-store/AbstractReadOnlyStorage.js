@@ -64,6 +64,23 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
      */
     this[FIELDS.storageFactory] = storageFactory
   }
+  
+  /**
+   * Tests whether a record matching the specified filter exists in this
+   * storage.
+   * 
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
+   *        filter The filter restricting on which records the callback will be
+   *        executed. The first argument will be set to the record, the second
+   *        argument will be set to the primary key of the record, and the
+   *        third argument will be set to the key referencing the record (the
+   *        primary key if traversing an object store).
+   * @return {Promise<boolean>} A promise that resolves to {@code true} if
+   *         there is a record matching the provided filter.
+   */
+  exists(filter = undefined) {
+    return this.count(filter).then(count => count > 0)
+  }
 
   /**
    * Calculates the number of records matching the specified filter.
@@ -304,4 +321,34 @@ function list(storage, keyRange, filter, direction, unique, pageSize, storageFac
           direction, unique, filter, pageSize, hasNextPage))
     }
   })
+}
+
+/**
+ * Normalizes the provided compound key represented as an object into a
+ * compound key representation compatible with the Indexed DB.
+ *
+ * @param {string[]} keyPaths The key paths of this storage.
+ * @param {Object} key The compound key to normalize for use with the Indexed
+ *        DB.
+ * @return {Array<(number|string|Date|Array)>} Normalized compound key.
+ */
+function normalizeCompoundObjectKey(keyPaths, key) {
+  let normalizedKey = []
+
+  keyPaths.forEach((keyPath) => {
+    let keyValue = key
+
+    keyPath.split(".").forEach((fieldName) => {
+      if (!keyValue.hasOwnProperty(fieldName)) {
+        throw new Error(`The ${keyPath} key path is not defined in the ` +
+            "provided compound key")
+      }
+
+      keyValue = keyValue[fieldName]
+    })
+
+    normalizedKey.push(keyValue)
+  })
+
+  return normalizedKey
 }
