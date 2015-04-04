@@ -55,4 +55,23 @@ describe("Database", () => {
     }).catch((error) => fail(error))
   })
   
+  it("blocks schema upgrade if no version change listener exists", (done) => {
+    database.addVersionChangeListener((newVersion) => {
+      expect(newVersion).toBe(14)
+    })
+    
+    DBFactory.open(DB_NAME,
+      new DatabaseSchema(1,
+        new ObjectStoreSchema("fooBar")
+      ),
+      new UpgradedDatabaseSchema(14, [], [
+        new ObjectStoreSchema("fooBar2")
+      ])
+    ).then((databaseInstance) => {
+      fail("the database connection should have been rejected")
+    }).catch((error) => {
+      done()
+    })
+  })
+  
 })
