@@ -4,6 +4,7 @@ import DatabaseSchema from "../../compiled/schema/DatabaseSchema"
 import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
 
 describe("ReadOnlyCursor", () => {
+
   const DB_NAME = "testing database"
   const OBJECT_STORE_NAME = "fooBar"
   
