@@ -74,4 +74,40 @@ describe("Database", () => {
     })
   })
   
+  it("creates read-write transactions", (done) => {
+    let transaction = database.startTransaction("fooBar")
+    let objectStore = transaction.getObjectStore("fooBar")
+    
+    objectStore.add(undefined, 123).then((key) => {
+      expect(key).toBe(123)
+      
+      return transaction.completionPromise
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
+  it("creates read-only transactions", (done) => {
+    let transaction = database.startReadOnlyTransaction("fooBar")
+    let objectStore = transaction.getObjectStore("fooBar")
+    
+    objectStore.count().then((count) => {
+      expect(count).toBe(0)
+      
+      return transaction.completionPromise
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
+  it("creates a single-object store read-only transactions", (done) => {
+    let objectStore = database.getObjectStore("fooBar")
+    
+    objectStore.count().then((count) => {
+      expect(count).toBe(0)
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
 })
