@@ -19,7 +19,7 @@ the native IndexedDB:
 - record lists with lazy-fetching of "pages" of records
 - very-well documented code :)
 - API split into ES6 modules
-- all native IndexedDB features are available through the API
+- practically all native IndexedDB features are available through the API
 
 ## The current state of this project
 
