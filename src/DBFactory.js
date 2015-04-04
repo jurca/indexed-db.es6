@@ -91,6 +91,8 @@ export default class DBFactory {
         migrationPromiseResolver = resolve
         migrationPromiseRejector = reject
       })
+      // prevent leaking the same error to the console twice
+      migrationPromise.catch(() => {})
       
       request.onsuccess = () => {
         let database = new Database(request.result)
