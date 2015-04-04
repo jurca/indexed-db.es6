@@ -61,6 +61,21 @@ export default class DBFactory {
    * The database version is always a positive integer. The version numbers
    * specified by the descriptors do not have to start at {@code 1} and may
    * contain gaps of any size.
+   * 
+   * Note that this method handles opening the connection slightly differenty
+   * when the database version is to be upgraded and the request is blocked:
+   * 
+   * This method will reject the returned promise immediately if the attempt is
+   * blocked. The native Indexed DB connection open request would behave
+   * slightly differently, that is, if all pending connections to the database
+   * are closed, the Indexed DB will fire the {@code upgradeneeded} and
+   * {@code success} events, even though the {@code blocked} event has been
+   * previously fired on the open request.
+   * 
+   * Since this behavior of the native Indexed DB is considered
+   * counter-intuitive this method simplifies this special case by ignoring the
+   * native events received after the {@code blocked} event and rejecting the
+   * returned promise.
    *
    * @param {string} databaseName The name of the database.
    * @param {...(DatabaseSchema|UpgradedDatabaseSchema)} schemaDescriptors The
@@ -85,50 +100,7 @@ export default class DBFactory {
     let requestedVersion = sortedSchemaDescriptors.slice().pop().version
     let request = indexedDB.open(databaseName, requestedVersion)
 
-    return new Promise((resolve, reject) => {
-      let migrationPromiseResolver, migrationPromiseRejector;
-      let migrationPromise = new Promise((resolve, reject) => {
-        migrationPromiseResolver = resolve
-        migrationPromiseRejector = reject
-      })
-      // prevent leaking the same error to the console twice
-      migrationPromise.catch(() => {})
-      
-      request.onsuccess = () => {
-        let database = new Database(request.result)
-        resolve(database)
-        migrationPromiseResolver()
-      }
-
-      request.onupgradeneeded = (event) => {
-        executeMigrationListeners(databaseName, event.oldVersion,
-            requestedVersion, migrationPromise)
-        
-        let database = request.result
-        let transaction = request.transaction
-
-        database.onerror = (errorEvent) => {
-          reject(errorEvent)
-          migrationPromiseRejector(errorEvent)
-        }
-
-        let migrator = new DatabaseMigrator(database, transaction,
-            sortedSchemaDescriptors, event.oldVersion)
-        migrator.executeMigration()
-      }
-
-      request.onerror = () => {
-        reject(request.error)
-        migrationPromiseRejector(request.error)
-      }
-      request.onblocked = () => {
-        let error = new Error("A database upgrade was needed, but could not " +
-            "be performed, because the attempt was blocked by a connection " +
-            "that remained opened after receiving the notification")
-        reject(error)
-        migrationPromiseRejector(error)
-      }
-    })
+    return openConnection(request, sortedSchemaDescriptors)
   }
 
   /**
@@ -190,6 +162,73 @@ export default class DBFactory {
   static removeMigrationListener(listener) {
     migrationListeners.delete(listener)
   }
+}
+
+/**
+ * Handles opening the connection to the database and wraps the whole process
+ * in a promise.
+ * 
+ * @param {IDBOpenDBRequest} request The native Indexed DB connection opening
+ *        request.
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema)} The database schema
+ *        descriptors, sorted in ascending order by the schema version number.
+ * @return {Promise<Database>} A promise that resolves to the database
+ *         connection.
+ */
+function openConnection(request, sortedSchemaDescriptors) {
+  return new Promise((resolve, reject) => {
+    let wasBlocked = false
+    
+    let migrationPromiseResolver, migrationPromiseRejector;
+    let migrationPromise = new Promise((resolve, reject) => {
+      migrationPromiseResolver = resolve
+      migrationPromiseRejector = reject
+    })
+    // prevent leaking the same error to the console twice
+    migrationPromise.catch(() => {})
+    
+    request.onsuccess = () => {
+      let database = new Database(request.result)
+      resolve(database)
+      migrationPromiseResolver()
+    }
+
+    request.onupgradeneeded = (event) => {
+      let database = request.result
+      let transaction = request.transaction
+      
+      if (wasBlocked) {
+        transaction.abort()
+        return
+      }
+      
+      executeMigrationListeners(database.name, event.oldVersion,
+          event.newVersion, migrationPromise)
+
+      database.onerror = (errorEvent) => {
+        reject(errorEvent)
+        migrationPromiseRejector(errorEvent)
+      }
+
+      let migrator = new DatabaseMigrator(database, transaction,
+          sortedSchemaDescriptors, event.oldVersion)
+      migrator.executeMigration()
+    }
+
+    request.onerror = () => {
+      reject(request.error)
+      migrationPromiseRejector(request.error)
+    }
+    request.onblocked = () => {
+      wasBlocked = true
+      
+      let error = new Error("A database upgrade was needed, but could not " +
+          "be performed, because the attempt was blocked by a connection " +
+          "that remained opened after receiving the notification")
+      reject(error)
+      migrationPromiseRejector(error)
+    }
+  })
 }
 
 /**
