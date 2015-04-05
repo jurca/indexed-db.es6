@@ -148,12 +148,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
         catch(reject)
 
       function iterate(cursor) {
-        if (!cursor) {
+        if (cursor.done) {
           resolve(count)
           return
         }
 
-        if (filter && filter(cursor.record, cursor.primaryKey, cursor.key)) {
+        if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
           callback(cursor.record, cursor.primaryKey, cursor.key)
           count++
         }
