@@ -31,6 +31,11 @@ export default class AbstractBaseStorage {
           "be overridden")
     }
 
+    let keyPath = storage.keyPath
+    if (keyPath && (typeof keyPath !== "string")) {
+      keyPath = Array.from(keyPath)
+    }
+    
     /**
      * The keypath of this object store or index, specified as a sequence of
      * field names joined by dots (if the object store uses in-line keys), or
@@ -39,7 +44,7 @@ export default class AbstractBaseStorage {
      *
      * @type {?(string|string[])}
      */
-    this.keyPath = storage.keyPath || null
+    this.keyPath = keyPath || null
 
     /**
      * The name of this object store.
@@ -125,38 +130,6 @@ export default class AbstractBaseStorage {
 
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
-
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        resolve(new cursorConstructor(request))
-      }
-      request.onerror = () => reject(request.error)
-    })
-  }
-
-  /**
-   * Opens a read-only cursor that traverses the records of this storage,
-   * resolving only the primary keys of the records.
-   *
-   * The {@code record} field of the cursor will always be {@code null}.
-   *
-   * @param {?(IDBKeyRange)} keyRange A key range to use to filter the records
-   *        by matching the values of their primary keys against this key
-   *        range.
-   * @param {CursorDirection} direction The direction in which the cursor will
-   *        traverse the records.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
-   *         pointing to the first matched record.
-   */
-  openKeyCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
-    if (keyRange === null) {
-      keyRange = undefined
-    }
-
-    let cursorConstructor = this[FIELDS.cursorConstructor]
-
-    let cursorDirection = direction.value.toLowerCase().substring(0, 4)
-    let request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection)
 
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {

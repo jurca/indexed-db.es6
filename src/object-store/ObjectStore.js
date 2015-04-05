@@ -179,23 +179,4 @@ export default class ObjectStore extends ReadOnlyObjectStore {
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
     return super.openCursor(keyRange, direction)
   }
-
-  /**
-   * Opens a read-write cursor that traverses the records of this object store,
-   * resolving only the primary keys of the records.
-   *
-   * The {@code record} field of the cursor will always be {@code null}.
-   *
-   * @override
-   * @param {?(IDBKeyRange)} keyRange A key range to use to filter the records
-   *        by matching the values of their primary keys against this key
-   *        range.
-   * @param {CursorDirection} direction The direction in which the cursor will
-   *        traverse the records.
-   * @return {Promise<Cursor>} A promise that resolves to a cursor pointing to
-   *         the first matched record.
-   */
-  openKeyCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
-    return super.openKeyCursor(keyRange, direction)
-  }
 }
