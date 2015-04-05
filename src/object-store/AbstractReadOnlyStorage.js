@@ -289,7 +289,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
  *        creates a new read-only transaction and returns this storage accessor
  *        each time it is invoked.
  */
-function list(storage, keyRange, filter, direction, unique, pageSize, storageFactory) {
+function list(storage, keyRange, filter, direction, unique, pageSize,
+    storageFactory) {
   return new Promise((resolve, reject) => {
     let items = []
 
