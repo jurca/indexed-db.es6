@@ -237,7 +237,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
 
     // convert the filter to a filter function - we need to always set our key
     // range ourselves to have a high-performance paging
-    fitler = normalizeFilter(filter, this.keyPath)
+    filter = normalizeFilter(filter, this.keyPath)
     let keyRange = undefined
     if (filter instanceof IDBKeyRange) {
       keyRange = filter
@@ -299,7 +299,7 @@ function list(storage, keyRange, filter, direction, unique, pageSize,
         catch(reject)
 
     function iterate(cursor) {
-      if (!cursor) {
+      if (cursor.done) {
         finalize(false, null, null)
         return
       }

@@ -195,7 +195,7 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
         catch(reject)
 
     function iterate(cursor) {
-      if (!cursor) {
+      if (cursor.done) {
         finalize(false, null, null)
         return
       }
