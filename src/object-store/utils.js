@@ -113,8 +113,8 @@ export function compileFieldRangeFilter(filter) {
         let upperComparison
         upperComparison = indexedDB.cmp(fieldRange.upper, fieldValue)
 
-        let failedTest = (lowerComparison < 0) ||
-            (fieldRange.upperOpen && (lowerComparison === 0))
+        let failedTest = (upperComparison < 0) ||
+            (fieldRange.upperOpen && (upperComparison === 0))
         if (failedTest) {
           return false
         }
