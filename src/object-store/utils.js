@@ -5,7 +5,7 @@ import KeyRange from "./KeyRange"
  * Converts the provided key range object into a field range map object.
  *
  * @param {IDBKeyRange} keyRange The key range object to convert.
- * @param {(string|string)} keyPath The key path of this storage.
+ * @param {(string|string[])} keyPath The key path of this storage.
  * @return {Object<string, IDBKeyRange>} A field range map object.
  */
 export function keyRangeToFieldRangeObject(keyRange, keyPath) {
