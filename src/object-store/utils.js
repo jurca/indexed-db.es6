@@ -220,8 +220,9 @@ function getFieldPaths(object, stopOnKeyRange = true) {
       let isTerminalValue =
           !(value instanceof Object) ||
           (value instanceof Date) ||
-          (value instanceof Array)
-      fieldPath = parts.slice()
+          (value instanceof Array) ||
+          (value instanceof IDBKeyRange)
+      let fieldPath = parts.slice()
       fieldPath.push(fieldName)
 
       if (isTerminalValue) {
@@ -296,7 +297,7 @@ function getFieldValue(object, fieldPath) {
 
   let currentObject = object
   fieldPath.split(".").forEach((fieldName) => {
-    if (!currentObject.hasOwnProperty(field)) {
+    if (!currentObject.hasOwnProperty(fieldName)) {
       throw new Error(`The field path ${fieldPath} does not exist in the ` +
           "provided object")
     }
