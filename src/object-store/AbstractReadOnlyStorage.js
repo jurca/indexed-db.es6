@@ -69,7 +69,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * Tests whether a record matching the specified filter exists in this
    * storage.
    * 
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
+   * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
    *        filter The filter restricting on which records the callback will be
    *        executed. The first argument will be set to the record, the second
    *        argument will be set to the primary key of the record, and the
@@ -78,7 +78,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * @return {Promise<boolean>} A promise that resolves to {@code true} if
    *         there is a record matching the provided filter.
    */
-  exists(filter = undefined) {
+  exists(filter) {
     return this.count(filter).then(count => count > 0)
   }
 
