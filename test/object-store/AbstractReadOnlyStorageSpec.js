@@ -130,4 +130,106 @@ describe("AbstractReadOnlyStorage", () => {
     }).catch(error => fail(error.stack || error.message))
   })
   
+  it("should be able to fetch all records matching a filter", (done) => {
+    objectStore.getAll().then((records) => {
+      expect(records).toEqual([
+        {
+          id: 11,
+          name: "John"
+        },
+        {
+          id: 14,
+          name: "Adam"
+        },
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      return objectStore.getAll(KeyRange.bound(11, 14))
+    }).then((records) => {
+      expect(records).toEqual([
+        {
+          id: 11,
+          name: "John"
+        },
+        {
+          id: 14,
+          name: "Adam"
+        }
+      ])
+      
+      return objectStore.getAll({
+        name: "Joshua"
+      })
+    }).then((records) => {
+      expect(records).toEqual([
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      return objectStore.getAll((record, primaryKey) => {
+        return primaryKey > 12
+      }, CursorDirection.PREVIOUS)
+    }).then((records) => {
+      expect(records).toEqual([
+        {
+          id: 17,
+          name: "Joshua"
+        },
+        {
+          id: 14,
+          name: "Adam"
+        }
+      ])
+      
+      done()
+    })
+  })
+  
+  it("should count the records matching a filter", (done) => {
+    objectStore.count().then((count) => {
+      expect(count).toEqual(3)
+      
+      return objectStore.count(KeyRange.bound(11, 14))
+    }).then((count) => {
+      expect(count).toEqual(2)
+      
+      return objectStore.count(14)
+    }).then((count) => {
+      expect(count).toEqual(1)
+      
+      return objectStore.count({
+        name: "Joshua"
+      })
+    }).then((count) => {
+      expect(count).toEqual(1)
+      
+      return objectStore.count(() => false)
+    }).then((count) => {
+      expect(count).toEqual(0)
+      
+      done()
+    })
+  })
+  
+  it("should test whether there is a matching record", (done) => {
+    objectStore.exists(KeyRange.bound(11, 14)).then((exists) => {
+      expect(exists).toBeTruthy()
+      
+      return objectStore.exists(KeyRange.lowerBound(24))
+    }).then((exists) => {
+      expect(exists).toBeFalsy()
+      
+      return objectStore.exists(record => record.name === "Adam")
+    }).then((exists) => {
+      expect(exists).toBeTruthy()
+      
+      done()
+    })
+  })
+  
 })
