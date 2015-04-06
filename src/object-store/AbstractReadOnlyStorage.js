@@ -242,7 +242,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
     if (filter instanceof IDBKeyRange) {
       keyRange = filter
       if (this.keyPath) {
-        filter = keyRangeToFieldRangeObject(filter)
+        filter = keyRangeToFieldRangeObject(filter, this.keyPath)
         filter = compileFieldRangeFilter(filter)
       } else {
         let primaryKeyFilter = compileFieldRangeFilter({
