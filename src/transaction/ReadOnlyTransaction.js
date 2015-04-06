@@ -173,7 +173,7 @@ export default class ReadOnlyTransaction {
     }
 
     let transactionFactory = () => {
-      return this[FIELDS.transactionFactory].getObjectStore(objectStoreName)
+      return this[FIELDS.transactionFactory](objectStoreName)
     }
 
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)
