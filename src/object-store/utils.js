@@ -1,4 +1,6 @@
 
+import KeyRange from "./KeyRange"
+
 /**
  * Converts the provided key range object into a field range map object.
  *
