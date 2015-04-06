@@ -96,7 +96,12 @@ export function compileFieldRangeFilter(filter) {
     }
 
     return (record) => {
-      let fieldValue = getFieldValue(record, fieldPath)
+      let fieldValue;
+      try {
+        fieldValue = getFieldValue(record, fieldPath)
+      } catch (error) {
+        return false // the field does not exist in the record
+      }
 
       if (fieldRange.lower !== undefined) {
         let lowerComparison
