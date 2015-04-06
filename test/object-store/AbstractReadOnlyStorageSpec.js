@@ -232,4 +232,114 @@ describe("AbstractReadOnlyStorage", () => {
     })
   })
   
+  it("should allow paging the records using the list method", (done) => {
+    objectStore.list().then((recordList) => {
+      expect(recordList.hasNextPage).toBeFalsy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 11,
+          name: "John"
+        },
+        {
+          id: 14,
+          name: "Adam"
+        },
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      expect(() => {
+        recordList.fetchNextPage()
+      }).toThrow()
+      
+      return objectStore.list(undefined, CursorDirection.NEXT, 2)
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeTruthy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 11,
+          name: "John"
+        },
+        {
+          id: 14,
+          name: "Adam"
+        }
+      ])
+      
+      return transaction.completionPromise.then(() => recordList)
+    }).then((recordList) => {
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(recordList), 125)
+      })
+    }).then((recordList) => {
+      return recordList.fetchNextPage()
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeFalsy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      expect(() => {
+        recordList.fetchNextPage()
+      }).toThrow()
+      
+      transaction = database.startReadOnlyTransaction(OBJECT_STORE_NAME)
+      objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
+      return objectStore.list((record, primaryKey) => {
+        return primaryKey > 12
+      }, CursorDirection.PREVIOUS, 1)
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeTruthy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      return recordList.fetchNextPage()
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeFalsy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 14,
+          name: "Adam"
+        }
+      ])
+      
+      transaction = database.startReadOnlyTransaction(OBJECT_STORE_NAME)
+      objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
+      return objectStore.list(
+        KeyRange.bound(14, 17),
+        CursorDirection.PREVIOUS,
+        1
+      )
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeTruthy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 17,
+          name: "Joshua"
+        }
+      ])
+      
+      return recordList.fetchNextPage()
+    }).then((recordList) => {
+      expect(recordList.hasNextPage).toBeFalsy()
+      expect(recordList.slice()).toEqual([
+        {
+          id: 14,
+          name: "Adam"
+        }
+      ])
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
 })
