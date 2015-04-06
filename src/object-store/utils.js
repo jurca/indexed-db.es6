@@ -169,7 +169,7 @@ function convertFieldMapToKeyRange(filter, keyPaths) {
     keyPaths = [keyPaths]
   }
 
-  let fieldPaths = getAllFieldPaths(filter)
+  let fieldPaths = getFieldPaths(filter)
   if (!fieldPaths) {
     return null
   }
@@ -215,11 +215,11 @@ function getFieldPaths(object, stopOnKeyRange = true) {
   return fieldPaths
 
   function generateFieldPaths(object, parts) {
-    Object.keys(object).forEach((fieldName) => {
+    Object.keys(object).some((fieldName) => {
       let value = object[fieldName]
       if (stopOnKeyRange && (value instanceof IDBKeyRange)) {
         fieldPaths = null
-        return
+        return true
       }
 
       let isTerminalValue =
