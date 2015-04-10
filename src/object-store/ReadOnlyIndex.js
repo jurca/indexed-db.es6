@@ -106,7 +106,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
           catch(reject)
 
       function iterate(cursor) {
-        if (!cursor) {
+        if (cursor.done) {
           resolve(primaryKeys)
           return
         }
