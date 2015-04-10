@@ -53,7 +53,8 @@ describe("ReadOnlyTransaction", () => {
     
     let objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
     objectStore.add(null, 1).then(() => {
-      objectStore.add(null, 1)
+      objectStore.add(null, 1).
+          catch(() => {})
     })
   })
   
@@ -63,6 +64,7 @@ describe("ReadOnlyTransaction", () => {
   
   it("should execute abort listeners on abort", (done) => {
     transaction.addAbortListener(() => done())
+    transaction.completionPromise.catch(() => {})
     
     transaction.abort()
   })
@@ -70,10 +72,12 @@ describe("ReadOnlyTransaction", () => {
   it("should execute error listeners on error", (done) => {
     let transaction = database.startTransaction(OBJECT_STORE_NAME)
     transaction.addErrorListener(() => done())
+    transaction.completionPromise.catch(() => {})
     
     let objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
     objectStore.add(null, 1).then(() => {
-      objectStore.add(null, 1)
+      objectStore.add(null, 1).
+          catch(() => {})
     })
   })
   
