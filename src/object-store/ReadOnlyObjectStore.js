@@ -8,7 +8,8 @@ import ReadOnlyIndex from "./ReadOnlyIndex"
 const FIELDS = Object.freeze({
   objectStore: Symbol("objectStore"),
   indexes: Symbol("indexes"),
-  transactionFactory: Symbol("transactionFactory")
+  transactionFactory: Symbol("transactionFactory"),
+  cursorConstructor: Symbol("cursorConstructor")
 })
 
 /**
@@ -72,6 +73,13 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
      * @type {function(): ReadOnlyTransaction}
      */
     this[FIELDS.transactionFactory] = transactionFactory
+    
+    /**
+     * Constructor of the cursor to use when traversing the storage records.
+     * 
+     * @type {function(new: ReadyOnlyCursor)}
+     */
+    this[FIELDS.cursorConstructor] = cursorConstructor
 
     if (this.constructor === ReadOnlyObjectStore) {
       Object.freeze(this)
