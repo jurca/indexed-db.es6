@@ -92,7 +92,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
       return this[FIELDS.indexes].get(indexName)
     }
 
-    let nativeIndex = this[FIELDS.storage].index(indexName)
+    let nativeIndex = this[FIELDS.objectStore].index(indexName)
     let index = new ReadOnlyIndex(
       nativeIndex,
       this[FIELDS.cursorConstructor],
