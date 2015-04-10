@@ -34,7 +34,7 @@ export default class ReadOnlyCursor {
     /**
      * Cursor state flags.
      *
-     * @type {Object<string, boolean>}
+     * @type {{hasAdvanced: boolean}}
      */
     this[FIELDS.flags] = {
       /**

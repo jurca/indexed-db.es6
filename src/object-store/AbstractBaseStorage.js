@@ -65,7 +65,7 @@ export default class AbstractBaseStorage {
      * The constructor function of the cursor to use to create cursor
      * instances.
      *
-     * @type {function(this: ReadyOnlyCursor)}
+     * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
   }

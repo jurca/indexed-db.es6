@@ -22,6 +22,11 @@ export default class Cursor extends ReadOnlyCursor {
   constructor(cursorRequest) {
     super(cursorRequest)
 
+    /**
+     * The native cursor.
+     * 
+     * @type {IDBCursor}
+     */
     this[FIELDS.cursor] = cursorRequest.result
   }
 

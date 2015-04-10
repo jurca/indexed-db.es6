@@ -1,5 +1,6 @@
 
 import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage"
+import CursorDirection from "./CursorDirection"
 
 /**
  * Private field symbols.
@@ -59,7 +60,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
      * The constructor function of the cursor to use to create cursor
      * instances.
      *
-     * @type {function(this: ReadyOnlyCursor)}
+     * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
 
@@ -82,8 +83,8 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
   getPrimaryKey(key) {
     return new Promise((resolve, reject) => {
       let request = this[FIELDS.storage].getKey(key)
-      request.onsuccess = resolve(request.result)
-      request.onerror = reject(request.error)
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
     })
   }
 
