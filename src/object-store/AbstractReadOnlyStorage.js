@@ -27,7 +27,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *
    * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
    *        store or index.
-   * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
+   * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
    * @param {function(): AbstractReadOnlyStorage} A function that creates a new
    *        read-only transaction and returns a new storage accessor for this

@@ -18,7 +18,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * Initializes the read-only index.
    *
    * @param {IDBIndex} storage The native Indexed DB index.
-   * @param {function(this: ReadyOnlyCursor)} cursorConstructor Constructor of
+   * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
