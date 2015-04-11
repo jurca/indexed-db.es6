@@ -117,6 +117,11 @@ export default class ReadOnlyTransaction {
    *
    * The order in which the event listeners will be executed is undefined and
    * should not be relied upon.
+   * 
+   * This method provides a more low-level access to the transaction lifecycle
+   * which can be useful in certain situations, however, it is recommended to
+   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * easier.
    *
    * @param {function()} listener The listener to register.
    */
@@ -130,6 +135,11 @@ export default class ReadOnlyTransaction {
    *
    * The order in which the event listeners will be executed is undefined and
    * should not be relied upon.
+   * 
+   * This method provides a more low-level access to the transaction lifecycle
+   * which can be useful in certain situations, however, it is recommended to
+   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * easier.
    *
    * @param {function()} listener The listener to register.
    */
@@ -145,6 +155,11 @@ export default class ReadOnlyTransaction {
    *
    * The order in which the event listeners will be executed is undefined and
    * should not be relied upon.
+   * 
+   * This method provides a more low-level access to the transaction lifecycle
+   * which can be useful in certain situations, however, it is recommended to
+   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * easier.
    *
    * @param {function(Error)} listener The listener to register.
    */
