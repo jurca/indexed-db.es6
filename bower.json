@@ -27,6 +27,5 @@
     "tests"
   ],
   "dependencies": {
-    "typed-enum": "~0.1.1"
   }
 }

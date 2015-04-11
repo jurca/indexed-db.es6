@@ -15,7 +15,6 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: 'bower_components/typed-enum/dist/enum.js', included: false},
       {pattern: 'compiled/**/*.js', included: false},
       {pattern: 'test/**/*Spec.js', included: false},
       'test/test-main.js'
