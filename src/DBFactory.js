@@ -78,13 +78,18 @@ export default class DBFactory {
    * returned promise.
    *
    * @param {string} databaseName The name of the database.
-   * @param {...(DatabaseSchema|UpgradedDatabaseSchema)} schemaDescriptors The
-   *        descriptors of the database schema across all its versions. The
-   *        descriptor of the lowest version must be a
+   * @param {...(DatabaseSchema|UpgradedDatabaseSchema|Object)}
+   *        schemaDescriptors The descriptors of the database schema across all
+   *        its versions. The descriptor of the lowest version must be a
    *        {@codelink DatabaseSchema} instance, all other must be
-   *        {@codelink UpgradedDatabaseSchema} instances. The order of the
-   *        descriptors does not matter.
-   *        At least one schema descriptor must be provided.
+   *        {@codelink UpgradedDatabaseSchema} instances.
+   *        Alternatively, plain object that follow the structure of the
+   *        {@codelink DatabaseSchema} and {@codelink UpgradedDatabaseSchema}
+   *        instances may be used instead, if preferred. Plain objects must not
+   *        be mixed with the {@codelink DatabaseSchema} and
+   *        {@codelink UpgradedDatabaseSchema} instances.
+   *        The order of the descriptors does not matter. At least one schema
+   *        descriptor must be provided.
    * @return {Promise<Database>} A promise that resolves to the database
    *         connection.
    */
@@ -170,7 +175,7 @@ export default class DBFactory {
  * 
  * @param {IDBOpenDBRequest} request The native Indexed DB connection opening
  *        request.
- * @param {(DatabaseSchema|UpgradedDatabaseSchema)} The database schema
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)} The database schema
  *        descriptors, sorted in ascending order by the schema version number.
  * @return {Promise<Database>} A promise that resolves to the database
  *         connection.

@@ -26,8 +26,9 @@ export default class DatabaseMigrator {
    * @param {IDBDatabase} database The native Indexed DB database connection.
    * @param {IDBTransaction} transaction The native Indexed DB
    *        {@code versionchange} transaction.
-   * @param {(DatabaseSchema|UpgradedDatabaseSchema)[]} schemaDescriptors
-   *        Descriptors of the database schema for all known database versions.
+   * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])}
+   *        schemaDescriptors Descriptors of the database schema for all known
+   *        database versions.
    * @param {number} currentVersion The current version of the database, as a
    *        positive integer, or set to {@code 0} if the database is being
    *        created.
@@ -39,22 +40,11 @@ export default class DatabaseMigrator {
     let sortedSchemasCopy = schemaDescriptors.slice().sort((desc1, desc2) => {
       return desc1.version - desc2.version
     })
-    if (!(sortedSchemasCopy[0] instanceof DatabaseSchema)) {
-      throw new TypeError("The schema descriptor of the lowest described " +
-          `database version (${sortedSchemasCopy[0].version}) must be a ` +
-          "DatabaseSchema instance")
-    }
-    sortedSchemasCopy.slice(1).forEach((descriptor) => {
-      if (!(descriptor instanceof UpgradedDatabaseSchema)) {
-        throw new TypeError("The schema descriptors of the upgraded " +
-            "database versions must be UpgradedDatabaseSchema instances, " +
-            `but the provided descriptor of version ${descriptor.version} ` +
-            "was not an UpgradedDatabaseSchema instance")
-      }
-    })
-    let isVersionValid = (currentVersion < 0) ||
-        (parseInt(currentVersion, 10) !== currentVersion)
-    if (isVersionValid) {
+    checkSchemaDescriptorTypes(sortedSchemasCopy)
+    
+    let isVersionValid = (currentVersion >= 0) &&
+        (parseInt(currentVersion, 10) === currentVersion)
+    if (!isVersionValid) {
       throw new Error("The version number must be either a positive " +
           "integer, or 0 if the database is being created")
     }
@@ -342,6 +332,39 @@ function normalizeFetchBeforeObjectStores(objectStores) {
       }
     } else {
       return objectStore
+    }
+  })
+}
+
+/**
+ * Validates the types of the provided schema descriptors.
+ * 
+ * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])}
+ *        schemaDescriptors The database schemas for database versions to
+ *        validate, sorted by version number in the ascending order.
+ * @throws {TypeError} Thrown if the schema descriptors are of invalid type.
+ */
+function checkSchemaDescriptorTypes(schemaDescriptors) {
+  let onlyPlainObjects = schemaDescriptors.every((descriptor) => {
+    return descriptor.constructor === Object
+  })
+  if (onlyPlainObjects) {
+    return
+  }
+  
+  if (!(schemaDescriptors[0] instanceof DatabaseSchema)) {
+    throw new TypeError("The schema descriptor of the lowest described " +
+        `database version (${schemaDescriptors[0].version}) must be a ` +
+        "DatabaseSchema instance, or all schema descriptors must be plain " +
+        "objects")
+  }
+  schemaDescriptors.slice(1).forEach((descriptor) => {
+    if (!(descriptor instanceof UpgradedDatabaseSchema)) {
+      throw new TypeError("The schema descriptors of the upgraded database " +
+          "versions must be UpgradedDatabaseSchema instances, but the " +
+          `provided descriptor of version ${descriptor.version} was not an ` +
+          "UpgradedDatabaseSchema instance, or all schema descriptors must " +
+          "be plain objects")
     }
   })
 }

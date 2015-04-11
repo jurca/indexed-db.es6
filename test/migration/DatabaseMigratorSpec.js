@@ -1,6 +1,7 @@
 
 import DatabaseMigrator from "../../compiled/migration/DatabaseMigrator"
 import DatabaseSchema from "../../compiled/schema/DatabaseSchema"
+import DBFactory from "../../compiled/DBFactory"
 import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
 import UpgradedDatabaseSchema
     from "../../compiled/schema/UpgradedDatabaseSchema"
@@ -187,6 +188,39 @@ describe("DatabaseMigrator", () => {
         done()
       }
       request.onerror = () => fail(request.error)
+    }).catch(error => fail(error))
+  })
+  
+  it("should allow usage of plain objects as schema descriptors", (done) => {
+    DBFactory.open(DB_NAME, {
+      version: 1,
+      objectStores: [
+        {
+          name: "fooBar",
+          keyPath: null,
+          autoIncrement: true,
+          indexes: [
+            {
+              name: "some index",
+              keyPath: "id",
+              unique: false,
+              multiEntry: true
+            }
+          ]
+        }
+      ]
+    }, {
+      version: 2,
+      fetchBefore: [],
+      objectStores: [
+        {
+          name: "fooBar2"
+        }
+      ],
+      after: () => {}
+    }).then((database) => {
+      database.close()
+      done()
     }).catch(error => fail(error))
   })
   
