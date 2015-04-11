@@ -197,6 +197,77 @@ export default class Database {
     let transaction = this.startReadOnlyTransaction(objectStoreName)
     return transaction.getObjectStore(objectStoreName)
   }
+  
+  /**
+   * Runs the provided transaction operations on the specified object stores
+   * in a new read-write transaction.
+   * 
+   * The created transaction will have an exclusive lock on the specified
+   * object store, allowing no other, read-only or read-write, transaction to
+   * access any of them until this transaction is finished. Any transaction
+   * created after this one with access to any of the same object stores will
+   * queue its operations and wait for this transaction to finish.
+   * 
+   * The method returns a promise resolved when the transaction completes.
+   * 
+   * @param {string|string[]} objectStoreNames The name(s) of the object stores
+   *        to pass to the {@codelink transactionOperations} callback, or an
+   *        array containing a single item - the array of object store names.
+   *        It is possible to use a string if only a single object store is
+   *        needed.
+   * @param {function(...ObjectStore): Promise<*>} transactionOperations The
+   *        callback containig the operations on the object stores in the
+   *        transaction. The callback should return a promise, the value to
+   *        which the promise resolves will be the result value of the promise
+   *        returned by this method.
+   * @return {Promise<*>} A promise that resolves when the transaction is
+   *         completed. The promise will resolve to the value to which resolved
+   *         the promise returned by the {@codelink transactionOperations}
+   *         callback.
+   */
+  runTransaction(objectStoreNames, transactionOperations) {
+    if (typeof objectStoreNames === "string") {
+      objectStoreNames = [objectStoreNames]
+    }
+    
+    let transaction = this.startTransaction(...objectStoreNames)
+    return runTransaction(transaction, objectStoreNames, transactionOperations)
+  }
+  
+  /**
+   * Runs the provided transaction operations on the specified object stores
+   * in a new read-only transaction.
+   * 
+   * The created transaction will have a shared lock on the specified object
+   * store, allowing other read-only transaction to access the same object
+   * stores simultaneously, but blocking any ready-write transaction with
+   * access to any object store until this transaction is finished.
+   * 
+   * The method returns a promise resolved when the transaction completes.
+   * 
+   * @param {string|string[]} objectStoreNames The name(s) of the object stores
+   *        to pass to the {@codelink transactionOperations} callback, or an
+   *        array containing a single item - the array of object store names.
+   *        It is possible to use a string if only a single object store is
+   *        needed.
+   * @param {function(...ReadOnlyObjectStore): Promise<*>}
+   *        transactionOperations The callback containig the operations on the
+   *        object stores in the transaction. The callback should return a
+   *        promise, the value to which the promise resolves will be the result
+   *        value of the promise returned by this method.
+   * @return {Promise<*>} A promise that resolves when the transaction is
+   *         completed. The promise will resolve to the value to which resolved
+   *         the promise returned by the {@codelink transactionOperations}
+   *         callback.
+   */
+  runReadOnlyTransaction(objectStoreNames, transactionOperations) {
+    if (typeof objectStoreNames === "string") {
+      objectStoreNames = [objectStoreNames]
+    }
+    
+    let transaction = this.startReadOnlyTransaction(...objectStoreNames)
+    return runTransaction(transaction, objectStoreNames, transactionOperations)
+  }
 
   /**
    * Closes this connection to the database.
@@ -207,4 +278,36 @@ export default class Database {
   close() {
     this[FIELDS.database].close()
   }
+}
+
+/**
+ * Runs the provided transaction operations on the specified object stores
+ * obtained from the provided transaction.
+ * 
+ * The function returns a promise resolved when the transaction completes.
+ * 
+ * @param {ReadOnlyTransaction} transaction The transaction from which the
+ *        object stores will be retrieved. The returned promise will resolve
+ *        when this transaction is completed.
+ * @param {string[]} The names of the object stores to pass to the
+ *        {@codelink transactionOperations} callback.
+ * @param {function(...ReadOnlyObjectStore): Promise<*>} transactionOperations
+ *        The callback containig the operations on the object stores in the
+ *        transaction. The callback should return a promise, the value to which
+ *        the promise resolves will be the result value of the promise returned
+ *        by this function.
+ * @return {Promise<*>} A promise that resolves when the transaction is
+ *         completed. The promise will resolve to the value to which resolved
+ *         the promise returned by the {@codelink transactionOperations}
+ *         callback.
+ */
+function runTransaction(transaction, objectStoreNames, transactionOperations) {
+  let objectStores = objectStoreNames.map((objectStoreName) => {
+    return transaction.getObjectStore(objectStoreName)
+  })
+  
+  let resultPromise = transactionOperations(...objectStores)
+  return Promise.resolve(resultPromise).then((result) => {
+    return transaction.completionPromise.then(() => result)
+  })
 }

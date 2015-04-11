@@ -118,4 +118,32 @@ describe("Database", () => {
     })
   })
   
+  it("should ran a read-only transaction", (done) => {
+    database.runReadOnlyTransaction("fooBar", (fooBar) => {
+      return fooBar.count()
+    }).then((count) => {
+      expect(count).toBe(0)
+      
+      done()
+    })
+  })
+  
+  it("should ran a read-write transaction", (done) => {
+    database.runTransaction("fooBar", (fooBar) => {
+      return fooBar.add("a", 1).then(
+        () => fooBar.add("b", 2)
+      ).then(
+        () => fooBar.add("c", 3)
+      )
+    }).then(() => {
+      return database.runTransaction(["fooBar"], (fooBar) => {
+        return fooBar.count()
+      })
+    }).then((count) => {
+      expect(count).toBe(3)
+      
+      done()
+    })
+  })
+  
 })
