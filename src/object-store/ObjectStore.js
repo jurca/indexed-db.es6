@@ -96,6 +96,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
   }
 
   /**
+   * Deletes all records matching the provided filter.
+   * 
    * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
    *        filter A filter specifying which records should be deleted.
    *        If a function is provided, the first argument will be set to the
@@ -155,7 +157,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
       return this[FIELDS.indexes].get(indexName)
     }
 
-    let nativeIndex = this[FIELDS.storage].index(indexName)
+    let nativeIndex = this[FIELDS.objectStore].index(indexName)
     let index = new Index(nativeIndex, this[FIELDS.transactionFactory])
 
     this[FIELDS.indexes].set(indexName, index)
