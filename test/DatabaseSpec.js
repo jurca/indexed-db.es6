@@ -110,4 +110,12 @@ describe("Database", () => {
     }).catch(error => fail(error))
   })
   
+  it("allows specifying object stores for transaction in an array", (done) => {
+    database.startTransaction(["fooBar"]).completionPromise.then(() => {
+      return database.startReadOnlyTransaction(["fooBar"]).completionPromise
+    }).then(() => {
+      done()
+    })
+  })
+  
 })

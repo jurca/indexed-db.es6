@@ -126,12 +126,16 @@ export default class Database {
    * The details of the transaction life cycle are available at
    * http://www.w3.org/TR/IndexedDB/#dfn-transaction-lifetime.
    *
-   * @param {...string} objectStoreNames The names of the object stores the
-   *        created transaction should have access to.
+   * @param {(...string|string[])} objectStoreNames The names of the object
+   *        stores the created transaction should have access to.
    * @return {Transaction} The created transaction.
    * @see http://w3c.github.io/IndexedDB/#dfn-transaction-lifetime
    */
   startTransaction(...objectStoreNames) {
+    if (objectStoreNames[0] instanceof Array) {
+      objectStoreNames = objectStoreNames[0]
+    }
+    
     let nativeTransaction = this[FIELDS.database].transaction(
       objectStoreNames,
       TRANSACTION_MODES.READ_WRITE
@@ -158,12 +162,16 @@ export default class Database {
    * The details of the transaction life cycle are available at
    * http://www.w3.org/TR/IndexedDB/#dfn-transaction-lifetime.
    *
-   * @param {...string} objectStoreNames The names of the object stores the
-   *        created transaction should have access to.
+   * @param {(...string|string[])} objectStoreNames The names of the object
+   *        stores the created transaction should have access to.
    * @return {ReadOnlyTransaction} The created transaction.
    * @see http://w3c.github.io/IndexedDB/#dfn-transaction-lifetime
    */
   startReadOnlyTransaction(...objectStoreNames) {
+    if (objectStoreNames[0] instanceof Array) {
+      objectStoreNames = objectStoreNames[0]
+    }
+    
     let nativeTransaction = this[FIELDS.database].transaction(
       objectStoreNames,
       TRANSACTION_MODES.READ_ONLY
