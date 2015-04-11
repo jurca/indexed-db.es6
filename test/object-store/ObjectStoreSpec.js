@@ -7,8 +7,7 @@ import IndexSchema from "../../compiled/schema/IndexSchema"
 import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
 
 describe("ObjectStore", () => {
-  
-    
+
   const DB_NAME = "testing database"
   const OBJECT_STORE_NAME = "fooBar"
 
