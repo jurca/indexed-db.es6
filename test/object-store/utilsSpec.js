@@ -1,7 +1,7 @@
 
-import KeyRange from "../../compiled/object-store/KeyRange"
+import KeyRange from "../../dist/object-store/KeyRange"
 import {keyRangeToFieldRangeObject, compileFieldRangeFilter, normalizeFilter}
-    from "../../compiled/object-store/utils"
+    from "../../dist/object-store/utils"
 
 describe("utils", () => {
   

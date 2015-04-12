@@ -1,7 +1,7 @@
 
-import ObjectStoreMigrator from "../../compiled/migration/ObjectStoreMigrator"
-import IndexSchema from "../../compiled/schema/IndexSchema"
-import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
+import ObjectStoreMigrator from "../../dist/migration/ObjectStoreMigrator"
+import IndexSchema from "../../dist/schema/IndexSchema"
+import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
 
 describe("ObjectStoreMigrator", () => {
   

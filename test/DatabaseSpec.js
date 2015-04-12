@@ -1,8 +1,8 @@
 
-import DBFactory from "../compiled/DBFactory"
-import DatabaseSchema from "../compiled/schema/DatabaseSchema"
-import ObjectStoreSchema from "../compiled/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema from "../compiled/schema/UpgradedDatabaseSchema"
+import DBFactory from "../dist/DBFactory"
+import DatabaseSchema from "../dist/schema/DatabaseSchema"
+import ObjectStoreSchema from "../dist/schema/ObjectStoreSchema"
+import UpgradedDatabaseSchema from "../dist/schema/UpgradedDatabaseSchema"
 
 describe("Database", () => {
   

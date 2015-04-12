@@ -1,10 +1,10 @@
 
-import DBFactory from "../../compiled/DBFactory"
-import CursorDirection from "../../compiled/object-store/CursorDirection"
-import KeyRange from "../../compiled/object-store/KeyRange"
-import DatabaseSchema from "../../compiled/schema/DatabaseSchema"
-import IndexSchema from "../../compiled/schema/IndexSchema"
-import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
+import DBFactory from "../../dist/DBFactory"
+import CursorDirection from "../../dist/object-store/CursorDirection"
+import KeyRange from "../../dist/object-store/KeyRange"
+import DatabaseSchema from "../../dist/schema/DatabaseSchema"
+import IndexSchema from "../../dist/schema/IndexSchema"
+import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
 
 describe("Index", () => {
     

@@ -1,10 +1,9 @@
 
-import DatabaseMigrator from "../../compiled/migration/DatabaseMigrator"
-import DatabaseSchema from "../../compiled/schema/DatabaseSchema"
-import DBFactory from "../../compiled/DBFactory"
-import ObjectStoreSchema from "../../compiled/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema
-    from "../../compiled/schema/UpgradedDatabaseSchema"
+import DatabaseMigrator from "../../dist/migration/DatabaseMigrator"
+import DatabaseSchema from "../../dist/schema/DatabaseSchema"
+import DBFactory from "../../dist/DBFactory"
+import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
+import UpgradedDatabaseSchema from "../../dist/schema/UpgradedDatabaseSchema"
 
 describe("DatabaseMigrator", () => {
   
