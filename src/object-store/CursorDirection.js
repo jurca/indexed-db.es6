@@ -51,13 +51,13 @@ export default class CursorDirection {
  * 
  * @type {CursorDirection}
  */
-const NEXT = new CursorDirection("NEXT")
+export const NEXT = new CursorDirection("NEXT")
 
 /**
  * The enum constant available as {@codelink CursorDirection.PREVIOUS}.
  * 
  * @type {CursorDirection}
  */
-const PREVIOUS = new CursorDirection("PREVIOUS")
+export const PREVIOUS = new CursorDirection("PREVIOUS")
 
 Object.freeze(CursorDirection)
