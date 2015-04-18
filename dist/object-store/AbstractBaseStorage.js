@@ -47,6 +47,12 @@ define(["./CursorDirection"], function($__0) {
           keyRange = undefined;
         }
         var cursorConstructor = this[FIELDS.cursorConstructor];
+        if (typeof direction === "string") {
+          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+            throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
+          }
+          direction = CursorDirection[direction.toUpperCase()];
+        }
         var cursorDirection = direction.value.toLowerCase().substring(0, 4);
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
         return new Promise((function(resolve, reject) {

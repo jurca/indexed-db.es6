@@ -119,8 +119,11 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        of the record, and the third argument will be set to the key
    *        referencing the record (the primary key if traversing an object
    *        store).
-   * @param {CursorDirection} direction The direction in which the records
-   *        should be traversed.
+   * @param {(CursorDirection|string)} direction The direction in which the
+   *        records should be traversed. Use either the
+   *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
+   *        {@code "PREVIOUS"}. The letter case used in the strings does not
+   *        matter. Defaults to {@code CursorDirection.NEXT}.
    * @param {function(*, (number|string|Date|Array), (number|string|Date|Array))}
    *        callback The callback to execute on the records matching the
    *        filter. The first argument will be set to the record, the second
@@ -176,7 +179,10 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        record, and the third argument will be set to the key referencing
    *        the record (the primary key if traversing an object store).
    * @param {CursorDirection} direction The direction in which the records are
-   *        to be listed.
+   *        to be listed. Use either the {@code CursorDirection.*} constants,
+   *        or strings {@code "NEXT"} and {@code "PREVIOUS"}. The letter case
+   *        used in the strings does not matter. Defaults to
+   *        {@code CursorDirection.NEXT}.
    * @return {Promise<Array<*>>} A promise that resolves to an array of all
    *         records matching the filter, listed in the specified order.
    */
@@ -224,7 +230,10 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        record, and the third argument will be set to the key referencing
    *        the record (the primary key if traversing an object store).
    * @param {CursorDirection} direction The direction in which the records are
-   *        to be listed.
+   *        to be listed. Use either the {@code CursorDirection.*} constants,
+   *        or strings {@code "NEXT"} and {@code "PREVIOUS"}. The letter case
+   *        used in the strings does not matter. Defaults to
+   *        {@code CursorDirection.NEXT}.
    * @param {number} pageSize The number of records per page.
    * @return {Promise<RecordList<*>>} A promise that resolves to a record list
    *         of the fetched records matching the filter.

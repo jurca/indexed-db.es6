@@ -159,4 +159,30 @@ describe("ReadOnlyIndex", () => {
     })
   })
   
+  it("should allow strings to specify cursor direction", (done) => {
+    let index = objectStore.getIndex("otherIndex")
+    index.openCursor(null, "NeXt").then((cursor) => {
+      expect(cursor.key).toBe("a")
+      
+      return index.openCursor(null, "PReViouS")
+    }).then((cursor) => {
+      expect(cursor.key).toBe("d")
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
+  it("should allow strings to specify key cursor direction", (done) => {
+    let index = objectStore.getIndex("otherIndex")
+    index.openKeyCursor(null, "NeXt").then((cursor) => {
+      expect(cursor.key).toBe("a")
+      
+      return index.openKeyCursor(null, "PReViouS")
+    }).then((cursor) => {
+      expect(cursor.key).toBe("d")
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
 })

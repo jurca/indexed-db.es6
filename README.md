@@ -173,6 +173,15 @@ myObjectStore.forEach(someFilter, CursorDirection.NEXT, (record) => {
 }).then((recordCount) => {
   // all records matching the filter have been traversed 
 })
+
+// you may also use the "NEXT" and "PREVIOUS" strings (letter case does not
+// matter):
+
+myObjectStore.forEach(someFilter, "previous", (record) => {
+  // do something with the record
+}).then((recordCount) => {
+  // all records matching the filter has been traversed
+})
 ```
 
 ...or fetch all records to an array:

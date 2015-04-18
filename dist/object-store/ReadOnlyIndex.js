@@ -65,6 +65,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
           keyRange = undefined;
         }
         var cursorConstructor = this[FIELDS.cursorConstructor];
+        if (typeof direction === "string") {
+          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+            throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
+          }
+          direction = CursorDirection[direction.toUpperCase()];
+        }
         var cursorDirection = direction.value.toLowerCase().substring(0, 4);
         if (unique) {
           cursorDirection += "unique";
@@ -85,6 +91,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
         var unique = arguments[2] !== (void 0) ? arguments[2] : false;
         if (keyRange === null) {
           keyRange = undefined;
+        }
+        if (typeof direction === "string") {
+          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+            throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
+          }
+          direction = CursorDirection[direction.toUpperCase()];
         }
         var cursorDirection = direction.value.toLowerCase().substring(0, 4);
         if (unique) {

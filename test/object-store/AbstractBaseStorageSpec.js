@@ -118,4 +118,16 @@ describe("AbstractBaseStorage", () => {
     })
   })
   
+  it("should allow strings to specify cursor direction", (done) => {
+    objectStore.openCursor(null, "NeXt").then((cursor) => {
+      expect(cursor.record).toBe("foo")
+      
+      return objectStore.openCursor(null, "PReViouS")
+    }).then((cursor) => {
+      expect(cursor.record).toBe("xyz")
+    }).then(() => {
+      done()
+    }).catch(error => fail(error))
+  })
+  
 })
