@@ -220,7 +220,12 @@ function openConnection(request, sortedSchemaDescriptors) {
       migrator.executeMigration()
     }
 
-    request.onerror = () => {
+    request.onerror = (event) => {
+      if (wasBlocked) {
+        event.preventDefault()
+        return
+      }
+      
       reject(request.error)
       migrationPromiseRejector(request.error)
     }

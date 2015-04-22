@@ -74,7 +74,11 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
         migrator.executeMigration();
       });
-      request.onerror = (function() {
+      request.onerror = (function(event) {
+        if (wasBlocked) {
+          event.preventDefault();
+          return ;
+        }
         reject(request.error);
         migrationPromiseRejector(request.error);
       });
