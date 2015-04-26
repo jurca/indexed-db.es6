@@ -64,7 +64,7 @@ describe("RequestMonitor", () => {
     })
   })
   
-  it("should return promise resolved to request result", () => {
+  it("should return promise resolved to request result", (done) => {
     monitor.monitor(new Request("my result", 0)).then((result) => {
       expect(result).toBe("my result")
       
