@@ -70,7 +70,8 @@ export default class ObjectStoreMigrator {
       }
     })
 
-    schema.indexes.forEach((indexSchema) => {
+    let schemaIndexes = schema.indexes || []
+    schemaIndexes.forEach((indexSchema) => {
       createIndex(objectStore, indexSchema)
     })
   }
@@ -88,7 +89,8 @@ export default class ObjectStoreMigrator {
  * @return {@code true} if the index should be deleted.
  */
 function shouldDeleteIndex(objectStore, schema, indexName) {
-  let newIndexNames = schema.indexes.map(indexSchema => indexSchema.name)
+  let schemaIndexes = schema.indexes || []
+  let newIndexNames = schemaIndexes.map(indexSchema => indexSchema.name)
 
   if (newIndexNames.indexOf(indexName) === -1) {
     return true
@@ -101,7 +103,7 @@ function shouldDeleteIndex(objectStore, schema, indexName) {
   }
   let serializedIndexKeyPath = JSON.stringify(indexKeyPath)
 
-  let indexSchema = schema.indexes.filter((indexSchema) => {
+  let indexSchema = schemaIndexes.filter((indexSchema) => {
     return indexSchema.name === index.name
   })[0]
 

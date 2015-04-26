@@ -27,14 +27,16 @@ define([], function() {
             objectStore.deleteIndex(indexName);
           }
         }));
-        schema.indexes.forEach((function(indexSchema) {
+        var schemaIndexes = schema.indexes || [];
+        schemaIndexes.forEach((function(indexSchema) {
           createIndex(objectStore, indexSchema);
         }));
       }}, {});
   }());
   var $__default = ObjectStoreMigrator;
   function shouldDeleteIndex(objectStore, schema, indexName) {
-    var newIndexNames = schema.indexes.map((function(indexSchema) {
+    var schemaIndexes = schema.indexes || [];
+    var newIndexNames = schemaIndexes.map((function(indexSchema) {
       return indexSchema.name;
     }));
     if (newIndexNames.indexOf(indexName) === -1) {
@@ -46,7 +48,7 @@ define([], function() {
       indexKeyPath = Array.from(indexKeyPath);
     }
     var serializedIndexKeyPath = JSON.stringify(indexKeyPath);
-    var indexSchema = schema.indexes.filter((function(indexSchema) {
+    var indexSchema = schemaIndexes.filter((function(indexSchema) {
       return indexSchema.name === index.name;
     }))[0];
     return (index.unique !== indexSchema.unique) || (index.multiEntry !== indexSchema.multiEntry) || (serializedIndexKeyPath !== JSON.stringify(indexSchema.keyPaths));
