@@ -287,9 +287,27 @@ comments. Go ahead and
 
 ## The current state of this project
 
-The API is fully implemented and the tests are passing. There are no current
-plans for additional features (unless a good case for adding them is made), but
-the project accepts bug fixes if new bugs are discovered.
+The API is fully implemented and the tests are passing in Google Chrome /
+Chromium.
+
+There are however a few issues being resolved:
+
+- the transaction should make keep-alive requests while the Promise callbacks
+  are being executed to prevent the transaction ending prematuraly - according
+  to the [specification](http://www.w3.org/TR/IndexedDB/) a transaction should
+  be completed once there are no more pending requests after the last result
+  has been processed and the JavaScript event loop has concluded. Since promise
+  callbacks are being executed asynchronously, the resulting "gap" must be
+  filled using keep-alive requests.
+- there appears to be a bug in the Firefox (tested on version 37) which
+  requires the IndexedDB client to execute all schema-altering operations
+  synchronously in the same event loop the `onupgradeneeded` callback was
+  triggered. A way to work around this issue and keep the current data
+  migration features is being designed.
+
+There are no current plans for additional features (unless a good case for
+adding them is made), but the project accepts bug fixes if new bugs are
+discovered.
 
 ## Contributing
 
