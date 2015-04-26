@@ -1,4 +1,6 @@
 
+import RequestMonitor from "./RequestMonitor"
+
 /**
  * Private field symbols.
  */
@@ -83,7 +85,7 @@ export default class KeepAlive {
      * @type {RequestMonitor}
      */
     this[FIELDS.requestMonitor] = new RequestMonitor((request, success) => {
-      if (terminated) {
+      if (this[FIELDS.terminated]) {
         // the keep-alive has been terminated, let the transaction be commited
         // right away
         return

@@ -1,5 +1,8 @@
-define([], function() {
+define(["./RequestMonitor"], function($__0) {
   "use strict";
+  if (!$__0 || !$__0.__esModule)
+    $__0 = {default: $__0};
+  var RequestMonitor = $__0.default;
   var FIELDS = Object.freeze({
     requestMonitor: Symbol("requestMonitor"),
     keepAliveObjectStoreFactory: Symbol("keepAliveObjectStoreFactory"),
@@ -10,29 +13,29 @@ define([], function() {
   });
   var KeepAlive = (function() {
     function KeepAlive(keepAliveObjectStoreFactory, commitDelay) {
-      var $__0 = this;
+      var $__2 = this;
       this[FIELDS.keepAliveObjectStoreFactory] = keepAliveObjectStoreFactory;
       this[FIELDS.commitDelay] = commitDelay;
       this[FIELDS.lastClientRequest] = 0;
       this[FIELDS.lastKeepAliveRequest] = null;
       this[FIELDS.terminated] = false;
       this[FIELDS.requestMonitor] = new RequestMonitor((function(request, success) {
-        if (terminated) {
+        if ($__2[FIELDS.terminated]) {
           return ;
         }
         if (!success) {
           return ;
         }
-        if (request !== $__0[FIELDS.lastKeepAliveRequest]) {
-          $__0[FIELDS.lastClientRequest] = Date.now();
+        if (request !== $__2[FIELDS.lastKeepAliveRequest]) {
+          $__2[FIELDS.lastClientRequest] = Date.now();
         }
-        var sinceLastClientRequest = Date.now() - $__0[FIELDS.lastClientRequest];
-        if (sinceLastClientRequest > $__0[FIELDS.commitDelay]) {
+        var sinceLastClientRequest = Date.now() - $__2[FIELDS.lastClientRequest];
+        if (sinceLastClientRequest > $__2[FIELDS.commitDelay]) {
           return ;
         }
         var objectStore = keepAliveObjectStoreFactory();
-        $__0[FIELDS.lastKeepAliveRequest] = objectStore.get(0);
-        $__0[FIELDS.requestMonitor].monitor($__0[FIELDS.lastKeepAliveRequest]);
+        $__2[FIELDS.lastKeepAliveRequest] = objectStore.get(0);
+        $__2[FIELDS.requestMonitor].monitor($__2[FIELDS.lastKeepAliveRequest]);
       }));
     }
     return ($traceurRuntime.createClass)(KeepAlive, {
