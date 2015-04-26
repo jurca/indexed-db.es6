@@ -313,9 +313,9 @@ said, you may not need such a tool and may be looking for a simpler solution:
 
 - [PouchDB](http://pouchdb.com/) if you require only a single object store per
   database.
-- [DB.js](https://github.com/aaronpowell/db.js) if you do not need to lock
-  multiple object stores for a transaction, or don't need certain low-level or
-  high-level features of indexed-db.es6.
+- [DB.js](https://github.com/aaronpowell/db.js) if you do not need transaction
+  support, or don't need certain low-level or high-level features of
+  indexed-db.es6.
 - [IDB Wrapper](https://github.com/jensarps/IDBWrapper) if you preffer
   callbacks to Promises.
 - [jQuery IndexedDB](http://nparashuram.com/jquery-indexeddb/) if you think you
