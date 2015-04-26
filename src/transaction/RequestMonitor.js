@@ -60,6 +60,14 @@ export default class RequestMonitor {
   monitor(request) {
     this[FIELDS.pendingRequests].add(request)
     
+    let onRequestFinished = (wasSuccessful) => {
+      this[FIELDS.pendingRequests].delete(request)
+      
+      if (!this[FIELDS.pendingRequests].size) {
+        this[FIELDS.onNoPendingRequests](request, wasSuccessful)
+      }
+    }
+    
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {
         resolve(request.result)
@@ -70,13 +78,5 @@ export default class RequestMonitor {
         onRequestFinished(false)
       }
     })
-    
-    function onRequestFinished(wasSuccessful) {
-      this[FIELDS.pendingRequests].delete(request)
-      
-      if (!this[FIELDS.pendingRequests].size) {
-        this[FIELDS.onNoPendingRequests](request, wasSuccessful)
-      }
-    }
   }
 }

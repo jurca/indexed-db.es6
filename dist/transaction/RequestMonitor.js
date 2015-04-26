@@ -11,7 +11,14 @@ define([], function() {
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(RequestMonitor, {monitor: function(request) {
+        var $__0 = this;
         this[FIELDS.pendingRequests].add(request);
+        var onRequestFinished = (function(wasSuccessful) {
+          $__0[FIELDS.pendingRequests].delete(request);
+          if (!$__0[FIELDS.pendingRequests].size) {
+            $__0[FIELDS.onNoPendingRequests](request, wasSuccessful);
+          }
+        });
         return new Promise((function(resolve, reject) {
           request.onsuccess = (function() {
             resolve(request.result);
@@ -22,12 +29,6 @@ define([], function() {
             onRequestFinished(false);
           });
         }));
-        function onRequestFinished(wasSuccessful) {
-          this[FIELDS.pendingRequests].delete(request);
-          if (!this[FIELDS.pendingRequests].size) {
-            this[FIELDS.onNoPendingRequests](request, wasSuccessful);
-          }
-        }
       }}, {});
   }());
   var $__default = RequestMonitor;
