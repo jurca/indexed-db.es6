@@ -66,23 +66,7 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
           transaction.abort();
           return ;
         }
-        executeMigrationListeners(database.name, event.oldVersion, event.newVersion, migrationPromise);
-        database.onerror = (function(errorEvent) {
-          reject(errorEvent);
-          migrationPromiseRejector(errorEvent);
-        });
-        try {
-          var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
-          migrator.executeMigration().catch((function(error) {
-            transaction.abort();
-            reject(error);
-            migrationPromiseRejector(error);
-          }));
-        } catch (error) {
-          transaction.abort();
-          reject(error);
-          migrationPromiseRejector(error);
-        }
+        upgradeDatabaseSchema(event, database, transaction, migrationPromise, reject, migrationPromiseRejector, sortedSchemaDescriptors);
       });
       request.onerror = (function(event) {
         if (wasBlocked) {
@@ -99,6 +83,25 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         migrationPromiseRejector(error);
       });
     }));
+  }
+  function upgradeDatabaseSchema(event, database, transaction, migrationPromise, reject, migrationPromiseRejector, sortedSchemaDescriptors) {
+    executeMigrationListeners(database.name, event.oldVersion, event.newVersion, migrationPromise);
+    database.onerror = (function(errorEvent) {
+      reject(errorEvent);
+      migrationPromiseRejector(errorEvent);
+    });
+    try {
+      var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
+      migrator.executeMigration().catch((function(error) {
+        transaction.abort();
+        reject(error);
+        migrationPromiseRejector(error);
+      }));
+    } catch (error) {
+      transaction.abort();
+      reject(error);
+      migrationPromiseRejector(error);
+    }
   }
   function executeMigrationListeners(databaseName, oldVersion, newVersion, completionPromise) {
     var $__8 = true;

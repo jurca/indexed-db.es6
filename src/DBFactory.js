@@ -175,8 +175,9 @@ export default class DBFactory {
  * 
  * @param {IDBOpenDBRequest} request The native Indexed DB connection opening
  *        request.
- * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)} The database schema
- *        descriptors, sorted in ascending order by the schema version number.
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
+ *        sortedSchemaDescriptors The database schema descriptors, sorted in
+ *        ascending order by the schema version number.
  * @return {Promise<Database>} A promise that resolves to the database
  *         connection.
  */
@@ -207,27 +208,8 @@ function openConnection(request, sortedSchemaDescriptors) {
         return
       }
       
-      executeMigrationListeners(database.name, event.oldVersion,
-          event.newVersion, migrationPromise)
-
-      database.onerror = (errorEvent) => {
-        reject(errorEvent)
-        migrationPromiseRejector(errorEvent)
-      }
-
-      try {
-        let migrator = new DatabaseMigrator(database, transaction,
-            sortedSchemaDescriptors, event.oldVersion)
-        migrator.executeMigration().catch((error) => {
-          transaction.abort()
-          reject(error)
-          migrationPromiseRejector(error)
-        })
-      } catch (error) {
-        transaction.abort()
-        reject(error)
-        migrationPromiseRejector(error)
-      }
+      upgradeDatabaseSchema(event, database, transaction, migrationPromise,
+          reject, migrationPromiseRejector, sortedSchemaDescriptors)
     }
 
     request.onerror = (event) => {
@@ -250,6 +232,50 @@ function openConnection(request, sortedSchemaDescriptors) {
       migrationPromiseRejector(error)
     }
   })
+}
+
+/**
+ * Handles the provided {@code upgradeneeded} event that has occurred during
+ * the opening of a database that was not blocked.
+ * 
+ * The function executes the database migration listeners and executes the
+ * database schema migration.
+ * 
+ * @param {Event} event The {@code upgradeneeded} event.
+ * @param {IDBDatabase} database The current connection to the database.
+ * @param {IDBTransaction} transaction The {@code versionchange} transaction
+ *        used to upgrade the database schema.
+ * @param {Promise<undefined>} migrationPromise The database schema migration
+ *        promise to pass to the migration listeners.
+ * @param {function(Error)} reject
+ * @param {function(Error)} migrationPromiseRejector
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
+ *        sortedSchemaDescriptors The database schema descriptors, sorted in
+ *        ascending order by the schema version number.
+ */
+function upgradeDatabaseSchema(event, database, transaction, migrationPromise,
+    reject, migrationPromiseRejector, sortedSchemaDescriptors) {
+  executeMigrationListeners(database.name, event.oldVersion,
+      event.newVersion, migrationPromise)
+
+  database.onerror = (errorEvent) => {
+    reject(errorEvent)
+    migrationPromiseRejector(errorEvent)
+  }
+
+  try {
+    let migrator = new DatabaseMigrator(database, transaction,
+        sortedSchemaDescriptors, event.oldVersion)
+    migrator.executeMigration().catch((error) => {
+      transaction.abort()
+      reject(error)
+      migrationPromiseRejector(error)
+    })
+  } catch (error) {
+    transaction.abort()
+    reject(error)
+    migrationPromiseRejector(error)
+  }
 }
 
 /**
