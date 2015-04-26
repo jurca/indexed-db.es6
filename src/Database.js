@@ -1,4 +1,5 @@
 
+import KeepAlive from "./transaction/KeepAlive"
 import ReadOnlyTransaction from "./transaction/ReadOnlyTransaction"
 import Transaction from "./transaction/Transaction"
 
@@ -17,7 +18,8 @@ const TRANSACTION_MODES = Object.freeze({
  */
 const FIELDS = Object.freeze({
   database: Symbol("database"),
-  versionChangeListeners: Symbol("versionChangeListeners")
+  versionChangeListeners: Symbol("versionChangeListeners"),
+  transactionCommitDelay: Symbol("transactionCommitDelay")
 })
 
 /**
@@ -30,8 +32,10 @@ export default class Database {
    *
    * @param {IDBDatabase} database The native connection to the Indexed DB
    *        database.
+   * @param {number} transactionCommitDelay The delay in milliseconds before an
+   *        inactive transaction should be committed.
    */
-  constructor(database) {
+  constructor(database, transactionCommitDelay) {
     /**
      * The name of the database.
      *
@@ -68,6 +72,14 @@ export default class Database {
      * @type {Set<function(number)>}
      */
     this[FIELDS.versionChangeListeners] = new Set()
+    
+    /**
+     * The delay in milliseconds before an inactive transaction shuold be
+     * committed.
+     * 
+     * @type {number}
+     */
+    this[FIELDS.transactionCommitDelay] = transactionCommitDelay
 
     database.onversionchange = (event) => {
       let newVersion = event.newVersion
@@ -140,10 +152,15 @@ export default class Database {
       objectStoreNames,
       TRANSACTION_MODES.READ_WRITE
     )
+    
+    let keepAliveObjectStore = objectStoreNames[0]
+    let keepAlive = new KeepAlive(() => {
+      return nativeTransaction.objectStore(keepAliveObjectStore)
+    }, this[FIELDS.transactionCommitDelay])
 
     return new Transaction(nativeTransaction, (objectStoreName) => {
       return this.startReadOnlyTransaction(objectStoreName)
-    })
+    }, keepAlive)
   }
 
   /**
@@ -176,10 +193,15 @@ export default class Database {
       objectStoreNames,
       TRANSACTION_MODES.READ_ONLY
     )
+    
+    let keepAliveObjectStore = objectStoreNames[0]
+    let keepAlive = new KeepAlive(() => {
+      return nativeTransaction.objectStore(keepAliveObjectStore)
+    }, this[FIELDS.transactionCommitDelay])
 
     return new ReadOnlyTransaction(nativeTransaction, (objectStoreName) => {
       return this.startReadOnlyTransaction(objectStoreName)
-    })
+    }, keepAlive)
   }
 
   /**
@@ -308,6 +330,7 @@ function runTransaction(transaction, objectStoreNames, transactionOperations) {
   
   let resultPromise = transactionOperations(...objectStores)
   return Promise.resolve(resultPromise).then((result) => {
+    transaction.commit()
     return transaction.completionPromise.then(() => result)
   })
 }

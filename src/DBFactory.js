@@ -16,6 +16,16 @@ import DatabaseMigrator from "./migration/DatabaseMigrator"
 const migrationListeners = new Set()
 
 /**
+ * How long in milliseconds the inactive transactions are being kept alive.
+ * This is used to ensure that the promise callbacks are executed before the
+ * transaction is committed, allowing them to schedule subsequent operations
+ * within the same transaction.
+ * 
+ * @type {number}
+ */
+let transactionCommitDelay = 50
+
+/**
  * Provider of connections to the database, manager of database versioning and
  * utility for deleting databases.
  *
@@ -167,6 +177,42 @@ export default class DBFactory {
   static removeMigrationListener(listener) {
     migrationListeners.delete(listener)
   }
+  
+  /**
+   * Returns how long in milliseconds the inactive transactions are being kept
+   * alive. This is used to ensure that the promise callbacks are executed
+   * before the transaction is committed, allowing them to schedule subsequent
+   * operations within the same transaction.
+   * 
+   * @return {number} Delay before auto-commiting an inactive transaction in
+   *         milliseconds.
+   */
+  static get transactionCommitDelay() {
+    return transactionCommitDelay
+  }
+  
+  /**
+   * Sets how long in milliseconds the inactive transactions are being kept
+   * alive. This is used to ensure that the promise callbacks are executed
+   * before the transaction is committed, allowing them to schedule subsequent
+   * operations within the same transaction.
+   * 
+   * Note that setting this delay will affect only the database connections
+   * created afterwards.
+   * 
+   * @param {number} newDelay Delay before auto-commiting an inactive
+   *        transaction in milliseconds.
+   */
+  static set transactionCommitDelay(newDelay) {
+    if ((typeof newDelay !== "number") || isNaN(newDelay) || (newDelay <= 0)) {
+      throw new Error("The commit delay must be a positive integer")
+    }
+    if (parseInt(`${newDelay}`, 10) !== newDelay) {
+      throw new Error("The commit delay must be a positive integer")
+    }
+    
+    transactionCommitDelay = newDelay
+  }
 }
 
 /**
@@ -194,7 +240,7 @@ function openConnection(request, sortedSchemaDescriptors) {
     migrationPromise.catch(() => {})
     
     request.onsuccess = () => {
-      let database = new Database(request.result)
+      let database = new Database(request.result, transactionCommitDelay)
       resolve(database)
       migrationPromiseResolver()
     }

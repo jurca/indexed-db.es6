@@ -11,7 +11,8 @@ import {normalizeFilter} from "./utils"
 const FIELDS = Object.freeze({
   objectStore: Symbol("objectStore"),
   indexes: Symbol("indexes"),
-  transactionFactory: Symbol("transactionFactory")
+  transactionFactory: Symbol("transactionFactory"),
+  requestMonitor: Symbol("requestMonitor")
 })
 
 /**
@@ -22,12 +23,14 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * Initializes the read-write object store.
    *
    * @param {IDBObjectStore} storage The native Indexed DB object store.
+   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
+   *        the status of pending database operation requests.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
    *        is invoked.
    */
-  constructor(storage, transactionFactory) {
-    super(storage, Cursor, transactionFactory)
+  constructor(storage, requestMonitor, transactionFactory) {
+    super(storage, Cursor, requestMonitor, transactionFactory)
 
     /**
      * The native Indexed DB object store used as the storage of records.
@@ -50,6 +53,14 @@ export default class ObjectStore extends ReadOnlyObjectStore {
      * @type {function(): ReadOnlyTransaction}
      */
     this[FIELDS.transactionFactory] = transactionFactory
+    
+    /**
+     * The request monitor used to monitor the status of pending database
+     * operation requests.
+     * 
+     * @type {RequestMonitor}
+     */
+    this[FIELDS.requestMonitor] = requestMonitor
 
     Object.freeze(this)
   }
@@ -158,7 +169,11 @@ export default class ObjectStore extends ReadOnlyObjectStore {
     }
 
     let nativeIndex = this[FIELDS.objectStore].index(indexName)
-    let index = new Index(nativeIndex, this[FIELDS.transactionFactory])
+    let index = new Index(
+      nativeIndex,
+      this[FIELDS.requestMonitor],
+      this[FIELDS.transactionFactory]
+    )
 
     this[FIELDS.indexes].set(indexName, index)
 

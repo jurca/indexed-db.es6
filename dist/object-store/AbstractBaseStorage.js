@@ -5,10 +5,11 @@ define(["./CursorDirection"], function($__0) {
   var CursorDirection = $__0.default;
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
-    cursorConstructor: Symbol("cursorConstructor")
+    cursorConstructor: Symbol("cursorConstructor"),
+    requestMonitor: Symbol("requestMonitor")
   });
   var AbstractBaseStorage = (function() {
-    function AbstractBaseStorage(storage, cursorConstructor) {
+    function AbstractBaseStorage(storage, cursorConstructor, requestMonitor) {
       if (this.constructor === AbstractBaseStorage) {
         throw new Error("THe AbstractBaseStorage class is abstract and must " + "be overridden");
       }
@@ -20,6 +21,7 @@ define(["./CursorDirection"], function($__0) {
       this.name = storage.name;
       this[FIELDS.storage] = storage;
       this[FIELDS.cursorConstructor] = cursorConstructor;
+      this[FIELDS.requestMonitor] = requestMonitor;
     }
     return ($traceurRuntime.createClass)(AbstractBaseStorage, {
       get: function(key) {
@@ -43,6 +45,7 @@ define(["./CursorDirection"], function($__0) {
       openCursor: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
+        var $__2 = this;
         if (keyRange === null) {
           keyRange = undefined;
         }
@@ -57,7 +60,7 @@ define(["./CursorDirection"], function($__0) {
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
         return new Promise((function(resolve, reject) {
           request.onsuccess = (function() {
-            resolve(new cursorConstructor(request));
+            resolve(new cursorConstructor(request, $__2[FIELDS.requestMonitor]));
           });
           request.onerror = (function() {
             return reject(request.error);

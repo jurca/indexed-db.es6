@@ -6,7 +6,8 @@ import CursorDirection from "./CursorDirection"
  */
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
-  cursorConstructor: Symbol("cursorConstructor")
+  cursorConstructor: Symbol("cursorConstructor"),
+  requestMonitor: Symbol("requestMonitor")
 })
 
 /**
@@ -24,8 +25,10 @@ export default class AbstractBaseStorage {
    *        store or index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
+   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
+   *        the status of pending database operation requests.
    */
-  constructor(storage, cursorConstructor) {
+  constructor(storage, cursorConstructor, requestMonitor) {
     if (this.constructor === AbstractBaseStorage) {
       throw new Error("THe AbstractBaseStorage class is abstract and must " +
           "be overridden")
@@ -68,6 +71,14 @@ export default class AbstractBaseStorage {
      * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
+    
+    /**
+     * The request monitor used to monitor the status of pending database
+     * operation requests.
+     * 
+     * @type {RequestMonitor}
+     */
+    this[FIELDS.requestMonitor] = requestMonitor
   }
 
   /**
@@ -146,7 +157,7 @@ export default class AbstractBaseStorage {
 
     return new Promise((resolve, reject) => {
       request.onsuccess = () => {
-        resolve(new cursorConstructor(request))
+        resolve(new cursorConstructor(request, this[FIELDS.requestMonitor]))
       }
       request.onerror = () => reject(request.error)
     })

@@ -29,12 +29,14 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        store or index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
+   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
+   *        the status of pending database operation requests.
    * @param {function(): AbstractReadOnlyStorage} A function that creates a new
    *        read-only transaction and returns a new storage accessor for this
    *        storage each time it is invoked.
    */
-  constructor(storage, cursorConstructor, storageFactory) {
-    super(storage, cursorConstructor)
+  constructor(storage, cursorConstructor, requestMonitor, storageFactory) {
+    super(storage, cursorConstructor, requestMonitor)
 
     if (this.constructor === AbstractReadOnlyStorage) {
       throw new Error("The AbstractReadOnlyStorage class is abstract and " +

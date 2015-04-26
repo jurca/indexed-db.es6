@@ -7,6 +7,7 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
   var Database = $__0.default;
   var DatabaseMigrator = $__2.default;
   var migrationListeners = new Set();
+  var transactionCommitDelay = 50;
   var DBFactory = (function() {
     function DBFactory() {}
     return ($traceurRuntime.createClass)(DBFactory, {}, {
@@ -40,6 +41,18 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
       },
       removeMigrationListener: function(listener) {
         migrationListeners.delete(listener);
+      },
+      get transactionCommitDelay() {
+        return transactionCommitDelay;
+      },
+      set transactionCommitDelay(newDelay) {
+        if ((typeof newDelay !== "number") || isNaN(newDelay) || (newDelay <= 0)) {
+          throw new Error("The commit delay must be a positive integer");
+        }
+        if (parseInt(("" + newDelay), 10) !== newDelay) {
+          throw new Error("The commit delay must be a positive integer");
+        }
+        transactionCommitDelay = newDelay;
       }
     });
   }());
@@ -55,7 +68,7 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
       }));
       migrationPromise.catch((function() {}));
       request.onsuccess = (function() {
-        var database = new Database(request.result);
+        var database = new Database(request.result, transactionCommitDelay);
         resolve(database);
         migrationPromiseResolver();
       });

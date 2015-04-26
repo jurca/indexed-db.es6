@@ -18,14 +18,16 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
   var FIELDS = Object.freeze({
     objectStore: Symbol("objectStore"),
     indexes: Symbol("indexes"),
-    transactionFactory: Symbol("transactionFactory")
+    transactionFactory: Symbol("transactionFactory"),
+    requestMonitor: Symbol("requestMonitor")
   });
   var ObjectStore = (function($__super) {
-    function ObjectStore(storage, transactionFactory) {
-      $traceurRuntime.superConstructor(ObjectStore).call(this, storage, Cursor, transactionFactory);
+    function ObjectStore(storage, requestMonitor, transactionFactory) {
+      $traceurRuntime.superConstructor(ObjectStore).call(this, storage, Cursor, requestMonitor, transactionFactory);
       this[FIELDS.objectStore] = storage;
       this[FIELDS.indexes] = new Map();
       this[FIELDS.transactionFactory] = transactionFactory;
+      this[FIELDS.requestMonitor] = requestMonitor;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(ObjectStore, {
@@ -96,7 +98,7 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
           return this[FIELDS.indexes].get(indexName);
         }
         var nativeIndex = this[FIELDS.objectStore].index(indexName);
-        var index = new Index(nativeIndex, this[FIELDS.transactionFactory]);
+        var index = new Index(nativeIndex, this[FIELDS.requestMonitor], this[FIELDS.transactionFactory]);
         this[FIELDS.indexes].set(indexName, index);
         return index;
       },

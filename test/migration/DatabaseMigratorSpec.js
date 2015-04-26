@@ -31,7 +31,17 @@ describe("DatabaseMigrator", () => {
   }
   
   it("should do nothing if the db version is the greatest described", () => {
-    let migrator = new DatabaseMigrator(null, null, [
+    let migrator = new DatabaseMigrator({
+      createObjectStore() {
+        return {
+          get() {
+            return {}
+          }
+        }
+      },
+      
+      deleteObjectStore() {}
+    }, null, [
       new DatabaseSchema(1),
       new UpgradedDatabaseSchema(2, [], [])
     ], 2)

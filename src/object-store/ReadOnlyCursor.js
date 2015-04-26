@@ -20,8 +20,10 @@ export default class ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
+   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
+   *        the status of pending database operation requests.
    */
-  constructor(cursorRequest) {
+  constructor(cursorRequest, requestMonitor) {
     /**
      * The IndexedDB native request used to retrieve the native cursor. The
      * request is resolved, and will be used to retrieve the subsequent

@@ -13,18 +13,19 @@ define(["./AbstractReadOnlyStorage", "./ReadOnlyIndex"], function($__0,$__2) {
     cursorConstructor: Symbol("cursorConstructor")
   });
   var ReadOnlyObjectStore = (function($__super) {
-    function ReadOnlyObjectStore(storage, cursorConstructor, transactionFactory) {
+    function ReadOnlyObjectStore(storage, cursorConstructor, requestMonitor, transactionFactory) {
       var storageFactory = (function() {
         var transaction = transactionFactory();
         return transaction.getObjectStore(storage.name);
       });
-      $traceurRuntime.superConstructor(ReadOnlyObjectStore).call(this, storage, cursorConstructor, storageFactory);
+      $traceurRuntime.superConstructor(ReadOnlyObjectStore).call(this, storage, cursorConstructor, requestMonitor, storageFactory);
       this.autoIncrement = storage.autoIncrement;
       this.indexNames = Object.freeze(Array.from(storage.indexNames));
       this[FIELDS.objectStore] = storage;
       this[FIELDS.indexes] = new Map();
       this[FIELDS.transactionFactory] = transactionFactory;
       this[FIELDS.cursorConstructor] = cursorConstructor;
+      this[FIELDS.requestMonitor] = requestMonitor;
       if (this.constructor === ReadOnlyObjectStore) {
         Object.freeze(this);
       }
@@ -34,7 +35,7 @@ define(["./AbstractReadOnlyStorage", "./ReadOnlyIndex"], function($__0,$__2) {
           return this[FIELDS.indexes].get(indexName);
         }
         var nativeIndex = this[FIELDS.objectStore].index(indexName);
-        var index = new ReadOnlyIndex(nativeIndex, this[FIELDS.cursorConstructor], this[FIELDS.transactionFactory]);
+        var index = new ReadOnlyIndex(nativeIndex, this[FIELDS.cursorConstructor], this[FIELDS.requestMonitor], this[FIELDS.transactionFactory]);
         this[FIELDS.indexes].set(indexName, index);
         return index;
       }}, {}, $__super);

@@ -8,7 +8,7 @@ define(["./CursorDirection"], function($__0) {
     flags: Symbol("flags")
   });
   var ReadOnlyCursor = (function() {
-    function ReadOnlyCursor(cursorRequest) {
+    function ReadOnlyCursor(cursorRequest, requestMonitor) {
       this[FIELDS.request] = cursorRequest;
       this[FIELDS.flags] = {hasAdvanced: false};
       var cursor = cursorRequest.result;

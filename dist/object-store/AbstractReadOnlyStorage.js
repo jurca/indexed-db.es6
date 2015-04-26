@@ -24,8 +24,8 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
     storageFactory: Symbol("storageFactory")
   });
   var AbstractReadOnlyStorage = (function($__super) {
-    function AbstractReadOnlyStorage(storage, cursorConstructor, storageFactory) {
-      $traceurRuntime.superConstructor(AbstractReadOnlyStorage).call(this, storage, cursorConstructor);
+    function AbstractReadOnlyStorage(storage, cursorConstructor, requestMonitor, storageFactory) {
+      $traceurRuntime.superConstructor(AbstractReadOnlyStorage).call(this, storage, cursorConstructor, requestMonitor);
       if (this.constructor === AbstractReadOnlyStorage) {
         throw new Error("The AbstractReadOnlyStorage class is abstract and " + "must be overridden");
       }

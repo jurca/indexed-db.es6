@@ -5,8 +5,8 @@ define(["./ReadOnlyCursor"], function($__0) {
   var ReadOnlyCursor = $__0.default;
   var FIELDS = Object.freeze({cursor: Symbol("cursor")});
   var Cursor = (function($__super) {
-    function Cursor(cursorRequest) {
-      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest);
+    function Cursor(cursorRequest, requestMonitor) {
+      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, requestMonitor);
       this[FIELDS.cursor] = cursorRequest.result;
     }
     return ($traceurRuntime.createClass)(Cursor, {
