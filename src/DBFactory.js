@@ -215,9 +215,19 @@ function openConnection(request, sortedSchemaDescriptors) {
         migrationPromiseRejector(errorEvent)
       }
 
-      let migrator = new DatabaseMigrator(database, transaction,
-          sortedSchemaDescriptors, event.oldVersion)
-      migrator.executeMigration()
+      try {
+        let migrator = new DatabaseMigrator(database, transaction,
+            sortedSchemaDescriptors, event.oldVersion)
+        migrator.executeMigration().catch((error) => {
+          transaction.abort()
+          reject(error)
+          migrationPromiseRejector(error)
+        })
+      } catch (error) {
+        transaction.abort()
+        reject(error)
+        migrationPromiseRejector(error)
+      }
     }
 
     request.onerror = (event) => {
@@ -229,6 +239,7 @@ function openConnection(request, sortedSchemaDescriptors) {
       reject(request.error)
       migrationPromiseRejector(request.error)
     }
+    
     request.onblocked = () => {
       wasBlocked = true
       

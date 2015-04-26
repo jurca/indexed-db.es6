@@ -71,8 +71,18 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
           reject(errorEvent);
           migrationPromiseRejector(errorEvent);
         });
-        var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
-        migrator.executeMigration();
+        try {
+          var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
+          migrator.executeMigration().catch((function(error) {
+            transaction.abort();
+            reject(error);
+            migrationPromiseRejector(error);
+          }));
+        } catch (error) {
+          transaction.abort();
+          reject(error);
+          migrationPromiseRejector(error);
+        }
       });
       request.onerror = (function(event) {
         if (wasBlocked) {
