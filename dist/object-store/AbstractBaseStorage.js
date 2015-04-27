@@ -33,14 +33,7 @@ define(["./CursorDirection"], function($__0) {
           key = normalizeCompoundObjectKey(this.keyPath, key);
         }
         var request = this[FIELDS.storage].get(key);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
-        }));
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       openCursor: function() {
         var keyRange = arguments[0];
@@ -58,13 +51,8 @@ define(["./CursorDirection"], function($__0) {
         }
         var cursorDirection = direction.value.toLowerCase().substring(0, 4);
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            resolve(new cursorConstructor(request, $__2[FIELDS.requestMonitor]));
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
+        return this[FIELDS.requestMonitor].monitor(request).then((function() {
+          return new cursorConstructor(request, $__2[FIELDS.requestMonitor]);
         }));
       }
     }, {});

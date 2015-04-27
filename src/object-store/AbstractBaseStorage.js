@@ -113,11 +113,7 @@ export default class AbstractBaseStorage {
     }
 
     let request = this[FIELDS.storage].get(key)
-
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
@@ -154,12 +150,9 @@ export default class AbstractBaseStorage {
 
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
-
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        resolve(new cursorConstructor(request, this[FIELDS.requestMonitor]))
-      }
-      request.onerror = () => reject(request.error)
+    
+    return this[FIELDS.requestMonitor].monitor(request).then(() => {
+      return new cursorConstructor(request, this[FIELDS.requestMonitor])
     })
   }
 }
