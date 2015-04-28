@@ -33,65 +33,35 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
     return ($traceurRuntime.createClass)(ObjectStore, {
       add: function(record) {
         var key = arguments[1];
-        var $__10 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__10[FIELDS.objectStore].add(record, key);
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
-        }));
+        var request = this[FIELDS.objectStore].add(record, key);
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       put: function(record) {
         var key = arguments[1];
-        var $__10 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__10[FIELDS.objectStore].put(record, key);
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
-        }));
+        var request = this[FIELDS.objectStore].put(record, key);
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       delete: function(filter) {
         var $__10 = this;
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof IDBKeyRange) {
-          return new Promise((function(resolve, reject) {
-            var request = $__10[FIELDS.objectStore].delete(filter);
-            request.onsuccess = (function() {
-              return resolve();
-            });
-            request.onerror = (function() {
-              return reject(request.error);
-            });
-          }));
+          var request = this[FIELDS.objectStore].delete(filter);
+          return this[FIELDS.requestMonitor].monitor(request);
         }
         return new Promise((function(resolve, reject) {
           var progressPromise = Promise.resolve(null);
           $__10.forEach(filter, CursorDirection.NEXT, (function(record, primaryKey) {
             progressPromise = progressPromise.then((function() {
               return $__10.delete(primaryKey);
-            }));
+            }), reject);
+          })).then((function() {
+            return resolve();
           }));
-          progressPromise.then(resolve).catch(reject);
         }));
       },
       clear: function() {
-        var $__10 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__10[FIELDS.objectStore].clear();
-          request.onsuccess = (function() {
-            return resolve();
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
-        }));
+        var request = this[FIELDS.objectStore].clear();
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       getIndex: function(indexName) {
         if (this[FIELDS.indexes].has(indexName)) {

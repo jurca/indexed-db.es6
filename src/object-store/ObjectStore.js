@@ -78,11 +78,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @return {Promise<(number|string|Date|Array)>}
    */
   add(record, key = undefined) {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.objectStore].add(record, key)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
+    let request = this[FIELDS.objectStore].add(record, key)
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
@@ -99,11 +96,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    *         the record key when the operation is successfuly queued.
    */
   put(record, key = undefined) {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.objectStore].put(record, key)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
+    let request = this[FIELDS.objectStore].put(record, key)
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
@@ -122,21 +116,19 @@ export default class ObjectStore extends ReadOnlyObjectStore {
     filter = normalizeFilter(filter, this.keyPath)
 
     if (filter instanceof IDBKeyRange) {
-      return new Promise((resolve, reject) => {
-        let request = this[FIELDS.objectStore].delete(filter)
-        request.onsuccess = () => resolve()
-        request.onerror = () => reject(request.error)
-      })
+      let request = this[FIELDS.objectStore].delete(filter)
+      return this[FIELDS.requestMonitor].monitor(request)
     }
 
     return new Promise((resolve, reject) => {
       let progressPromise = Promise.resolve(null)
 
       this.forEach(filter, CursorDirection.NEXT, (record, primaryKey) => {
-        progressPromise = progressPromise.then(() => this.delete(primaryKey))
-      })
-
-      progressPromise.then(resolve).catch(reject)
+        progressPromise = progressPromise.then(
+          () => this.delete(primaryKey),
+          reject
+        )
+      }).then(() => resolve())
     })
   }
 
@@ -147,11 +139,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    *         been deleted.
    */
   clear() {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.objectStore].clear()
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject(request.error)
-    })
+    let request = this[FIELDS.objectStore].clear()
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
