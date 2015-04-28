@@ -5,7 +5,8 @@ import ReadOnlyCursor from "./ReadOnlyCursor"
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
-  cursor: Symbol("cursor")
+  cursor: Symbol("cursor"),
+  requestMonitor: Symbol("requestMonitor")
 })
 
 /**
@@ -30,6 +31,14 @@ export default class Cursor extends ReadOnlyCursor {
      * @type {IDBCursor}
      */
     this[FIELDS.cursor] = cursorRequest.result
+    
+    /**
+     * The request monitor used to monitor the status of pending database
+     * operation requests.
+     * 
+     * @type {RequestMonitor}
+     */
+    this[FIELDS.requestMonitor] = requestMonitor
   }
 
   /**
@@ -44,11 +53,8 @@ export default class Cursor extends ReadOnlyCursor {
    *         successfully queued.
    */
   update(record) {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.cursor].update(record)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject()
-    })
+    let request = this[FIELDS.cursor].update(record)
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
@@ -58,10 +64,6 @@ export default class Cursor extends ReadOnlyCursor {
    *         deleted.
    */
   delete() {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.cursor].delete()
-      request.onsuccess = () => resolve()
-      request.onerror = () => reject()
-    })
+    return this[FIELDS.requestMonitor].monitor(this[FIELDS.cursor].delete())
   }
 }

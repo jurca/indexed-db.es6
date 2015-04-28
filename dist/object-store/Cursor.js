@@ -3,36 +3,23 @@ define(["./ReadOnlyCursor"], function($__0) {
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   var ReadOnlyCursor = $__0.default;
-  var FIELDS = Object.freeze({cursor: Symbol("cursor")});
+  var FIELDS = Object.freeze({
+    cursor: Symbol("cursor"),
+    requestMonitor: Symbol("requestMonitor")
+  });
   var Cursor = (function($__super) {
     function Cursor(cursorRequest, requestMonitor) {
       $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, requestMonitor);
       this[FIELDS.cursor] = cursorRequest.result;
+      this[FIELDS.requestMonitor] = requestMonitor;
     }
     return ($traceurRuntime.createClass)(Cursor, {
       update: function(record) {
-        var $__2 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__2[FIELDS.cursor].update(record);
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject();
-          });
-        }));
+        var request = this[FIELDS.cursor].update(record);
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       delete: function() {
-        var $__2 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__2[FIELDS.cursor].delete();
-          request.onsuccess = (function() {
-            return resolve();
-          });
-          request.onerror = (function() {
-            return reject();
-          });
-        }));
+        return this[FIELDS.requestMonitor].monitor(this[FIELDS.cursor].delete());
       }
     }, {}, $__super);
   }(ReadOnlyCursor));

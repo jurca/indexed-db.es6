@@ -6,7 +6,8 @@ import CursorDirection from "./CursorDirection"
  */
 const FIELDS = Object.freeze({
   request: Symbol("request"),
-  flags: Symbol("flags")
+  flags: Symbol("flags"),
+  requestMonitor: Symbol("requestMonitor")
 })
 
 /**
@@ -32,6 +33,14 @@ export default class ReadOnlyCursor {
      * @type {IDBRequest}
      */
     this[FIELDS.request] = cursorRequest
+    
+    /**
+     * The request monitor used to monitor the status of pending database
+     * operation requests.
+     *
+     * @type {RequestMonitor}
+     */
+    this[FIELDS.requestMonitor] = requestMonitor
 
     /**
      * Cursor state flags.
@@ -162,14 +171,12 @@ export default class ReadOnlyCursor {
           "records sequence")
     }
 
-    return new Promise((resolve, reject) => {
-      this[FIELDS.request].onsuccess = () => {
-        resolve(new (this.constructor)(this[FIELDS.request]))
-      }
-      this[FIELDS.request].onerror = () => reject(this[FIELDS.request].error)
-
-      this[FIELDS.request].result.advance(stepsCount)
-      this[FIELDS.flags].hasAdvanced = true
+    let request = this[FIELDS.request]
+    request.result.advance(stepsCount)
+    this[FIELDS.flags].hasAdvanced = true
+    
+    return this[FIELDS.requestMonitor].monitor(request).then(() => {
+      return new (this.constructor)(request, this[FIELDS.requestMonitor])
     })
   }
 
@@ -206,14 +213,12 @@ export default class ReadOnlyCursor {
           "records sequence")
     }
 
-    return new Promise((resolve, reject) => {
-      this[FIELDS.request].onsuccess = () => {
-        resolve(new this.constructor(this[FIELDS.request]))
-      }
-      this[FIELDS.request].onerror = () => reject(this[FIELDS.request].error)
-
-      this[FIELDS.request].result.continue(nextKey)
-      this[FIELDS.flags].hasAdvanced = true
+    let request = this[FIELDS.request]
+    request.result.continue(nextKey)
+    this[FIELDS.flags].hasAdvanced = true
+    
+    return this[FIELDS.requestMonitor].monitor(request).then(() => {
+      return new this.constructor(request, this[FIELDS.requestMonitor])
     })
   }
 }

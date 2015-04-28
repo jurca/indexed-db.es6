@@ -5,11 +5,13 @@ define(["./CursorDirection"], function($__0) {
   var CursorDirection = $__0.default;
   var FIELDS = Object.freeze({
     request: Symbol("request"),
-    flags: Symbol("flags")
+    flags: Symbol("flags"),
+    requestMonitor: Symbol("requestMonitor")
   });
   var ReadOnlyCursor = (function() {
     function ReadOnlyCursor(cursorRequest, requestMonitor) {
       this[FIELDS.request] = cursorRequest;
+      this[FIELDS.requestMonitor] = requestMonitor;
       this[FIELDS.flags] = {hasAdvanced: false};
       var cursor = cursorRequest.result;
       var direction;
@@ -40,15 +42,11 @@ define(["./CursorDirection"], function($__0) {
         if (this.done) {
           throw new Error("The cursor has already reached the end of the " + "records sequence");
         }
-        return new Promise((function(resolve, reject) {
-          $__2[FIELDS.request].onsuccess = (function() {
-            resolve(new ($__2.constructor)($__2[FIELDS.request]));
-          });
-          $__2[FIELDS.request].onerror = (function() {
-            return reject($__2[FIELDS.request].error);
-          });
-          $__2[FIELDS.request].result.advance(stepsCount);
-          $__2[FIELDS.flags].hasAdvanced = true;
+        var request = this[FIELDS.request];
+        request.result.advance(stepsCount);
+        this[FIELDS.flags].hasAdvanced = true;
+        return this[FIELDS.requestMonitor].monitor(request).then((function() {
+          return new ($__2.constructor)(request, $__2[FIELDS.requestMonitor]);
         }));
       },
       continue: function() {
@@ -60,15 +58,11 @@ define(["./CursorDirection"], function($__0) {
         if (this.done) {
           throw new Error("The cursor has already reached the end of the " + "records sequence");
         }
-        return new Promise((function(resolve, reject) {
-          $__2[FIELDS.request].onsuccess = (function() {
-            resolve(new $__2.constructor($__2[FIELDS.request]));
-          });
-          $__2[FIELDS.request].onerror = (function() {
-            return reject($__2[FIELDS.request].error);
-          });
-          $__2[FIELDS.request].result.continue(nextKey);
-          $__2[FIELDS.flags].hasAdvanced = true;
+        var request = this[FIELDS.request];
+        request.result.continue(nextKey);
+        this[FIELDS.flags].hasAdvanced = true;
+        return this[FIELDS.requestMonitor].monitor(request).then((function() {
+          return new $__2.constructor(request, $__2[FIELDS.requestMonitor]);
         }));
       }
     }, {});
