@@ -93,11 +93,8 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    *         {@code undefined} if no record is found.
    */
   getPrimaryKey(key) {
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.storage].getKey(key)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(request.error)
-    })
+    let request = this[FIELDS.storage].getKey(key)
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
@@ -174,11 +171,8 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        resolve(new cursorConstructor(request, this[FIELDS.requestMonitor]))
-      }
-      request.onerror = () => reject(request.error)
+    return this[FIELDS.requestMonitor].monitor(request).then(() => {
+      return new cursorConstructor(request, this[FIELDS.requestMonitor])
     })
   }
 
@@ -224,11 +218,8 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection)
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => {
-        resolve(new ReadOnlyCursor(request, this[FIELDS.requestMonitor]))
-      }
-      request.onerror = () => reject(request.error)
+    return this[FIELDS.requestMonitor].monitor(request).then(() => {
+      return new ReadOnlyCursor(request, this[FIELDS.requestMonitor])
     })
   }
 }

@@ -33,16 +33,8 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
     }
     return ($traceurRuntime.createClass)(ReadOnlyIndex, {
       getPrimaryKey: function(key) {
-        var $__6 = this;
-        return new Promise((function(resolve, reject) {
-          var request = $__6[FIELDS.storage].getKey(key);
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
-        }));
+        var request = this[FIELDS.storage].getKey(key);
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       getAllPrimaryKeys: function() {
         var $__6 = this;
@@ -79,13 +71,8 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
           cursorDirection += "unique";
         }
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            resolve(new cursorConstructor(request, $__6[FIELDS.requestMonitor]));
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
+        return this[FIELDS.requestMonitor].monitor(request).then((function() {
+          return new cursorConstructor(request, $__6[FIELDS.requestMonitor]);
         }));
       },
       openKeyCursor: function() {
@@ -107,13 +94,8 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
           cursorDirection += "unique";
         }
         var request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            resolve(new ReadOnlyCursor(request, $__6[FIELDS.requestMonitor]));
-          });
-          request.onerror = (function() {
-            return reject(request.error);
-          });
+        return this[FIELDS.requestMonitor].monitor(request).then((function() {
+          return new ReadOnlyCursor(request, $__6[FIELDS.requestMonitor]);
         }));
       }
     }, {}, $__super);
