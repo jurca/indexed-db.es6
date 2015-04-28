@@ -21,7 +21,8 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     unique: Symbol("unique"),
-    storageFactory: Symbol("storageFactory")
+    storageFactory: Symbol("storageFactory"),
+    requestMonitor: Symbol("requestMonitor")
   });
   var AbstractReadOnlyStorage = (function($__super) {
     function AbstractReadOnlyStorage(storage, cursorConstructor, requestMonitor, storageFactory) {
@@ -31,6 +32,7 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
       }
       this[FIELDS.storage] = storage;
       this[FIELDS.unique] = storage instanceof IDBObjectStore || storage.unique;
+      this[FIELDS.requestMonitor] = requestMonitor;
       this[FIELDS.storageFactory] = storageFactory;
     }
     return ($traceurRuntime.createClass)(AbstractReadOnlyStorage, {
@@ -41,20 +43,12 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
       },
       count: function() {
         var filter = arguments[0];
-        var $__10 = this;
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof Function) {
           return this.forEach(filter, CursorDirection.NEXT, (function() {}));
         }
-        return new Promise((function(resolve, reject) {
-          var request = $__10[FIELDS.storage].count(filter);
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return reject(result.error);
-          });
-        }));
+        var request = this[FIELDS.storage].count(filter);
+        return this[FIELDS.requestMonitor].monitor(request);
       },
       forEach: function(filter, direction, callback) {
         var $__10 = this;

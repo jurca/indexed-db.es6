@@ -12,7 +12,8 @@ import {compileFieldRangeFilter, normalizeFilter, keyRangeToFieldRangeObject}
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
   unique: Symbol("unique"),
-  storageFactory: Symbol("storageFactory")
+  storageFactory: Symbol("storageFactory"),
+  requestMonitor: Symbol("requestMonitor")
 })
 
 /**
@@ -57,6 +58,14 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
      * @type {boolean}
      */
     this[FIELDS.unique] = storage instanceof IDBObjectStore || storage.unique
+    
+    /**
+     * The request monitor used to monitor the status of pending database
+     * operation requests.
+     * 
+     * @type {RequestMonitor}
+     */
+    this[FIELDS.requestMonitor] = requestMonitor
 
     /**
      * A function that creates a new read-only transaction and returns a new
@@ -103,11 +112,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
       return this.forEach(filter, CursorDirection.NEXT, () => {})
     }
 
-    return new Promise((resolve, reject) => {
-      let request = this[FIELDS.storage].count(filter)
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => reject(result.error)
-    })
+    let request = this[FIELDS.storage].count(filter)
+    return this[FIELDS.requestMonitor].monitor(request)
   }
 
   /**
