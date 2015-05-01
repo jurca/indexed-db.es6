@@ -218,7 +218,7 @@ function openConnection(request, objectStoreNames) {
         }
       })
       
-      resolve(request.database)
+      resolve(database)
     }
     
     request.onupgradeneeded = () => {

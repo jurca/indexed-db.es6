@@ -97,7 +97,7 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
             return ;
           }
         }));
-        resolve(request.database);
+        resolve(database);
       });
       request.onupgradeneeded = (function() {
         request.transaction.abort();
