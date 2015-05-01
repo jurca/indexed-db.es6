@@ -1,5 +1,6 @@
 
-import Database from "../Database"
+import KeepAlive from "../transaction/KeepAlive"
+import Transaction from "../transaction/Transaction"
 import ObjectStoreMigrator from "./ObjectStoreMigrator"
 
 /**
@@ -92,6 +93,8 @@ export default class DatabaseVersionMigrator {
     )
     
     return openConnection(request, (nativeDatabase, nativeTransaction) => {
+      openedDatabase = nativeDatabase
+      
       let objectStores = this[FIELDS.objectStores]
       upgradeSchema(nativeDatabase, nativeTransaction, objectStores)
       
@@ -99,11 +102,20 @@ export default class DatabaseVersionMigrator {
         return objectStore.name
       })
       
-      let transactionCommitDelay = this[FIELDS.transactionCommitDelay]
-      let database = new Database(nativeDatabase, transactionCommitDelay)
-      openedDatabase = database
-      let transaction = database.startTransaction(objectStoreNames)
+      let keepAlive = new KeepAlive(
+        () => nativeTransaction.objectStore(objectStoreNames[0]).
+        this[FIELDS.transactionCommitDelay]
+      )
+      
+      let transaction = new Transaction(
+        nativeTransaction,
+        () => transaction,
+        keepAlive
+      )
+      
       return Promise.resolve(onComplete(transaction, callbackData))
+    }).then(() => {
+      openedDatabase.close()
     }).catch((error) => {
       if (openedDatabase) {
         openedDatabase.close()

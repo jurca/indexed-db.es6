@@ -1,11 +1,14 @@
-define(["../Database", "./ObjectStoreMigrator"], function($__0,$__2) {
+define(["../transaction/KeepAlive", "../transaction/Transaction", "./ObjectStoreMigrator"], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
-  var Database = $__0.default;
-  var ObjectStoreMigrator = $__2.default;
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
+  var KeepAlive = $__0.default;
+  var Transaction = $__2.default;
+  var ObjectStoreMigrator = $__4.default;
   var FIELDS = Object.freeze({
     databaseName: Symbol("databaseName"),
     targetVersion: Symbol("targetVersion"),
@@ -21,20 +24,25 @@ define(["../Database", "./ObjectStoreMigrator"], function($__0,$__2) {
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseVersionMigrator, {executeMigration: function(onComplete, callbackData) {
-        var $__4 = this;
+        var $__6 = this;
         var openedDatabase;
         var request = indexedDB.open(this[FIELDS.databaseName], this[FIELDS.targetVersion]);
         return openConnection(request, (function(nativeDatabase, nativeTransaction) {
-          var objectStores = $__4[FIELDS.objectStores];
+          openedDatabase = nativeDatabase;
+          var objectStores = $__6[FIELDS.objectStores];
           upgradeSchema(nativeDatabase, nativeTransaction, objectStores);
-          var objectStoreNames = $__4[FIELDS.objectStores].map((function(objectStore) {
+          var objectStoreNames = $__6[FIELDS.objectStores].map((function(objectStore) {
             return objectStore.name;
           }));
-          var transactionCommitDelay = $__4[FIELDS.transactionCommitDelay];
-          var database = new Database(nativeDatabase, transactionCommitDelay);
-          openedDatabase = database;
-          var transaction = database.startTransaction(objectStoreNames);
+          var keepAlive = new KeepAlive((function() {
+            return nativeTransaction.objectStore(objectStoreNames[0]).this[FIELDS.transactionCommitDelay];
+          }));
+          var transaction = new Transaction(nativeTransaction, (function() {
+            return transaction;
+          }), keepAlive);
           return Promise.resolve(onComplete(transaction, callbackData));
+        })).then((function() {
+          openedDatabase.close();
         })).catch((function(error) {
           if (openedDatabase) {
             openedDatabase.close();
