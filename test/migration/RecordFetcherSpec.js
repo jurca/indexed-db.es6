@@ -2,7 +2,7 @@
 import RecordFetcher from "../../dist/migration/RecordFetcher"
 import UpgradedDatabaseSchema from "../../dist/schema/UpgradedDatabaseSchema"
 
-fdescribe("RecordFetcher", () => {
+describe("RecordFetcher", () => {
   
   const DB_NAME = "testing database"
   const STORE1 = "first store"
