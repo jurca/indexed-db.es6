@@ -121,7 +121,9 @@ database.runReadOnlyTransaction(["foo", "bar], (foo, bar) => {
   // do some stuff
 }).then((result) => {
   // Do something with the result of the promise returned from the transaction
-  // callback. This callback will be call after the transaction is completed.
+  // callback. This callback will be called after the transaction is completed.
+}).catch((error) => {
+  // Something went wrong. Check the error for details.
 })
 
 // read-write transaction:
@@ -129,7 +131,9 @@ database.runTransaction(["foo", "bar"], (foo, bar) => {
   // do some stuff
 }).then((result) => {
   // Do something with the result of the promise returned from the transaction
-  // callback. This callback will be call after the transaction is completed.
+  // callback. This callback will be called after the transaction is completed.
+}).catch((error) => {
+  // Something went wrong. Check the error for details.
 })
 ```
 
@@ -187,7 +191,7 @@ myObjectStore.forEach(someFilter, "previous", (record) => {
 ...or fetch all records to an array:
 
 ```
-myObjectStore.getAll().then((allRecord) => {
+myObjectStore.getAll(optionalFilter, optionalDirection).then((allRecords) => {
   // do something
 })
 ```
@@ -195,14 +199,15 @@ myObjectStore.getAll().then((allRecord) => {
 ...or just count records matching a filter:
 
 ```
-myObjectStore.count(filter).then((recordCount) => {
+myObjectStore.count(optionalFilter).then((recordCount) => {
   // do something with the record count
 })
 ```
 
 ...or you can use the record list (extension of the native JavaScript `Array`)
-which allows processing the records in pages, allowing you to fetch the next
-page of records even if the original transaction has already been terminated:
+which allows processing the records in "pages", allowing you to fetch the next
+page of records lazily even if the original transaction has already been
+terminated:
 
 ```
 import CursorDirection from
@@ -217,7 +222,7 @@ myObjectStore.list(myFilter, CursorDirection.PREVIOUS, myPageSize).
   // after some time:
   if (list.hasNextPage) {
     list.fetchNextPage().then((nextPage) => {
-      // do something
+      // do something with the next page of records
     })
   }
 })
@@ -256,6 +261,17 @@ myObjectStore.put({
 }).then((primaryKey) => {
   // record will be updated when the transaction completes
 })
+
+// for object stores using out-of-line keys (stored outside of records),
+// specify the key as the second argument:
+
+myObjectStore.put({
+  updated: new Date(),
+  note: "this record will be updated"
+}, 123).then((primaryKey) => {
+  // record will be updated when the transaction completes
+})
+
 ```
 
 Records may be deleted using the `delete` method:
@@ -290,20 +306,13 @@ comments. Go ahead and
 The API is fully implemented and the tests are passing in Google Chrome /
 Chromium.
 
-There are however a few issues being resolved:
+There is however an issue being resolved:
 
-- the transaction should make keep-alive requests while the Promise callbacks
-  are being executed to prevent the transaction ending prematuraly - according
-  to the [specification](http://www.w3.org/TR/IndexedDB/) a transaction should
-  be completed once there are no more pending requests after the last result
-  has been processed and the JavaScript event loop has concluded. Since promise
-  callbacks are being executed asynchronously, the resulting "gap" must be
-  filled using keep-alive requests.
-- there appears to be a bug in the Firefox (tested on version 37) which
-  requires the IndexedDB client to execute all schema-altering operations
-  synchronously in the same event loop the `onupgradeneeded` callback was
-  triggered. A way to work around this issue and keep the current data
-  migration features is being designed.
+There appears to be a bug in the Firefox (tested on version 37) which requires
+the IndexedDB client to execute all schema-altering operations synchronously in
+the same event loop the `onupgradeneeded` callback was triggered. A way to work
+around this issue and keep the current data migration features is being
+designed.
 
 There are no current plans for additional features (unless a good case for
 adding them is made), but the project accepts bug fixes if new bugs are
@@ -333,7 +342,8 @@ said, you may not need such a tool and may be looking for a simpler solution:
   database.
 - [DB.js](https://github.com/aaronpowell/db.js) if you do not need transaction
   support, or don't need certain low-level or high-level features of
-  indexed-db.es6.
+  indexed-db.es6, or you are not concerned about the database being opened from
+  several browser tabs simultaneously.
 - [IDB Wrapper](https://github.com/jensarps/IDBWrapper) if you preffer
   callbacks to Promises.
 - [jQuery IndexedDB](http://nparashuram.com/jquery-indexeddb/) if you think you
