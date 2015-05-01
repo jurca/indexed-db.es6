@@ -34,7 +34,7 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
           if (openedDatabase) {
             openedDatabase.close();
           }
-          return error;
+          throw error;
         }));
       }}, {});
   }());

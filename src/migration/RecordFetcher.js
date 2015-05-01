@@ -74,7 +74,7 @@ export default class RecordFetcher {
         openedDatabase.close()
       }
       
-      return error
+      throw error
     })
   }
 }
