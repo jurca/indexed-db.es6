@@ -1,4 +1,4 @@
-define(["./ObjectStoreMigrator", "../schema/DatabaseSchema", "../schema/UpgradedDatabaseSchema", "../transaction/KeepAlive", "../transaction/ReadOnlyTransaction", "../transaction/Transaction"], function($__0,$__2,$__4,$__6,$__8,$__10) {
+define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchema", "../schema/UpgradedDatabaseSchema", "../transaction/Transaction"], function($__0,$__2,$__4,$__6,$__8) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -10,24 +10,19 @@ define(["./ObjectStoreMigrator", "../schema/DatabaseSchema", "../schema/Upgraded
     $__6 = {default: $__6};
   if (!$__8 || !$__8.__esModule)
     $__8 = {default: $__8};
-  if (!$__10 || !$__10.__esModule)
-    $__10 = {default: $__10};
-  var ObjectStoreMigrator = $__0.default;
-  var DatabaseSchema = $__2.default;
-  var UpgradedDatabaseSchema = $__4.default;
-  var KeepAlive = $__6.default;
-  var ReadOnlyTransaction = $__8.default;
-  var Transaction = $__10.default;
+  var RecordFetcher = $__0.default;
+  var DatabaseVersionMigrator = $__2.default;
+  var DatabaseSchema = $__4.default;
+  var UpgradedDatabaseSchema = $__6.default;
+  var Transaction = $__8.default;
   var FIELDS = Object.freeze({
-    database: Symbol("database"),
-    transaction: Symbol("transaction"),
+    databaseName: Symbol("databaseName"),
     schemaDescriptors: Symbol("schemaDescriptors"),
     currentVersion: Symbol("currentVersion"),
-    keepAliveObjectStore: Symbol("keepAliveObjectStore"),
     commitDelay: Symbol("commitDelay")
   });
   var DatabaseMigrator = (function() {
-    function DatabaseMigrator(database, transaction, schemaDescriptors, currentVersion, commitDelay) {
+    function DatabaseMigrator(databaseName, schemaDescriptors, currentVersion, commitDelay) {
       if (!schemaDescriptors.length) {
         throw new Error("The list of schema descriptors cannot be empty");
       }
@@ -39,113 +34,40 @@ define(["./ObjectStoreMigrator", "../schema/DatabaseSchema", "../schema/Upgraded
       if (!isVersionValid) {
         throw new Error("The version number must be either a positive " + "integer, or 0 if the database is being created");
       }
-      this[FIELDS.database] = database;
-      this[FIELDS.transaction] = transaction;
+      this[FIELDS.databaseName] = databaseName;
       this[FIELDS.schemaDescriptors] = Object.freeze(sortedSchemasCopy);
       this[FIELDS.currentVersion] = currentVersion;
-      var keepAliveObjectStore;
-      keepAliveObjectStore = generateKeepAliveObjectStoreName(sortedSchemasCopy);
-      this[FIELDS.keepAliveObjectStore] = keepAliveObjectStore;
       this[FIELDS.commitDelay] = commitDelay;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseMigrator, {executeMigration: function() {
-        var $__12 = this;
-        var keepAliveObjectStore = this[FIELDS.database].createObjectStore(this[FIELDS.keepAliveObjectStore]);
-        var keepAlive = new KeepAlive((function() {
-          return keepAliveObjectStore;
-        }), this[FIELDS.commitDelay]);
-        keepAlive.requestMonitor.monitor(keepAliveObjectStore.get(0));
-        return migrateDatabase(this[FIELDS.database], this[FIELDS.transaction], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion], keepAlive, this[FIELDS.keepAliveObjectStore]).then((function() {
-          keepAlive.terminate();
-          $__12[FIELDS.database].deleteObjectStore(keepAliveObjectStore.name);
-        }));
+        return migrateDatabase(this[FIELDS.databaseName], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion], this[FIELDS.commitDelay]);
       }}, {});
   }());
   var $__default = DatabaseMigrator;
-  function migrateDatabase(database, transaction, schemaDescriptors, currentVersion, keepAlive, keepAliveObjectStore) {
+  function migrateDatabase(databaseName, schemaDescriptors, currentVersion, commitDelay) {
     var descriptorsToProcess = schemaDescriptors.filter((function(descriptor) {
       return descriptor.version > currentVersion;
     }));
     if (!descriptorsToProcess.length) {
       return Promise.resolve(undefined);
     }
-    return migrateDatabaseVersion(database, transaction, descriptorsToProcess[0], keepAlive, keepAliveObjectStore).then((function() {
-      return migrateDatabase(database, transaction, descriptorsToProcess, descriptorsToProcess[0].version, keepAlive, keepAliveObjectStore);
+    return migrateDatabaseVersion(databaseName, descriptorsToProcess[0], commitDelay).then((function() {
+      return migrateDatabase(databaseName, descriptorsToProcess, descriptorsToProcess[0].version, commitDelay);
     }));
   }
-  function migrateDatabaseVersion(database, nativeTransaction, descriptor, keepAlive, keepAliveObjectStore) {
-    var transaction = new Transaction(nativeTransaction, (function() {
-      return nativeTransaction;
-    }), keepAlive);
-    var objectStores = descriptor.fetchBefore || [];
-    return fetchRecords(transaction, objectStores).then((function(recordsMap) {
-      upgradeSchema(database, nativeTransaction, descriptor, keepAliveObjectStore);
-      if (descriptor.after) {
-        return Promise.resolve(descriptor.after(transaction, recordsMap));
-      }
-    }));
-  }
-  function upgradeSchema(database, nativeTransaction, descriptor, keepAliveObjectStore) {
-    var objectStoreNames = Array.from(database.objectStoreNames);
-    var newObjectStoreNames = descriptor.objectStores.map((function(objectStore) {
-      return objectStore.name;
-    }));
-    objectStoreNames.forEach((function(objectStoreName) {
-      if (newObjectStoreNames.indexOf(objectStoreName) === -1) {
-        if (objectStoreName !== keepAliveObjectStore) {
-          database.deleteObjectStore(objectStoreName);
-        }
-      }
-    }));
-    descriptor.objectStores.forEach((function(objectStoreDescriptor) {
-      var objectStoreName = objectStoreDescriptor.name;
-      var nativeObjectStore = objectStoreNames.indexOf(objectStoreName) > -1 ? nativeTransaction.objectStore(objectStoreName) : null;
-      var objectStoreMigrator = new ObjectStoreMigrator(database, nativeObjectStore, objectStoreDescriptor);
-      objectStoreMigrator.executeMigration();
-    }));
-  }
-  function fetchRecords(transaction, objectStores) {
-    if (!objectStores.length) {
-      return Promise.resolve({});
+  function migrateDatabaseVersion(databaseName, descriptor, commitDelay) {
+    var fetchPromise;
+    if (descriptor.fetchBefore && descriptor.fetchBefore.length) {
+      var fetcher = new RecordFetcher();
+      var objectStores = normalizeFetchBeforeObjectStores(descriptor.fetchBefore);
+      fetchPromise = fetcher.fetchRecords(databaseName, commitDelay, objectStores);
+    } else {
+      fetchPromise = Promise.resolve({});
     }
-    var normalizedObjectStores = normalizeFetchBeforeObjectStores(objectStores);
-    return new Promise((function(resolveAll, rejectAll) {
-      Promise.all(normalizedObjectStores.map((function(objectStore) {
-        return fetchObjectStoreRecords(transaction.getObjectStore(objectStore.objectStore), objectStore.preprocessor);
-      }))).then((function(fetchedRecords) {
-        var recordsMap = {};
-        for (var i = 0; i < objectStores.length; i++) {
-          recordsMap[normalizedObjectStores[i].objectStore] = fetchedRecords[i];
-        }
-        resolveAll(recordsMap);
-      })).catch(rejectAll);
-    }));
-  }
-  function fetchObjectStoreRecords(objectStore, preprocessor) {
-    return new Promise((function(resolve, reject) {
-      var records = [];
-      var cursorPromise = objectStore.openCursor();
-      cursorPromise.then(iterate).catch(reject);
-      function iterate(cursor) {
-        if (cursor.done) {
-          resolve(records);
-          return ;
-        }
-        var preprocessed = preprocessor(cursor.record, cursor.primaryKey);
-        if (preprocessed === UpgradedDatabaseSchema.DELETE_RECORD) {
-          cursor.delete().then((function() {
-            return cursor.advance();
-          })).then(iterate).catch(reject);
-          return ;
-        } else if (preprocessed !== UpgradedDatabaseSchema.SKIP_RECORD) {
-          records.push({
-            key: cursor.primaryKey,
-            record: preprocessed
-          });
-        } else {}
-        cursor.advance().then(iterate).catch(reject);
-      }
+    return fetchPromise.then((function(recordsMap) {
+      var versionMigrator = new DatabaseVersionMigrator(databaseName, descriptor.version, descriptor.objectStores, commitDelay);
+      return versionMigrator.executeMigration(descriptor.after || ((function() {})), recordsMap);
     }));
   }
   function normalizeFetchBeforeObjectStores(objectStores) {
@@ -168,18 +90,6 @@ define(["./ObjectStoreMigrator", "../schema/DatabaseSchema", "../schema/Upgraded
         return objectStore;
       }
     }));
-  }
-  function generateKeepAliveObjectStoreName(schemaDescriptors) {
-    var longestName = "";
-    schemaDescriptors.forEach((function(versionSchema) {
-      versionSchema.objectStores.forEach((function(objectStoreSchema) {
-        var objectStoreName = objectStoreSchema.name;
-        if (objectStoreName.length > longestName.length) {
-          longestName = objectStoreName;
-        }
-      }));
-    }));
-    return ("keep-alive " + longestName);
   }
   function checkSchemaDescriptorTypes(schemaDescriptors) {
     var onlyPlainObjects = schemaDescriptors.every((function(descriptor) {

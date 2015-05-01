@@ -113,9 +113,12 @@ export default class DBFactory {
     })
 
     let requestedVersion = sortedSchemaDescriptors.slice().pop().version
-    let request = indexedDB.open(databaseName, requestedVersion)
 
-    return openConnection(request, sortedSchemaDescriptors)
+    return openConnection(
+      databaseName,
+      requestedVersion,
+      sortedSchemaDescriptors
+    )
   }
 
   /**
@@ -219,19 +222,23 @@ export default class DBFactory {
  * Handles opening the connection to the database and wraps the whole process
  * in a promise.
  * 
- * @param {IDBOpenDBRequest} request The native Indexed DB connection opening
- *        request.
+ * @param {string} databaseName The name of the Indexed DB database to connect
+ *        to.
+ * @param {number} version The expected version of the database.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
  *        sortedSchemaDescriptors The database schema descriptors, sorted in
  *        ascending order by the schema version number.
  * @return {Promise<Database>} A promise that resolves to the database
  *         connection.
  */
-function openConnection(request, sortedSchemaDescriptors) {
+function openConnection(databaseName, version, sortedSchemaDescriptors) {
+  let request = indexedDB.open(databaseName, version)
+  
   return new Promise((resolve, reject) => {
     let wasBlocked = false
+    let wasUpgraded = false
     
-    let migrationPromiseResolver, migrationPromiseRejector;
+    let migrationPromiseResolver, migrationPromiseRejector
     let migrationPromise = new Promise((resolve, reject) => {
       migrationPromiseResolver = resolve
       migrationPromiseRejector = reject
@@ -246,20 +253,37 @@ function openConnection(request, sortedSchemaDescriptors) {
     }
 
     request.onupgradeneeded = (event) => {
-      let database = request.result
-      let transaction = request.transaction
+      if (!wasBlocked) {
+        wasUpgraded = true
+      }
       
+      request.transaction.abort()
       if (wasBlocked) {
-        transaction.abort()
         return
       }
       
-      upgradeDatabaseSchema(event, database, transaction, migrationPromise,
-          reject, migrationPromiseRejector, sortedSchemaDescriptors)
+      Promise.resolve().then(() => {
+        return upgradeDatabaseSchema(
+          databaseName,
+          migrationPromise,
+          event,
+          sortedSchemaDescriptors
+        )
+      }).then(() => {
+        migrationPromiseResolver()
+        return openConnection(
+          databaseName,
+          version,
+          sortedSchemaDescriptors
+        ).then(database => resolve(database))
+      }).catch((error) => {
+        reject(error)
+        migrationPromiseRejector(error)
+      })
     }
 
     request.onerror = (event) => {
-      if (wasBlocked) {
+      if (wasBlocked || wasUpgraded) {
         event.preventDefault()
         return
       }
@@ -299,29 +323,19 @@ function openConnection(request, sortedSchemaDescriptors) {
  *        sortedSchemaDescriptors The database schema descriptors, sorted in
  *        ascending order by the schema version number.
  */
-function upgradeDatabaseSchema(event, database, transaction, migrationPromise,
-    reject, migrationPromiseRejector, sortedSchemaDescriptors) {
-  executeMigrationListeners(database.name, event.oldVersion,
+function upgradeDatabaseSchema(databaseName, migrationPromise, event,
+    sortedSchemaDescriptors) {
+  executeMigrationListeners(databaseName, event.oldVersion,
       event.newVersion, migrationPromise)
-
-  database.onerror = (errorEvent) => {
-    reject(errorEvent)
-    migrationPromiseRejector(errorEvent)
-  }
-
-  try {
-    let migrator = new DatabaseMigrator(database, transaction,
-        sortedSchemaDescriptors, event.oldVersion)
-    migrator.executeMigration().catch((error) => {
-      transaction.abort()
-      reject(error)
-      migrationPromiseRejector(error)
-    })
-  } catch (error) {
-    transaction.abort()
-    reject(error)
-    migrationPromiseRejector(error)
-  }
+  
+  let migrator = new DatabaseMigrator(
+    databaseName,
+    sortedSchemaDescriptors,
+    event.oldVersion,
+    transactionCommitDelay
+  )
+  
+  return migrator.executeMigration()
 }
 
 /**
