@@ -112,11 +112,8 @@ export default class DBFactory {
       return d1.version - d2.version
     })
 
-    let requestedVersion = sortedSchemaDescriptors.slice().pop().version
-
     return openConnection(
       databaseName,
-      requestedVersion,
       sortedSchemaDescriptors
     )
   }
@@ -224,19 +221,19 @@ export default class DBFactory {
  * 
  * @param {string} databaseName The name of the Indexed DB database to connect
  *        to.
- * @param {number} version The expected version of the database.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
  *        sortedSchemaDescriptors The database schema descriptors, sorted in
  *        ascending order by the schema version number.
  * @return {Promise<Database>} A promise that resolves to the database
  *         connection.
  */
-function openConnection(databaseName, version, sortedSchemaDescriptors) {
+function openConnection(databaseName, sortedSchemaDescriptors) {
+  let version = sortedSchemaDescriptors.slice().pop().version
   let request = indexedDB.open(databaseName, version)
   
   return new Promise((resolve, reject) => {
     let wasBlocked = false
-    let wasUpgraded = false
+    let upgradeTriggered = false
     
     let migrationPromiseResolver, migrationPromiseRejector
     let migrationPromise = new Promise((resolve, reject) => {
@@ -254,7 +251,7 @@ function openConnection(databaseName, version, sortedSchemaDescriptors) {
 
     request.onupgradeneeded = (event) => {
       if (!wasBlocked) {
-        wasUpgraded = true
+        upgradeTriggered = true
       }
       
       request.transaction.abort()
@@ -262,34 +259,14 @@ function openConnection(databaseName, version, sortedSchemaDescriptors) {
         return
       }
       
-      Promise.resolve().then(() => {
-        return upgradeDatabaseSchema(
-          databaseName,
-          migrationPromise,
-          event,
-          sortedSchemaDescriptors
-        )
-      }).then(() => {
-        migrationPromiseResolver()
-        return openConnection(
-          databaseName,
-          version,
-          sortedSchemaDescriptors
-        ).then(database => resolve(database))
-      }).catch((error) => {
-        reject(error)
-        migrationPromiseRejector(error)
-      })
+      upgradeSchemaAndReconnect(databaseName, migrationPromiseevent,
+          sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver,
+          migrationPromiseRejector)
     }
 
     request.onerror = (event) => {
-      if (wasBlocked || wasUpgraded) {
-        event.preventDefault()
-        return
-      }
-      
-      reject(request.error)
-      migrationPromiseRejector(request.error)
+      handleConnectionError(event, request.error, wasBlocked, upgradeTriggered,
+          reject, migrationPromiseRejector)
     }
     
     request.onblocked = () => {
@@ -305,20 +282,84 @@ function openConnection(databaseName, version, sortedSchemaDescriptors) {
 }
 
 /**
+ * Handles a database error encountered during connection establishing.
+ * 
+ * @param {Event} event The error event.
+ * @param {Error} error The encountered error.
+ * @param {boolean} wasBlocked Flag signalling whether the connection has been
+ *        blocked.
+ * @param {boolean} upgradeTriggered Flag signalling whether the database schema
+ *        upgrade process was triggered.
+ * @param {function(Error)} reject The connection promise rejector.
+ * @param {function(Error)} migrationPromiseRejector The schema migration
+ *        promise rejector.
+ */
+function handleConnectionError(event, error, wasBlocked, upgradeTriggered,
+    reject, migrationPromiseRejector) {
+  if (wasBlocked || upgradeTriggered) {
+    event.preventDefault()
+    return
+  }
+  
+  reject(request.error)
+  migrationPromiseRejector(request.error)
+}
+
+/**
+ * Handles the provided {@code upgradeneeded} event that occurred during
+ * opening a database that was not blocked. The function handles database
+ * schema upgrade, establishes a new connection to the upgraded database and
+ * executes the promise resolution/rejection callbacks.
+ * 
+ * @param {string} databaseName The name of the database to upgrade.
+ * @param {Promise<undefined>} migrationPromise The database schema migration
+ *        promise to pass to the migration listeners.
+ * @param {Event} event The {@code upgradeneeded} event.
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
+ *        sortedSchemaDescriptors The database schema descriptors, sorted in
+ *        ascending order by the schema version number.
+ * @param {function(Database)} resolve Connection promise resolver.
+ * @param {function(Error)} reject Connection promise rejector.
+ * @param {function()} migrationPromiseResolver Schema migration promise
+ *        resolver.
+ * @param {function(Error)} migrationPromiseRejector Schema migration promise
+ *        rejector.
+ */
+function upgradeSchemaAndReconnect(databaseName, migrationPromise, event,
+    sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver,
+    migrationPromiseRejector) {
+  Promise.resolve().then(() => {
+    return upgradeDatabaseSchema(
+      databaseName,
+      migrationPromise,
+      event,
+      sortedSchemaDescriptors
+    )
+  }).then(() => {
+    migrationPromiseResolver()
+    return openConnection(
+      databaseName,
+      sortedSchemaDescriptors
+    )
+  }).then((database) => {
+    resolve(database)
+  }).catch((error) => {
+    reject(error)
+    migrationPromiseRejector(error)
+  })
+}
+
+/**
  * Handles the provided {@code upgradeneeded} event that has occurred during
  * the opening of a database that was not blocked.
  * 
  * The function executes the database migration listeners and executes the
  * database schema migration.
  * 
- * @param {Event} event The {@code upgradeneeded} event.
- * @param {IDBDatabase} database The current connection to the database.
- * @param {IDBTransaction} transaction The {@code versionchange} transaction
- *        used to upgrade the database schema.
+ * @param {string} databaseName The name of the database to upgrade.
  * @param {Promise<undefined>} migrationPromise The database schema migration
  *        promise to pass to the migration listeners.
- * @param {function(Error)} reject
- * @param {function(Error)} migrationPromiseRejector
+ * @param {Event} event The {@code upgradeneeded} event.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
  *        sortedSchemaDescriptors The database schema descriptors, sorted in
  *        ascending order by the schema version number.

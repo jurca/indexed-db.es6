@@ -21,8 +21,7 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         var sortedSchemaDescriptors = schemaDescriptors.slice().sort((function(d1, d2) {
           return d1.version - d2.version;
         }));
-        var requestedVersion = sortedSchemaDescriptors.slice().pop().version;
-        return openConnection(databaseName, requestedVersion, sortedSchemaDescriptors);
+        return openConnection(databaseName, sortedSchemaDescriptors);
       },
       deleteDatabase: function(databaseName) {
         var request = indexedDB.deleteDatabase(databaseName);
@@ -56,11 +55,12 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
     });
   }());
   var $__default = DBFactory;
-  function openConnection(databaseName, version, sortedSchemaDescriptors) {
+  function openConnection(databaseName, sortedSchemaDescriptors) {
+    var version = sortedSchemaDescriptors.slice().pop().version;
     var request = indexedDB.open(databaseName, version);
     return new Promise((function(resolve, reject) {
       var wasBlocked = false;
-      var wasUpgraded = false;
+      var upgradeTriggered = false;
       var migrationPromiseResolver,
           migrationPromiseRejector;
       var migrationPromise = new Promise((function(resolve, reject) {
@@ -75,31 +75,16 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
       });
       request.onupgradeneeded = (function(event) {
         if (!wasBlocked) {
-          wasUpgraded = true;
+          upgradeTriggered = true;
         }
         request.transaction.abort();
         if (wasBlocked) {
           return ;
         }
-        Promise.resolve().then((function() {
-          return upgradeDatabaseSchema(databaseName, migrationPromise, event, sortedSchemaDescriptors);
-        })).then((function() {
-          migrationPromiseResolver();
-          return openConnection(databaseName, version, sortedSchemaDescriptors).then((function(database) {
-            return resolve(database);
-          }));
-        })).catch((function(error) {
-          reject(error);
-          migrationPromiseRejector(error);
-        }));
+        upgradeSchemaAndReconnect(databaseName, migrationPromiseevent, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector);
       });
       request.onerror = (function(event) {
-        if (wasBlocked || wasUpgraded) {
-          event.preventDefault();
-          return ;
-        }
-        reject(request.error);
-        migrationPromiseRejector(request.error);
+        handleConnectionError(event, request.error, wasBlocked, upgradeTriggered, reject, migrationPromiseRejector);
       });
       request.onblocked = (function() {
         wasBlocked = true;
@@ -107,6 +92,27 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         reject(error);
         migrationPromiseRejector(error);
       });
+    }));
+  }
+  function handleConnectionError(event, error, wasBlocked, upgradeTriggered, reject, migrationPromiseRejector) {
+    if (wasBlocked || upgradeTriggered) {
+      event.preventDefault();
+      return ;
+    }
+    reject(request.error);
+    migrationPromiseRejector(request.error);
+  }
+  function upgradeSchemaAndReconnect(databaseName, migrationPromise, event, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector) {
+    Promise.resolve().then((function() {
+      return upgradeDatabaseSchema(databaseName, migrationPromise, event, sortedSchemaDescriptors);
+    })).then((function() {
+      migrationPromiseResolver();
+      return openConnection(databaseName, sortedSchemaDescriptors);
+    })).then((function(database) {
+      resolve(database);
+    })).catch((function(error) {
+      reject(error);
+      migrationPromiseRejector(error);
     }));
   }
   function upgradeDatabaseSchema(databaseName, migrationPromise, event, sortedSchemaDescriptors) {
