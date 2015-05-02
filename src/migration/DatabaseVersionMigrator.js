@@ -103,7 +103,7 @@ export default class DatabaseVersionMigrator {
       })
       
       let keepAlive = new KeepAlive(
-        () => nativeTransaction.objectStore(objectStoreNames[0]).
+        () => nativeTransaction.objectStore(objectStoreNames[0]),
         this[FIELDS.transactionCommitDelay]
       )
       
@@ -113,7 +113,11 @@ export default class DatabaseVersionMigrator {
         keepAlive
       )
       
-      return Promise.resolve(onComplete(transaction, callbackData))
+      try {
+        return Promise.resolve(onComplete(transaction, callbackData))
+      } catch (error) {
+        return Promise.reject(error)
+      }
     }).catch((error) => {
       if (openedDatabase) {
         openedDatabase.close()
@@ -190,7 +194,10 @@ function openConnection(request, onUpgradeReady) {
         return
       }
       
-      onUpgradeReady(request.result, request.transaction)
+      onUpgradeReady(request.result, request.transaction).catch((error) => {
+        reject(error)
+        request.transaction.abort()
+      })
       upgradeExecuted = true
     }
     

@@ -35,12 +35,16 @@ define(["../transaction/KeepAlive", "../transaction/Transaction", "./ObjectStore
             return objectStore.name;
           }));
           var keepAlive = new KeepAlive((function() {
-            return nativeTransaction.objectStore(objectStoreNames[0]).this[FIELDS.transactionCommitDelay];
-          }));
+            return nativeTransaction.objectStore(objectStoreNames[0]);
+          }), $__6[FIELDS.transactionCommitDelay]);
           var transaction = new Transaction(nativeTransaction, (function() {
             return transaction;
           }), keepAlive);
-          return Promise.resolve(onComplete(transaction, callbackData));
+          try {
+            return Promise.resolve(onComplete(transaction, callbackData));
+          } catch (error) {
+            return Promise.reject(error);
+          }
         })).catch((function(error) {
           if (openedDatabase) {
             openedDatabase.close();
@@ -84,7 +88,10 @@ define(["../transaction/KeepAlive", "../transaction/Transaction", "./ObjectStore
           request.transaction.abort();
           return ;
         }
-        onUpgradeReady(request.result, request.transaction);
+        onUpgradeReady(request.result, request.transaction).catch((function(error) {
+          reject(error);
+          request.transaction.abort();
+        }));
         upgradeExecuted = true;
       });
       request.onerror = (function() {
