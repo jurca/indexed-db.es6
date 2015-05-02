@@ -4,7 +4,7 @@ import DatabaseVersionMigrator
 import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
 import IndexSchema from "../../dist/schema/IndexSchema"
 
-fdescribe("DatabaseVersionMigrator", () => {
+describe("DatabaseVersionMigrator", () => {
   
   const DB_NAME = "testing database"
   const COMMIT_DELAY = 50
