@@ -15,58 +15,36 @@ describe("DatabaseMigrator", () => {
     request.onerror = () => fail(request.error)
   })
   
-  function connectForUpgrade(version = 2) {
+  function connect() {
+    let request = indexedDB.open(DB_NAME)
+    
     return new Promise((resolve, reject) => {
-      let request = indexedDB.open(DB_NAME, version)
-      request.onerror = reject
-      request.onblocked = reject
-      request.onupgradeneeded = () => {
-        resolve({
-          database: request.result,
-          transaction: request.transaction,
-          request: request
-        })
-      }
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
     })
   }
   
   it("should do nothing if the db version is the greatest described", () => {
-    let migrator = new DatabaseMigrator({
-      createObjectStore() {
-        return {
-          get() {
-            return {}
-          }
-        }
-      },
-      
-      deleteObjectStore() {}
-    }, null, [
-      new DatabaseSchema(1),
+    let migrator = new DatabaseMigrator(DB_NAME, [
+      new DatabaseSchema(1, []),
       new UpgradedDatabaseSchema(2, [], [])
-    ], 2)
+    ], 2, 50)
     
     migrator.executeMigration()
   })
   
   it("should perform database creation and upgrade", (done) => {
-    connectForUpgrade().then((connection) => {
-      let { database, transaction, request } = connection
-      
-      let migrator = new DatabaseMigrator(database, transaction, [
-        new DatabaseSchema(1,
-          new ObjectStoreSchema("fooBar", null, false)
-        ),
-        new UpgradedDatabaseSchema(2, [], [
-          new ObjectStoreSchema("fooBar2", null, false)
-        ])
-      ], 0)
-      
-      migrator.executeMigration()
-      
-      return new Promise((resolve) => {
-        request.onsuccess = () => resolve(request.result)
-      })
+    let migrator = new DatabaseMigrator(DB_NAME, [
+      new DatabaseSchema(1,
+        new ObjectStoreSchema("fooBar", null, false)
+      ),
+      new UpgradedDatabaseSchema(2, [], [
+        new ObjectStoreSchema("fooBar2", null, false)
+      ])
+    ], 0, 50)
+    
+    migrator.executeMigration().then(() => {
+      return connect()
     }).then((database) => {
       let objectStores = Array.from(database.objectStoreNames)
       expect(objectStores).toEqual(["fooBar2"])
@@ -78,20 +56,14 @@ describe("DatabaseMigrator", () => {
   })
   
   it("should allow data migration", (done) => {
-    connectForUpgrade(1).then((connection) => {
-      let { database, transaction, request } = connection
-      
-      let migrator = new DatabaseMigrator(database, transaction, [
-        new DatabaseSchema(1,
-          new ObjectStoreSchema("fooBar", null, true)
-        )
-      ], 0)
-      
-      migrator.executeMigration()
-      
-      return new Promise((resolve) => {
-        request.onsuccess = () => resolve(request.result)
-      })
+    let migrator = new DatabaseMigrator(DB_NAME, [
+      new DatabaseSchema(1,
+        new ObjectStoreSchema("fooBar", null, true)
+      )
+    ], 0, 50)
+    
+    migrator.executeMigration().then(() => {
+      return connect()
     }).then((database) => {
       let transaction = database.transaction("fooBar", "readwrite")
       let objectStore = transaction.objectStore("fooBar")
@@ -108,17 +80,15 @@ describe("DatabaseMigrator", () => {
                 transaction.oncomplete = () => {
                   database.close()
         
-                  resolve(connectForUpgrade(2))
+                  resolve()
                 }
               }
             }
           }
         }
       })
-    }).then((connection) => {
-      let { database, transaction, request } = connection
-      
-      let migrator = new DatabaseMigrator(database, transaction, [
+    }).then(() => {
+      let migrator = new DatabaseMigrator(DB_NAME, [
         new DatabaseSchema(1,
           new ObjectStoreSchema("fooBar", null, true)
         ),
@@ -160,13 +130,11 @@ describe("DatabaseMigrator", () => {
             })
           }
         )
-      ], 1)
+      ], 1, 50)
       
-      return migrator.executeMigration().then(() => {
-        return new Promise((resolve) => {
-          request.onsuccess = () => resolve(request.result)
-        })
-      })
+      return migrator.executeMigration()
+    }).then(() => {
+      return connect()
     }).then((database) => {
       let transaction = database.transaction("fooBar")
       let objectStore = transaction.objectStore("fooBar")
@@ -200,7 +168,7 @@ describe("DatabaseMigrator", () => {
     }).catch(error => fail(error))
   })
   
-  it("should allow usage of plain objects as schema descriptors", (done) => {
+  fit("should allow usage of plain objects as schema descriptors", (done) => {
     DBFactory.open(DB_NAME, {
       version: 1,
       objectStores: [
