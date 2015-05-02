@@ -120,7 +120,7 @@ describe("DBFactory", () => {
     ).then((database) => {
       database.close()
       
-      expect(migrationDone).toBeFalsy()
+      expect(migrationDone).toBeTruthy()
     }).catch((error) => fail(error))
   })
 })
