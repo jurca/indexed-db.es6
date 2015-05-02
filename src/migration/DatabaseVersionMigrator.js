@@ -114,8 +114,6 @@ export default class DatabaseVersionMigrator {
       )
       
       return Promise.resolve(onComplete(transaction, callbackData))
-    }).then(() => {
-      openedDatabase.close()
     }).catch((error) => {
       if (openedDatabase) {
         openedDatabase.close()
@@ -180,7 +178,7 @@ function openConnection(request, onUpgradeReady) {
       
       if (!upgradeExecuted) {
         reject(new Error("The database was already at version " +
-            database.verion))
+            database.version))
       }
       
       resolve()

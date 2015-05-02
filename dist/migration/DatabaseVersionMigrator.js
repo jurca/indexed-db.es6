@@ -41,8 +41,6 @@ define(["../transaction/KeepAlive", "../transaction/Transaction", "./ObjectStore
             return transaction;
           }), keepAlive);
           return Promise.resolve(onComplete(transaction, callbackData));
-        })).then((function() {
-          openedDatabase.close();
         })).catch((function(error) {
           if (openedDatabase) {
             openedDatabase.close();
@@ -77,7 +75,7 @@ define(["../transaction/KeepAlive", "../transaction/Transaction", "./ObjectStore
         var database = request.result;
         database.close();
         if (!upgradeExecuted) {
-          reject(new Error("The database was already at version " + database.verion));
+          reject(new Error("The database was already at version " + database.version));
         }
         resolve();
       });
