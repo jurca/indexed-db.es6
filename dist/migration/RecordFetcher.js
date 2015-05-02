@@ -52,7 +52,9 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
       for (var i = 0; i < objectStores.length; i++) {
         recordsMap[objectStores[i].objectStore] = fetchedRecords[i];
       }
-      return (recordsMap);
+      return transaction.completionPromise.then((function() {
+        return recordsMap;
+      }));
     }));
   }
   function fetchRecords(objectStore, preprocessor) {

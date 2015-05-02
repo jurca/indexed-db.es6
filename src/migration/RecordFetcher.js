@@ -116,7 +116,7 @@ function fetchAllRecords(database, objectStores) {
       recordsMap[objectStores[i].objectStore] = fetchedRecords[i]
     }
     
-    return(recordsMap)
+    return transaction.completionPromise.then(() => recordsMap)
   })
 }
 
