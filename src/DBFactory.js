@@ -259,7 +259,7 @@ function openConnection(databaseName, sortedSchemaDescriptors) {
         return
       }
       
-      upgradeSchemaAndReconnect(databaseName, migrationPromiseevent,
+      upgradeSchemaAndReconnect(databaseName, migrationPromise, event,
           sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver,
           migrationPromiseRejector)
     }

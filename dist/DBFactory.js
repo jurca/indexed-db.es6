@@ -81,7 +81,7 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         if (wasBlocked) {
           return ;
         }
-        upgradeSchemaAndReconnect(databaseName, migrationPromiseevent, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector);
+        upgradeSchemaAndReconnect(databaseName, migrationPromise, event, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector);
       });
       request.onerror = (function(event) {
         handleConnectionError(event, request.error, wasBlocked, upgradeTriggered, reject, migrationPromiseRejector);
