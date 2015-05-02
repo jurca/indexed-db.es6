@@ -168,7 +168,7 @@ describe("DatabaseMigrator", () => {
     }).catch(error => fail(error))
   })
   
-  fit("should allow usage of plain objects as schema descriptors", (done) => {
+  it("should allow usage of plain objects as schema descriptors", (done) => {
     DBFactory.open(DB_NAME, {
       version: 1,
       objectStores: [
