@@ -301,18 +301,49 @@ The source code is well documented using [JSDoc](http://usejsdoc.org/) docblock
 comments. Go ahead and
 [take a look](https://github.com/jurca/indexed-db.es6/tree/master/src)!
 
+## Browser support
+
+The following browsers are supported (all tests are passing):
+
+- Google Chrome
+- Chromium
+
+The following browsers will be supported (some tests are passing, issues are
+being resolved):
+
+- Firefox
+
+The following browsers are theoretically compatible (each seems to use engine
+of one of the supported browsers), but not tested:
+
+- Opera
+- Seznam.cz Browser
+- Opera Mobile
+- Android Browser (4.4+)
+- Chrome for Android
+- Firefox for Android (after fixing compatibility with Firefox)
+
+The following browsers are not supported at the moment:
+
+- Internet Explorer: Does not support compound keys and key paths and no new
+  versions are expected to be released
+- Safari:
+  - Does not allow records in separate object stores to have the same
+    primary key, the next version should fix this
+  - Requires Apple hardware to run legally
+- iOS Safari: same issues as Safari
+
 ## The current state of this project
 
-The API is fully implemented and the tests are passing in Google Chrome /
-Chromium.
+The tests are passing in Google Chrome / Chromium.
 
-There is however an issue being resolved:
+There is however an issue with the Firefox being resolved:
 
 There appears to be a bug in the Firefox (tested on version 37) which requires
-the IndexedDB client to execute all schema-altering operations synchronously in
-the same event loop the `onupgradeneeded` callback was triggered. A way to work
-around this issue and keep the current data migration features is being
-designed.
+all transaction operations to be requests from the context in which the
+transaction was created or a child context of the context - that is, it is
+impossible to request a new operation on the transaction from a Promise
+callback even if the transaction is still alive.
 
 There are no current plans for additional features (unless a good case for
 adding them is made), but the project accepts bug fixes if new bugs are
