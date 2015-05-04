@@ -11,8 +11,7 @@ import Transaction from "../transaction/Transaction"
 const FIELDS = Object.freeze({
   databaseName: Symbol("databaseName"),
   schemaDescriptors: Symbol("schemaDescriptors"),
-  currentVersion: Symbol("currentVersion"),
-  commitDelay: Symbol("commitDelay")
+  currentVersion: Symbol("currentVersion")
 })
 
 /**
@@ -31,10 +30,8 @@ export default class DatabaseMigrator {
    * @param {number} currentVersion The current version of the database, as a
    *        positive integer, or set to {@code 0} if the database is being
    *        created.
-   * @param {number} commitDelay The delay in milliseconds how long the
-   *        transaction should be kept alive if inactive.
    */
-  constructor(databaseName, schemaDescriptors, currentVersion, commitDelay) {
+  constructor(databaseName, schemaDescriptors, currentVersion) {
     if (!schemaDescriptors.length) {
       throw new Error("The list of schema descriptors cannot be empty")
     }
@@ -77,14 +74,6 @@ export default class DatabaseMigrator {
      * @type {number}
      */
     this[FIELDS.currentVersion] = currentVersion
-    
-    /**
-     * Delay in milliseconds for how long an inactive transction should be
-     * kept alive.
-     * 
-     * @type {number}
-     */
-    this[FIELDS.commitDelay] = commitDelay
 
     Object.freeze(this)
   }
@@ -101,8 +90,7 @@ export default class DatabaseMigrator {
     return migrateDatabase(
       this[FIELDS.databaseName],
       this[FIELDS.schemaDescriptors],
-      this[FIELDS.currentVersion],
-      this[FIELDS.commitDelay]
+      this[FIELDS.currentVersion]
     )
   }
 }
@@ -116,14 +104,11 @@ export default class DatabaseMigrator {
  *        descriptors of the database schemas for various versions, sorted in
  *        ascending order by the version number.
  * @param {number} currentVersion The current version of the database schema.
- * @param {number} commitDelay Delay in milliseconds for how long an inactive
- *        transction should be kept alive.
  * @return {Promise<undefined>} A promise that resolves when the schema is
  *         upgraded to the greatest version specified in the schema
  *         descriptors.
  */
-function migrateDatabase(databaseName, schemaDescriptors, currentVersion,
-    commitDelay) {
+function migrateDatabase(databaseName, schemaDescriptors, currentVersion) {
   let descriptorsToProcess = schemaDescriptors.filter((descriptor) => {
     return descriptor.version > currentVersion
   })
@@ -134,14 +119,12 @@ function migrateDatabase(databaseName, schemaDescriptors, currentVersion,
   
   return migrateDatabaseVersion(
     databaseName,
-    descriptorsToProcess[0],
-    commitDelay
+    descriptorsToProcess[0]
   ).then(() => {
     return migrateDatabase(
       databaseName,
       descriptorsToProcess,
-      descriptorsToProcess[0].version,
-      commitDelay
+      descriptorsToProcess[0].version
     )
   })
 }
@@ -153,18 +136,16 @@ function migrateDatabase(databaseName, schemaDescriptors, currentVersion,
  * @param {string} databaseName The native Indexed DB database being migrated.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema)} descriptor Schema
  *        descriptor of the version to which the database is to be upgraded.
- * @param {number} commitDelay Delay in milliseconds for how long an inactive
- *        transction should be kept alive.
  * @return {Promise<undefined>} A promise that resolves once the database has
  *         been upgraded to the schema described by the provided schema
  *         descriptor.
  */
-function migrateDatabaseVersion(databaseName, descriptor, commitDelay) {
+function migrateDatabaseVersion(databaseName, descriptor) {
   let fetchPromise
   if (descriptor.fetchBefore && descriptor.fetchBefore.length) {
     let fetcher = new RecordFetcher()
     let objectStores = normalizeFetchBeforeObjectStores(descriptor.fetchBefore)
-    fetchPromise = fetcher.fetchRecords(databaseName, commitDelay, objectStores)
+    fetchPromise = fetcher.fetchRecords(databaseName, objectStores)
   } else {
     fetchPromise = Promise.resolve({})
   }
@@ -173,8 +154,7 @@ function migrateDatabaseVersion(databaseName, descriptor, commitDelay) {
     let versionMigrator = new DatabaseVersionMigrator(
       databaseName,
       descriptor.version,
-      descriptor.objectStores,
-      commitDelay
+      descriptor.objectStores
     )
     
     return versionMigrator.executeMigration(

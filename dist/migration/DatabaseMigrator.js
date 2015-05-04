@@ -18,11 +18,10 @@ define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchem
   var FIELDS = Object.freeze({
     databaseName: Symbol("databaseName"),
     schemaDescriptors: Symbol("schemaDescriptors"),
-    currentVersion: Symbol("currentVersion"),
-    commitDelay: Symbol("commitDelay")
+    currentVersion: Symbol("currentVersion")
   });
   var DatabaseMigrator = (function() {
-    function DatabaseMigrator(databaseName, schemaDescriptors, currentVersion, commitDelay) {
+    function DatabaseMigrator(databaseName, schemaDescriptors, currentVersion) {
       if (!schemaDescriptors.length) {
         throw new Error("The list of schema descriptors cannot be empty");
       }
@@ -37,36 +36,35 @@ define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchem
       this[FIELDS.databaseName] = databaseName;
       this[FIELDS.schemaDescriptors] = Object.freeze(sortedSchemasCopy);
       this[FIELDS.currentVersion] = currentVersion;
-      this[FIELDS.commitDelay] = commitDelay;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseMigrator, {executeMigration: function() {
-        return migrateDatabase(this[FIELDS.databaseName], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion], this[FIELDS.commitDelay]);
+        return migrateDatabase(this[FIELDS.databaseName], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion]);
       }}, {});
   }());
   var $__default = DatabaseMigrator;
-  function migrateDatabase(databaseName, schemaDescriptors, currentVersion, commitDelay) {
+  function migrateDatabase(databaseName, schemaDescriptors, currentVersion) {
     var descriptorsToProcess = schemaDescriptors.filter((function(descriptor) {
       return descriptor.version > currentVersion;
     }));
     if (!descriptorsToProcess.length) {
       return Promise.resolve(undefined);
     }
-    return migrateDatabaseVersion(databaseName, descriptorsToProcess[0], commitDelay).then((function() {
-      return migrateDatabase(databaseName, descriptorsToProcess, descriptorsToProcess[0].version, commitDelay);
+    return migrateDatabaseVersion(databaseName, descriptorsToProcess[0]).then((function() {
+      return migrateDatabase(databaseName, descriptorsToProcess, descriptorsToProcess[0].version);
     }));
   }
-  function migrateDatabaseVersion(databaseName, descriptor, commitDelay) {
+  function migrateDatabaseVersion(databaseName, descriptor) {
     var fetchPromise;
     if (descriptor.fetchBefore && descriptor.fetchBefore.length) {
       var fetcher = new RecordFetcher();
       var objectStores = normalizeFetchBeforeObjectStores(descriptor.fetchBefore);
-      fetchPromise = fetcher.fetchRecords(databaseName, commitDelay, objectStores);
+      fetchPromise = fetcher.fetchRecords(databaseName, objectStores);
     } else {
       fetchPromise = Promise.resolve({});
     }
     return fetchPromise.then((function(recordsMap) {
-      var versionMigrator = new DatabaseVersionMigrator(databaseName, descriptor.version, descriptor.objectStores, commitDelay);
+      var versionMigrator = new DatabaseVersionMigrator(databaseName, descriptor.version, descriptor.objectStores);
       return versionMigrator.executeMigration(descriptor.after || ((function() {})), recordsMap);
     }));
   }

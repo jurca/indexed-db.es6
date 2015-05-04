@@ -14,11 +14,6 @@ export default class RecordFetcher {
    * 
    * @param {string} databaseName The name of the database from which the
    *        records should be fetched. The database must exist.
-   * @param {number} transactionCommitDelay How long in milliseconds an
-   *        inactive transaction should be kept alive. This is used to ensure
-   *        that the promise callbacks are executed before the transaction is
-   *        committed, allowing them to schedule subsequent operations within
-   *        the same transaction.
    * @param {{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (*|UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD)}[]}
    *        objectStores Names names of object stores from which all records
    *        should be fetched and a map/filter callback functionexecuted to
@@ -40,16 +35,7 @@ export default class RecordFetcher {
    *         records fetched from the object store, except for the records
    *         marked for skipping or deletion.
    */
-  fetchRecords(databaseName, transactionCommitDelay, objectStores) {
-    if (typeof transactionCommitDelay !== "number") {
-      throw new TypeError("The transaction commit delay must be a positive " +
-          "integer")
-    }
-    if ((transactionCommitDelay <= 0) || isNaN(transactionCommitDelay)) {
-      throw new Error("The transaction commit delay must be a positive " +
-          "integer")
-    }
-    
+  fetchRecords(databaseName, objectStores) {
     if (!objectStores.length) {
       throw new Error("The object stores array cannot be empty")
     }
@@ -64,7 +50,7 @@ export default class RecordFetcher {
     
     return openConnection(request, objectStoreNames).then((nativeDatabase) => {
       openedDatabase = nativeDatabase
-      let database = new Database(nativeDatabase, transactionCommitDelay)
+      let database = new Database(nativeDatabase)
       return fetchAllRecords(database, objectStores).then((records) => {
         database.close()
         return records
@@ -108,8 +94,6 @@ function fetchAllRecords(database, objectStores) {
       descriptor.preprocessor
     )
   })).then((fetchedRecords) => {
-    transaction.commit()
-    
     let recordsMap = {}
     
     for (let i = 0; i < objectStores.length; i++) {

@@ -11,8 +11,7 @@ import {normalizeFilter} from "./utils"
 const FIELDS = Object.freeze({
   objectStore: Symbol("objectStore"),
   indexes: Symbol("indexes"),
-  transactionFactory: Symbol("transactionFactory"),
-  requestMonitor: Symbol("requestMonitor")
+  transactionFactory: Symbol("transactionFactory")
 })
 
 /**
@@ -23,14 +22,12 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * Initializes the read-write object store.
    *
    * @param {IDBObjectStore} storage The native Indexed DB object store.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
    *        is invoked.
    */
-  constructor(storage, requestMonitor, transactionFactory) {
-    super(storage, Cursor, requestMonitor, transactionFactory)
+  constructor(storage, transactionFactory) {
+    super(storage, Cursor, transactionFactory)
 
     /**
      * The native Indexed DB object store used as the storage of records.
@@ -53,14 +50,6 @@ export default class ObjectStore extends ReadOnlyObjectStore {
      * @type {function(): ReadOnlyTransaction}
      */
     this[FIELDS.transactionFactory] = transactionFactory
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
 
     Object.freeze(this)
   }
@@ -79,7 +68,10 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    */
   add(record, key = undefined) {
     let request = this[FIELDS.objectStore].add(record, key)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**
@@ -97,7 +89,10 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    */
   put(record, key = undefined) {
     let request = this[FIELDS.objectStore].put(record, key)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**
@@ -117,7 +112,10 @@ export default class ObjectStore extends ReadOnlyObjectStore {
 
     if (filter instanceof IDBKeyRange) {
       let request = this[FIELDS.objectStore].delete(filter)
-      return this[FIELDS.requestMonitor].monitor(request)
+      return new Promise((resolve, reject) => {
+        request.onsuccess = () => resolve(request.result)
+        request.onerror = () => resolve(request.error)
+      })
     }
 
     return new Promise((resolve, reject) => {
@@ -140,7 +138,10 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    */
   clear() {
     let request = this[FIELDS.objectStore].clear()
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**
@@ -160,7 +161,6 @@ export default class ObjectStore extends ReadOnlyObjectStore {
     let nativeIndex = this[FIELDS.objectStore].index(indexName)
     let index = new Index(
       nativeIndex,
-      this[FIELDS.requestMonitor],
       this[FIELDS.transactionFactory]
     )
 

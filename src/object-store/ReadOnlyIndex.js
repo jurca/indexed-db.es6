@@ -8,8 +8,7 @@ import ReadOnlyCursor from "./ReadOnlyCursor"
  */
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
-  cursorConstructor: Symbol("cursorConstructor"),
-  requestMonitor: Symbol("requestMonitor")
+  cursorConstructor: Symbol("cursorConstructor")
 })
 
 /**
@@ -22,19 +21,17 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * @param {IDBIndex} storage The native Indexed DB index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
    *        is invoked.
    */
-  constructor(storage, cursorConstructor, requestMonitor, transactionFactory) {
+  constructor(storage, cursorConstructor, transactionFactory) {
     let storageFactory = () => {
       let transaction = transactionFactory()
       let objectStore = transaction.getObjectStore(storage.objectStore.name)
       return objectStore.index(storage.name)
     }
-    super(storage, cursorConstructor, requestMonitor, storageFactory)
+    super(storage, cursorConstructor, storageFactory)
 
     /**
      * When {@code true}, and a record's index key path evaluates to an array,
@@ -67,14 +64,6 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
      * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
 
     if (this.constructor === ReadOnlyIndex) {
       Object.freeze(this)
@@ -171,8 +160,11 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
 
-    return this[FIELDS.requestMonitor].monitor(request).then(() => {
-      return new cursorConstructor(request, this[FIELDS.requestMonitor])
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    }).then(() => {
+      return new cursorConstructor(request)
     })
   }
 
@@ -218,8 +210,11 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection)
 
-    return this[FIELDS.requestMonitor].monitor(request).then(() => {
-      return new ReadOnlyCursor(request, this[FIELDS.requestMonitor])
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    }).then(() => {
+      return new ReadOnlyCursor(request)
     })
   }
 }

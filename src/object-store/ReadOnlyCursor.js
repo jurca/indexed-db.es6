@@ -6,8 +6,7 @@ import CursorDirection from "./CursorDirection"
  */
 const FIELDS = Object.freeze({
   request: Symbol("request"),
-  flags: Symbol("flags"),
-  requestMonitor: Symbol("requestMonitor")
+  flags: Symbol("flags")
 })
 
 /**
@@ -21,10 +20,8 @@ export default class ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    */
-  constructor(cursorRequest, requestMonitor) {
+  constructor(cursorRequest) {
     /**
      * The IndexedDB native request used to retrieve the native cursor. The
      * request is resolved, and will be used to retrieve the subsequent
@@ -33,14 +30,6 @@ export default class ReadOnlyCursor {
      * @type {IDBRequest}
      */
     this[FIELDS.request] = cursorRequest
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     *
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
 
     /**
      * Cursor state flags.
@@ -175,8 +164,11 @@ export default class ReadOnlyCursor {
     request.result.advance(stepsCount)
     this[FIELDS.flags].hasAdvanced = true
     
-    return this[FIELDS.requestMonitor].monitor(request).then(() => {
-      return new (this.constructor)(request, this[FIELDS.requestMonitor])
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    }).then(() => {
+      return new (this.constructor)(request)
     })
   }
 
@@ -217,8 +209,11 @@ export default class ReadOnlyCursor {
     request.result.continue(nextKey)
     this[FIELDS.flags].hasAdvanced = true
     
-    return this[FIELDS.requestMonitor].monitor(request).then(() => {
-      return new this.constructor(request, this[FIELDS.requestMonitor])
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    }).then(() => {
+      return new this.constructor(request)
     })
   }
 }

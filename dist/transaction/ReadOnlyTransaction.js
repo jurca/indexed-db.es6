@@ -15,11 +15,10 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
     objectStores: Symbol("objectStores"),
     completeListeners: Symbol("completeListeners"),
     abortListeners: Symbol("abortListeners"),
-    errorListeners: Symbol("errorListeners"),
-    keepAlive: Symbol("keepAlive")
+    errorListeners: Symbol("errorListeners")
   });
   var ReadOnlyTransaction = (function() {
-    function ReadOnlyTransaction(transaction, transactionFactory, keepAlive) {
+    function ReadOnlyTransaction(transaction, transactionFactory) {
       var $__6 = this;
       this[FIELDS.transaction] = transaction;
       this[FIELDS.transactionFactory] = transactionFactory;
@@ -27,7 +26,6 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
       this[FIELDS.completeListeners] = new Set();
       this[FIELDS.abortListeners] = new Set();
       this[FIELDS.errorListeners] = new Set();
-      this[FIELDS.keepAlive] = keepAlive;
       this.completionPromise = new Promise((function(resolve, reject) {
         $__6.addCompleteListener(resolve);
         $__6.addAbortListener((function() {
@@ -67,9 +65,6 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
         this[FIELDS.keepAlive].terminate();
         this[FIELDS.transaction].abort();
       },
-      commit: function() {
-        this[FIELDS.keepAlive].terminate();
-      },
       getObjectStore: function(objectStoreName) {
         var $__6 = this;
         if (this[FIELDS.objectStores].has(objectStoreName)) {
@@ -79,7 +74,7 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
           return $__6[FIELDS.transactionFactory](objectStoreName);
         });
         var idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName);
-        var objectStore = new ReadOnlyObjectStore(idbObjectStore, ReadOnlyCursor, this[FIELDS.keepAlive].requestMonitor, transactionFactory);
+        var objectStore = new ReadOnlyObjectStore(idbObjectStore, ReadOnlyCursor, transactionFactory);
         this[FIELDS.objectStores].set(objectStoreName, objectStore);
         return objectStore;
       }

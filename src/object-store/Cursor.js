@@ -5,8 +5,7 @@ import ReadOnlyCursor from "./ReadOnlyCursor"
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
-  cursor: Symbol("cursor"),
-  requestMonitor: Symbol("requestMonitor")
+  cursor: Symbol("cursor")
 })
 
 /**
@@ -19,11 +18,9 @@ export default class Cursor extends ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    */
-  constructor(cursorRequest, requestMonitor) {
-    super(cursorRequest, requestMonitor)
+  constructor(cursorRequest) {
+    super(cursorRequest)
 
     /**
      * The native cursor.
@@ -31,14 +28,6 @@ export default class Cursor extends ReadOnlyCursor {
      * @type {IDBCursor}
      */
     this[FIELDS.cursor] = cursorRequest.result
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
   }
 
   /**
@@ -54,7 +43,10 @@ export default class Cursor extends ReadOnlyCursor {
    */
   update(record) {
     let request = this[FIELDS.cursor].update(record)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**
@@ -64,6 +56,10 @@ export default class Cursor extends ReadOnlyCursor {
    *         deleted.
    */
   delete() {
-    return this[FIELDS.requestMonitor].monitor(this[FIELDS.cursor].delete())
+    let request = this[FIELDS.cursor].delete()
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 }

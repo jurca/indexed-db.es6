@@ -5,13 +5,11 @@ define(["./CursorDirection"], function($__0) {
   var CursorDirection = $__0.default;
   var FIELDS = Object.freeze({
     request: Symbol("request"),
-    flags: Symbol("flags"),
-    requestMonitor: Symbol("requestMonitor")
+    flags: Symbol("flags")
   });
   var ReadOnlyCursor = (function() {
-    function ReadOnlyCursor(cursorRequest, requestMonitor) {
+    function ReadOnlyCursor(cursorRequest) {
       this[FIELDS.request] = cursorRequest;
-      this[FIELDS.requestMonitor] = requestMonitor;
       this[FIELDS.flags] = {hasAdvanced: false};
       var cursor = cursorRequest.result;
       var direction;
@@ -45,8 +43,15 @@ define(["./CursorDirection"], function($__0) {
         var request = this[FIELDS.request];
         request.result.advance(stepsCount);
         this[FIELDS.flags].hasAdvanced = true;
-        return this[FIELDS.requestMonitor].monitor(request).then((function() {
-          return new ($__2.constructor)(request, $__2[FIELDS.requestMonitor]);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        })).then((function() {
+          return new ($__2.constructor)(request);
         }));
       },
       continue: function() {
@@ -61,8 +66,15 @@ define(["./CursorDirection"], function($__0) {
         var request = this[FIELDS.request];
         request.result.continue(nextKey);
         this[FIELDS.flags].hasAdvanced = true;
-        return this[FIELDS.requestMonitor].monitor(request).then((function() {
-          return new $__2.constructor(request, $__2[FIELDS.requestMonitor]);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        })).then((function() {
+          return new $__2.constructor(request);
         }));
       }
     }, {});

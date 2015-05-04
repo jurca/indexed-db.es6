@@ -8,13 +8,7 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
   var UpgradedDatabaseSchema = $__2.default;
   var RecordFetcher = (function() {
     function RecordFetcher() {}
-    return ($traceurRuntime.createClass)(RecordFetcher, {fetchRecords: function(databaseName, transactionCommitDelay, objectStores) {
-        if (typeof transactionCommitDelay !== "number") {
-          throw new TypeError("The transaction commit delay must be a positive " + "integer");
-        }
-        if ((transactionCommitDelay <= 0) || isNaN(transactionCommitDelay)) {
-          throw new Error("The transaction commit delay must be a positive " + "integer");
-        }
+    return ($traceurRuntime.createClass)(RecordFetcher, {fetchRecords: function(databaseName, objectStores) {
         if (!objectStores.length) {
           throw new Error("The object stores array cannot be empty");
         }
@@ -25,7 +19,7 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
         var openedDatabase;
         return openConnection(request, objectStoreNames).then((function(nativeDatabase) {
           openedDatabase = nativeDatabase;
-          var database = new Database(nativeDatabase, transactionCommitDelay);
+          var database = new Database(nativeDatabase);
           return fetchAllRecords(database, objectStores).then((function(records) {
             database.close();
             return records;
@@ -47,7 +41,6 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
     return Promise.all(objectStores.map((function(descriptor) {
       return fetchRecords(transaction.getObjectStore(descriptor.objectStore), descriptor.preprocessor);
     }))).then((function(fetchedRecords) {
-      transaction.commit();
       var recordsMap = {};
       for (var i = 0; i < objectStores.length; i++) {
         recordsMap[objectStores[i].objectStore] = fetchedRecords[i];

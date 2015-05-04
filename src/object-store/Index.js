@@ -11,19 +11,17 @@ export default class Index extends ReadOnlyIndex {
    * Initializes the read-write index.
    *
    * @param {IDBIndex} storage The native Indexed DB index.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
    *        is invoked.
    */
-  constructor(storage, requestMonitor, transactionFactory) {
+  constructor(storage, transactionFactory) {
     let storageFactory = () => {
       let transaction = transactionFactory()
       let objectStore = transaction.getObjectStore(storage.objectStore.name)
       return objectStore.index(storage.name)
     }
-    super(storage, Cursor, requestMonitor, storageFactory)
+    super(storage, Cursor, storageFactory)
 
     Object.freeze(this)
   }

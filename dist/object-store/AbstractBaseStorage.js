@@ -5,11 +5,10 @@ define(["./CursorDirection"], function($__0) {
   var CursorDirection = $__0.default;
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
-    cursorConstructor: Symbol("cursorConstructor"),
-    requestMonitor: Symbol("requestMonitor")
+    cursorConstructor: Symbol("cursorConstructor")
   });
   var AbstractBaseStorage = (function() {
-    function AbstractBaseStorage(storage, cursorConstructor, requestMonitor) {
+    function AbstractBaseStorage(storage, cursorConstructor) {
       if (this.constructor === AbstractBaseStorage) {
         throw new Error("THe AbstractBaseStorage class is abstract and must " + "be overridden");
       }
@@ -21,7 +20,6 @@ define(["./CursorDirection"], function($__0) {
       this.name = storage.name;
       this[FIELDS.storage] = storage;
       this[FIELDS.cursorConstructor] = cursorConstructor;
-      this[FIELDS.requestMonitor] = requestMonitor;
     }
     return ($traceurRuntime.createClass)(AbstractBaseStorage, {
       get: function(key) {
@@ -33,12 +31,18 @@ define(["./CursorDirection"], function($__0) {
           key = normalizeCompoundObjectKey(this.keyPath, key);
         }
         var request = this[FIELDS.storage].get(key);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       openCursor: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
-        var $__2 = this;
         if (keyRange === null) {
           keyRange = undefined;
         }
@@ -51,8 +55,15 @@ define(["./CursorDirection"], function($__0) {
         }
         var cursorDirection = direction.value.toLowerCase().substring(0, 4);
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return this[FIELDS.requestMonitor].monitor(request).then((function() {
-          return new cursorConstructor(request, $__2[FIELDS.requestMonitor]);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        })).then((function() {
+          return new cursorConstructor(request);
         }));
       }
     }, {});

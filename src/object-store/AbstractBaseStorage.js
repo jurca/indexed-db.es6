@@ -6,8 +6,7 @@ import CursorDirection from "./CursorDirection"
  */
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
-  cursorConstructor: Symbol("cursorConstructor"),
-  requestMonitor: Symbol("requestMonitor")
+  cursorConstructor: Symbol("cursorConstructor")
 })
 
 /**
@@ -25,10 +24,8 @@ export default class AbstractBaseStorage {
    *        store or index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    */
-  constructor(storage, cursorConstructor, requestMonitor) {
+  constructor(storage, cursorConstructor) {
     if (this.constructor === AbstractBaseStorage) {
       throw new Error("THe AbstractBaseStorage class is abstract and must " +
           "be overridden")
@@ -71,14 +68,6 @@ export default class AbstractBaseStorage {
      * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
   }
 
   /**
@@ -113,7 +102,10 @@ export default class AbstractBaseStorage {
     }
 
     let request = this[FIELDS.storage].get(key)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**
@@ -151,8 +143,11 @@ export default class AbstractBaseStorage {
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
     
-    return this[FIELDS.requestMonitor].monitor(request).then(() => {
-      return new cursorConstructor(request, this[FIELDS.requestMonitor])
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    }).then(() => {
+      return new cursorConstructor(request)
     })
   }
 }

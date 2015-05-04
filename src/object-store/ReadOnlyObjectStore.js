@@ -22,18 +22,16 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    * @param {IDBObjectStore} storage The native Indexed DB object store.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    * @param {function(): ReadOnlyTransaction} transactionFactory A function
    *        that creates and returns a new read-only transaction each time it
    *        is invoked.
    */
-  constructor(storage, cursorConstructor, requestMonitor, transactionFactory) {
+  constructor(storage, cursorConstructor, transactionFactory) {
     let storageFactory = () => {
       let transaction = transactionFactory()
       return transaction.getObjectStore(storage.name)
     }
-    super(storage, cursorConstructor, requestMonitor, storageFactory)
+    super(storage, cursorConstructor, storageFactory)
 
     /**
      * When {@code true}, the keys of the newly created records in this object
@@ -82,14 +80,6 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
      * @type {function(new: ReadyOnlyCursor)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
 
     if (this.constructor === ReadOnlyObjectStore) {
       Object.freeze(this)
@@ -114,7 +104,6 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
     let index = new ReadOnlyIndex(
       nativeIndex,
       this[FIELDS.cursorConstructor],
-      this[FIELDS.requestMonitor],
       this[FIELDS.transactionFactory]
     )
 

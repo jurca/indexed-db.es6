@@ -3,23 +3,34 @@ define(["./ReadOnlyCursor"], function($__0) {
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   var ReadOnlyCursor = $__0.default;
-  var FIELDS = Object.freeze({
-    cursor: Symbol("cursor"),
-    requestMonitor: Symbol("requestMonitor")
-  });
+  var FIELDS = Object.freeze({cursor: Symbol("cursor")});
   var Cursor = (function($__super) {
-    function Cursor(cursorRequest, requestMonitor) {
-      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, requestMonitor);
+    function Cursor(cursorRequest) {
+      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest);
       this[FIELDS.cursor] = cursorRequest.result;
-      this[FIELDS.requestMonitor] = requestMonitor;
     }
     return ($traceurRuntime.createClass)(Cursor, {
       update: function(record) {
         var request = this[FIELDS.cursor].update(record);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       delete: function() {
-        return this[FIELDS.requestMonitor].monitor(this[FIELDS.cursor].delete());
+        var request = this[FIELDS.cursor].delete();
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       }
     }, {}, $__super);
   }(ReadOnlyCursor));

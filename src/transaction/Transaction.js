@@ -8,8 +8,7 @@ import ReadOnlyTransaction from "./ReadOnlyTransaction"
 const FIELDS = Object.freeze({
   transaction: Symbol("transaction"),
   transactionFactory: Symbol("transactionFactory"),
-  objectStores: Symbol("objectStores"),
-  keepAlive: Symbol("keepAlive")
+  objectStores: Symbol("objectStores")
 })
 
 /**
@@ -24,11 +23,9 @@ export default class Transaction extends ReadOnlyTransaction {
    *        factory function that creates a new read-only transaction with
    *        access only the to the object store specified by the provided
    *        argument every time the function is invoked.
-   * @param {KeepAlive} keepAlive Utility keeping the transaction alive while
-   *        the promise callbacks are executing.
    */
-  constructor(transaction, transactionFactory, keepAlive) {
-    super(transaction, transactionFactory, keepAlive)
+  constructor(transaction, transactionFactory) {
+    super(transaction, transactionFactory)
 
     /**
      * The native IndexedDB transaction object.
@@ -53,14 +50,6 @@ export default class Transaction extends ReadOnlyTransaction {
      * @type {Map<string, ObjectStore>}
      */
     this[FIELDS.objectStores] = new Map()
-    
-    /**
-     * Utility for keeping the transaction alive while the promise callbacks
-     * are executing.
-     * 
-     * @type {KeepAlive}
-     */
-    this[FIELDS.keepAlive] = keepAlive
 
     Object.freeze(this)
   }
@@ -85,7 +74,6 @@ export default class Transaction extends ReadOnlyTransaction {
     let idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName)
     let objectStore = new ObjectStore(
       idbObjectStore,
-      this[FIELDS.keepAlive].requestMonitor,
       transactionFactory
     )
     this[FIELDS.objectStores].set(objectStoreName, objectStore)

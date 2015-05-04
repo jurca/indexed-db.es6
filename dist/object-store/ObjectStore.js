@@ -18,35 +18,54 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
   var FIELDS = Object.freeze({
     objectStore: Symbol("objectStore"),
     indexes: Symbol("indexes"),
-    transactionFactory: Symbol("transactionFactory"),
-    requestMonitor: Symbol("requestMonitor")
+    transactionFactory: Symbol("transactionFactory")
   });
   var ObjectStore = (function($__super) {
-    function ObjectStore(storage, requestMonitor, transactionFactory) {
-      $traceurRuntime.superConstructor(ObjectStore).call(this, storage, Cursor, requestMonitor, transactionFactory);
+    function ObjectStore(storage, transactionFactory) {
+      $traceurRuntime.superConstructor(ObjectStore).call(this, storage, Cursor, transactionFactory);
       this[FIELDS.objectStore] = storage;
       this[FIELDS.indexes] = new Map();
       this[FIELDS.transactionFactory] = transactionFactory;
-      this[FIELDS.requestMonitor] = requestMonitor;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(ObjectStore, {
       add: function(record) {
         var key = arguments[1];
         var request = this[FIELDS.objectStore].add(record, key);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       put: function(record) {
         var key = arguments[1];
         var request = this[FIELDS.objectStore].put(record, key);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       delete: function(filter) {
         var $__10 = this;
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof IDBKeyRange) {
           var request = this[FIELDS.objectStore].delete(filter);
-          return this[FIELDS.requestMonitor].monitor(request);
+          return new Promise((function(resolve, reject) {
+            request.onsuccess = (function() {
+              return resolve(request.result);
+            });
+            request.onerror = (function() {
+              return resolve(request.error);
+            });
+          }));
         }
         return new Promise((function(resolve, reject) {
           var progressPromise = Promise.resolve(null);
@@ -61,14 +80,21 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
       },
       clear: function() {
         var request = this[FIELDS.objectStore].clear();
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       getIndex: function(indexName) {
         if (this[FIELDS.indexes].has(indexName)) {
           return this[FIELDS.indexes].get(indexName);
         }
         var nativeIndex = this[FIELDS.objectStore].index(indexName);
-        var index = new Index(nativeIndex, this[FIELDS.requestMonitor], this[FIELDS.transactionFactory]);
+        var index = new Index(nativeIndex, this[FIELDS.transactionFactory]);
         this[FIELDS.indexes].set(indexName, index);
         return index;
       },

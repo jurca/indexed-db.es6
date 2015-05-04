@@ -12,8 +12,7 @@ const FIELDS = Object.freeze({
   objectStores: Symbol("objectStores"),
   completeListeners: Symbol("completeListeners"),
   abortListeners: Symbol("abortListeners"),
-  errorListeners: Symbol("errorListeners"),
-  keepAlive: Symbol("keepAlive")
+  errorListeners: Symbol("errorListeners")
 })
 
 /**
@@ -28,10 +27,8 @@ export default class ReadOnlyTransaction {
    *        factory function that creates a new read-only transaction with
    *        access only the to the object store specified by the provided
    *        argument every time the function is invoked.
-   * @param {KeepAlive} keepAlive Utility keeping the transaction alive while
-   *        the promise callbacks are executing.
    */
-  constructor(transaction, transactionFactory, keepAlive) {
+  constructor(transaction, transactionFactory) {
     /**
      * The native IndexedDB transaction object.
      *
@@ -76,14 +73,6 @@ export default class ReadOnlyTransaction {
      * @type {Set<function(Error)>}
      */
     this[FIELDS.errorListeners] = new Set()
-    
-    /**
-     * Utility keeping the transaction alive while the promise callbacks are
-     * executing.
-     * 
-     * @type {KeepAlive}
-     */
-    this[FIELDS.keepAlive] = keepAlive
 
     /**
      * A promise that resolves when the transaction is completed, and rejects
@@ -187,20 +176,6 @@ export default class ReadOnlyTransaction {
     this[FIELDS.keepAlive].terminate()
     this[FIELDS.transaction].abort()
   }
-  
-  /**
-   * Marks this transaction as commit-ready. The transaction will be committed
-   * once the last event loop processing results of pending operations is
-   * finished, unless a new operation is scheduled.
-   * 
-   * Explicit calls to this method are not neccessary, as transactions are
-   * committed automatically if not used for some time.
-   * 
-   * Repeated calls to this method have no effect.
-   */
-  commit() {
-    this[FIELDS.keepAlive].terminate()
-  }
 
   /**
    * Returns the read-only object store of the specified name. The method
@@ -222,7 +197,6 @@ export default class ReadOnlyTransaction {
     let objectStore = new ReadOnlyObjectStore(
       idbObjectStore,
       ReadOnlyCursor,
-      this[FIELDS.keepAlive].requestMonitor,
       transactionFactory
     )
     this[FIELDS.objectStores].set(objectStoreName, objectStore)

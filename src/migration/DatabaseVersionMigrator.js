@@ -1,5 +1,4 @@
 
-import KeepAlive from "../transaction/KeepAlive"
 import Transaction from "../transaction/Transaction"
 import ObjectStoreMigrator from "./ObjectStoreMigrator"
 
@@ -9,8 +8,7 @@ import ObjectStoreMigrator from "./ObjectStoreMigrator"
 const FIELDS = Object.freeze({
   databaseName: Symbol("databaseName"),
   targetVersion: Symbol("targetVersion"),
-  objectStores: Symbol("objectStores"),
-  transactionCommitDelay: Symbol("transactionCommitDelay")
+  objectStores: Symbol("objectStores")
 })
 
 /**
@@ -28,11 +26,8 @@ export default class DatabaseVersionMigrator {
    *        stores representing the schema the database should have after the
    *        migration. Use either {@codelink ObjectStoreSchema} instances or
    *        plain object with compatible structure.
-   * @param {number} transactionCommitDelay The delay in milliseconds before an
-   *        inactive transaction shuold be committed.
    */
-  constructor(databaseName, targetVersion, objectStores,
-      transactionCommitDelay) {
+  constructor(databaseName, targetVersion, objectStores) {
     /**
      * The name of the database to upgrade.
      * 
@@ -54,14 +49,6 @@ export default class DatabaseVersionMigrator {
      * @type {(ObjectStoreSchema[]|Object[])}
      */
     this[FIELDS.objectStores] = objectStores
-    
-    /**
-     * The delay in milliseconds before an inactive transaction shuold be
-     * committed.
-     * 
-     * @type {number}
-     */
-    this[FIELDS.transactionCommitDelay] = transactionCommitDelay
     
     Object.freeze(this)
   }
@@ -102,16 +89,7 @@ export default class DatabaseVersionMigrator {
         return objectStore.name
       })
       
-      let keepAlive = new KeepAlive(
-        () => nativeTransaction.objectStore(objectStoreNames[0]),
-        this[FIELDS.transactionCommitDelay]
-      )
-      
-      let transaction = new Transaction(
-        nativeTransaction,
-        () => transaction,
-        keepAlive
-      )
+      let transaction = new Transaction(nativeTransaction, () => transaction)
       
       try {
         return Promise.resolve(onComplete(transaction, callbackData))

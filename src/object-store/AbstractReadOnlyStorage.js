@@ -12,8 +12,7 @@ import {compileFieldRangeFilter, normalizeFilter, keyRangeToFieldRangeObject}
 const FIELDS = Object.freeze({
   storage: Symbol("storage"),
   unique: Symbol("unique"),
-  storageFactory: Symbol("storageFactory"),
-  requestMonitor: Symbol("requestMonitor")
+  storageFactory: Symbol("storageFactory")
 })
 
 /**
@@ -30,14 +29,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        store or index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
-   * @param {RequestMonitor} requestMonitor The request monitor used to monitor
-   *        the status of pending database operation requests.
    * @param {function(): AbstractReadOnlyStorage} A function that creates a new
    *        read-only transaction and returns a new storage accessor for this
    *        storage each time it is invoked.
    */
-  constructor(storage, cursorConstructor, requestMonitor, storageFactory) {
-    super(storage, cursorConstructor, requestMonitor)
+  constructor(storage, cursorConstructor, storageFactory) {
+    super(storage, cursorConstructor)
 
     if (this.constructor === AbstractReadOnlyStorage) {
       throw new Error("The AbstractReadOnlyStorage class is abstract and " +
@@ -58,14 +55,6 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
      * @type {boolean}
      */
     this[FIELDS.unique] = storage instanceof IDBObjectStore || storage.unique
-    
-    /**
-     * The request monitor used to monitor the status of pending database
-     * operation requests.
-     * 
-     * @type {RequestMonitor}
-     */
-    this[FIELDS.requestMonitor] = requestMonitor
 
     /**
      * A function that creates a new read-only transaction and returns a new
@@ -113,7 +102,10 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
     }
 
     let request = this[FIELDS.storage].count(filter)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**

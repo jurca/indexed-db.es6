@@ -9,16 +9,14 @@ define(["../object-store/ObjectStore", "./ReadOnlyTransaction"], function($__0,$
   var FIELDS = Object.freeze({
     transaction: Symbol("transaction"),
     transactionFactory: Symbol("transactionFactory"),
-    objectStores: Symbol("objectStores"),
-    keepAlive: Symbol("keepAlive")
+    objectStores: Symbol("objectStores")
   });
   var Transaction = (function($__super) {
-    function Transaction(transaction, transactionFactory, keepAlive) {
-      $traceurRuntime.superConstructor(Transaction).call(this, transaction, transactionFactory, keepAlive);
+    function Transaction(transaction, transactionFactory) {
+      $traceurRuntime.superConstructor(Transaction).call(this, transaction, transactionFactory);
       this[FIELDS.transaction] = transaction;
       this[FIELDS.transactionFactory] = transactionFactory;
       this[FIELDS.objectStores] = new Map();
-      this[FIELDS.keepAlive] = keepAlive;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(Transaction, {getObjectStore: function(objectStoreName) {
@@ -30,7 +28,7 @@ define(["../object-store/ObjectStore", "./ReadOnlyTransaction"], function($__0,$
           return $__4[FIELDS.transactionFactory](objectStoreName);
         });
         var idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName);
-        var objectStore = new ObjectStore(idbObjectStore, this[FIELDS.keepAlive].requestMonitor, transactionFactory);
+        var objectStore = new ObjectStore(idbObjectStore, transactionFactory);
         this[FIELDS.objectStores].set(objectStoreName, objectStore);
         return objectStore;
       }}, {}, $__super);

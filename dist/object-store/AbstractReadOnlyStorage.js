@@ -21,18 +21,16 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     unique: Symbol("unique"),
-    storageFactory: Symbol("storageFactory"),
-    requestMonitor: Symbol("requestMonitor")
+    storageFactory: Symbol("storageFactory")
   });
   var AbstractReadOnlyStorage = (function($__super) {
-    function AbstractReadOnlyStorage(storage, cursorConstructor, requestMonitor, storageFactory) {
-      $traceurRuntime.superConstructor(AbstractReadOnlyStorage).call(this, storage, cursorConstructor, requestMonitor);
+    function AbstractReadOnlyStorage(storage, cursorConstructor, storageFactory) {
+      $traceurRuntime.superConstructor(AbstractReadOnlyStorage).call(this, storage, cursorConstructor);
       if (this.constructor === AbstractReadOnlyStorage) {
         throw new Error("The AbstractReadOnlyStorage class is abstract and " + "must be overridden");
       }
       this[FIELDS.storage] = storage;
       this[FIELDS.unique] = storage instanceof IDBObjectStore || storage.unique;
-      this[FIELDS.requestMonitor] = requestMonitor;
       this[FIELDS.storageFactory] = storageFactory;
     }
     return ($traceurRuntime.createClass)(AbstractReadOnlyStorage, {
@@ -48,7 +46,14 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
           return this.forEach(filter, CursorDirection.NEXT, (function() {}));
         }
         var request = this[FIELDS.storage].count(filter);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       forEach: function(filter, direction, callback) {
         var $__10 = this;

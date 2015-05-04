@@ -10,13 +10,13 @@ define(["./ReadOnlyIndex", "./Cursor", "./CursorDirection"], function($__0,$__2,
   var Cursor = $__2.default;
   var CursorDirection = $__4.default;
   var Index = (function($__super) {
-    function Index(storage, requestMonitor, transactionFactory) {
+    function Index(storage, transactionFactory) {
       var storageFactory = (function() {
         var transaction = transactionFactory();
         var objectStore = transaction.getObjectStore(storage.objectStore.name);
         return objectStore.index(storage.name);
       });
-      $traceurRuntime.superConstructor(Index).call(this, storage, Cursor, requestMonitor, storageFactory);
+      $traceurRuntime.superConstructor(Index).call(this, storage, Cursor, storageFactory);
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(Index, {openCursor: function() {
