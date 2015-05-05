@@ -83,7 +83,10 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    */
   getPrimaryKey(key) {
     let request = this[FIELDS.storage].getKey(key)
-    return this[FIELDS.requestMonitor].monitor(request)
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => resolve(request.error)
+    })
   }
 
   /**

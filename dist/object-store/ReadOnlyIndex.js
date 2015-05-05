@@ -32,7 +32,14 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
     return ($traceurRuntime.createClass)(ReadOnlyIndex, {
       getPrimaryKey: function(key) {
         var request = this[FIELDS.storage].getKey(key);
-        return this[FIELDS.requestMonitor].monitor(request);
+        return new Promise((function(resolve, reject) {
+          request.onsuccess = (function() {
+            return resolve(request.result);
+          });
+          request.onerror = (function() {
+            return resolve(request.error);
+          });
+        }));
       },
       getAllPrimaryKeys: function() {
         var $__6 = this;

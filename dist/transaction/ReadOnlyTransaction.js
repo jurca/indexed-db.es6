@@ -1,14 +1,11 @@
-define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"], function($__0,$__2,$__4) {
+define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"], function($__0,$__2) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
-  if (!$__4 || !$__4.__esModule)
-    $__4 = {default: $__4};
-  var KeepAlive = $__0.default;
-  var ReadOnlyObjectStore = $__2.default;
-  var ReadOnlyCursor = $__4.default;
+  var ReadOnlyObjectStore = $__0.default;
+  var ReadOnlyCursor = $__2.default;
   var FIELDS = Object.freeze({
     transaction: Symbol("transaction"),
     transactionFactory: Symbol("transactionFactory"),
@@ -19,7 +16,7 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
   });
   var ReadOnlyTransaction = (function() {
     function ReadOnlyTransaction(transaction, transactionFactory) {
-      var $__6 = this;
+      var $__4 = this;
       this[FIELDS.transaction] = transaction;
       this[FIELDS.transactionFactory] = transactionFactory;
       this[FIELDS.objectStores] = new Map();
@@ -27,23 +24,23 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
       this[FIELDS.abortListeners] = new Set();
       this[FIELDS.errorListeners] = new Set();
       this.completionPromise = new Promise((function(resolve, reject) {
-        $__6.addCompleteListener(resolve);
-        $__6.addAbortListener((function() {
+        $__4.addCompleteListener(resolve);
+        $__4.addAbortListener((function() {
           reject(new Error("The transaction has been aborted"));
         }));
-        $__6.addErrorListener(reject);
+        $__4.addErrorListener(reject);
       }));
       transaction.oncomplete = (function() {
-        executeEventListeners($__6[FIELDS.completeListeners]);
+        executeEventListeners($__4[FIELDS.completeListeners]);
       });
       transaction.onabort = (function() {
-        executeEventListeners($__6[FIELDS.abortListeners]);
+        executeEventListeners($__4[FIELDS.abortListeners]);
       });
       transaction.onerror = (function() {
-        executeEventListeners($__6[FIELDS.errorListeners], transaction.error);
+        executeEventListeners($__4[FIELDS.errorListeners], transaction.error);
       });
       this.addErrorListener((function(error) {
-        if ($__6[FIELDS.errorListeners].size < 2) {
+        if ($__4[FIELDS.errorListeners].size < 2) {
           console.error("Encountered an uncaptured transaction-level error " + "while no error listeners were registered", error);
         }
       }));
@@ -62,16 +59,15 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
         this[FIELDS.errorListeners].add(listener);
       },
       abort: function() {
-        this[FIELDS.keepAlive].terminate();
         this[FIELDS.transaction].abort();
       },
       getObjectStore: function(objectStoreName) {
-        var $__6 = this;
+        var $__4 = this;
         if (this[FIELDS.objectStores].has(objectStoreName)) {
           return this[FIELDS.objectStores].get(objectStoreName);
         }
         var transactionFactory = (function() {
-          return $__6[FIELDS.transactionFactory](objectStoreName);
+          return $__4[FIELDS.transactionFactory](objectStoreName);
         });
         var idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName);
         var objectStore = new ReadOnlyObjectStore(idbObjectStore, ReadOnlyCursor, transactionFactory);
@@ -83,8 +79,8 @@ define(["./KeepAlive", "../object-store/ReadOnlyObjectStore", "../object-store/R
   var $__default = ReadOnlyTransaction;
   function executeEventListeners(listeners) {
     for (var parameters = [],
-        $__8 = 1; $__8 < arguments.length; $__8++)
-      parameters[$__8 - 1] = arguments[$__8];
+        $__6 = 1; $__6 < arguments.length; $__6++)
+      parameters[$__6 - 1] = arguments[$__6];
     listeners.forEach((function(listener) {
       try {
         listener.apply(null, parameters);

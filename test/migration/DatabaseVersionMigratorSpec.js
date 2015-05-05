@@ -7,7 +7,6 @@ import IndexSchema from "../../dist/schema/IndexSchema"
 describe("DatabaseVersionMigrator", () => {
   
   const DB_NAME = "testing database"
-  const COMMIT_DELAY = 50
   const SCHEMA_V1 = [
     new ObjectStoreSchema("fooBar", "", true,
       new IndexSchema("someIndex", "keyed", true)
@@ -176,8 +175,7 @@ describe("DatabaseVersionMigrator", () => {
     let migrator = new DatabaseVersionMigrator(
       DB_NAME,
       2,
-      SCHEMA_V2,
-      COMMIT_DELAY
+      SCHEMA_V2
     )
     
     return migrator.executeMigration(callback, data)
@@ -187,8 +185,7 @@ describe("DatabaseVersionMigrator", () => {
     let migrator = new DatabaseVersionMigrator(
       DB_NAME,
       1,
-      SCHEMA_V1,
-      COMMIT_DELAY
+      SCHEMA_V1
     )
     
     return migrator.executeMigration(() => {}, {})

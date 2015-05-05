@@ -28,7 +28,7 @@ describe("DatabaseMigrator", () => {
     let migrator = new DatabaseMigrator(DB_NAME, [
       new DatabaseSchema(1, []),
       new UpgradedDatabaseSchema(2, [], [])
-    ], 2, 50)
+    ], 2)
     
     migrator.executeMigration()
   })
@@ -41,7 +41,7 @@ describe("DatabaseMigrator", () => {
       new UpgradedDatabaseSchema(2, [], [
         new ObjectStoreSchema("fooBar2", null, false)
       ])
-    ], 0, 50)
+    ], 0)
     
     migrator.executeMigration().then(() => {
       return connect()
@@ -60,7 +60,7 @@ describe("DatabaseMigrator", () => {
       new DatabaseSchema(1,
         new ObjectStoreSchema("fooBar", null, true)
       )
-    ], 0, 50)
+    ], 0)
     
     migrator.executeMigration().then(() => {
       return connect()
@@ -130,7 +130,7 @@ describe("DatabaseMigrator", () => {
             })
           }
         )
-      ], 1, 50)
+      ], 1)
       
       return migrator.executeMigration()
     }).then(() => {

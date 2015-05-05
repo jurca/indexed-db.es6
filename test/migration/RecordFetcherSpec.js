@@ -7,7 +7,6 @@ describe("RecordFetcher", () => {
   const DB_NAME = "testing database"
   const STORE1 = "first store"
   const STORE2 = "second store"
-  const COMMIT_DELAY = 50
   
   let fetcher = new RecordFetcher()
   
@@ -52,7 +51,7 @@ describe("RecordFetcher", () => {
   })
   
   it("should fetch the records", (done) => {
-    fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+    fetcher.fetchRecords(DB_NAME, [
       {
         objectStore: STORE1,
         preprocessor: (record => record)
@@ -81,7 +80,7 @@ describe("RecordFetcher", () => {
   })
   
   it("should allow preprocessing records", (done) => {
-    fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+    fetcher.fetchRecords(DB_NAME, [
       {
         objectStore: STORE1,
         preprocessor: ((record, primaryKey) => {
@@ -103,7 +102,7 @@ describe("RecordFetcher", () => {
   })
   
   it("should allow skipping records", (done) => {
-    fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+    fetcher.fetchRecords(DB_NAME, [
       {
         objectStore: STORE1,
         preprocessor: ((record, primaryKey) => {
@@ -122,7 +121,7 @@ describe("RecordFetcher", () => {
         ]
       })
       
-      return fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+      return fetcher.fetchRecords(DB_NAME, [
         {
           objectStore: STORE1,
           preprocessor: ((record, primaryKey) => {
@@ -160,7 +159,7 @@ describe("RecordFetcher", () => {
   })
   
   it("should allow deleting records", (done) => {
-    fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+    fetcher.fetchRecords(DB_NAME, [
       {
         objectStore: STORE1,
         preprocessor: ((record, primaryKey) => {
@@ -186,7 +185,7 @@ describe("RecordFetcher", () => {
         ]
       })
       
-      return fetcher.fetchRecords(DB_NAME, COMMIT_DELAY, [
+      return fetcher.fetchRecords(DB_NAME, [
         {
           objectStore: STORE1,
           preprocessor: (record => record)
