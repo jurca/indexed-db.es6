@@ -1,5 +1,4 @@
 
-import KeepAlive from "./KeepAlive"
 import ReadOnlyObjectStore from "../object-store/ReadOnlyObjectStore"
 import ReadOnlyCursor from "../object-store/ReadOnlyCursor"
 
@@ -173,7 +172,6 @@ export default class ReadOnlyTransaction {
    * the abort listeners registered on this transaction.
    */
   abort() {
-    this[FIELDS.keepAlive].terminate()
     this[FIELDS.transaction].abort()
   }
 
