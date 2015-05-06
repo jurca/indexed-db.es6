@@ -396,7 +396,7 @@ describe("PromiseSync", () => {
   
   function connect() {
     return new PromiseSync((resolve, reject) => {
-      let request = indexedDB.open("testing datbase")
+      let request = indexedDB.open("testing database")
       
       request.onsuccess = () => resolve(request.result)
       
