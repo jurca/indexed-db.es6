@@ -1,4 +1,5 @@
 
+import PromiseSync from "../../dist/PromiseSync"
 import ObjectStoreMigrator from "../../dist/migration/ObjectStoreMigrator"
 import IndexSchema from "../../dist/schema/IndexSchema"
 import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
@@ -14,7 +15,7 @@ describe("ObjectStoreMigrator", () => {
   })
   
   function connectForUpgrade() {
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       let request = indexedDB.open(DB_NAME, 1)
       request.onerror = reject
       request.onblocked = reject
@@ -40,7 +41,7 @@ describe("ObjectStoreMigrator", () => {
       
       migrator.executeMigration()
       
-      return new Promise((resolve) => {
+      return new PromiseSync((resolve) => {
         request.onsuccess = () => resolve(request.result)
       })
     }).then((database) => {
@@ -83,7 +84,7 @@ describe("ObjectStoreMigrator", () => {
       
       migrator.executeMigration()
       
-      return new Promise((resolve) => {
+      return new PromiseSync((resolve) => {
         request.onsuccess = () => resolve(request.result)
       })
     }).then((database) => {
