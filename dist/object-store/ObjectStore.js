@@ -1,4 +1,4 @@
-define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./utils"], function($__0,$__2,$__4,$__6,$__8) {
+define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./utils"], function($__0,$__2,$__4,$__6,$__8,$__10) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -10,11 +10,14 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
     $__6 = {default: $__6};
   if (!$__8 || !$__8.__esModule)
     $__8 = {default: $__8};
-  var ReadOnlyObjectStore = $__0.default;
-  var Cursor = $__2.default;
-  var CursorDirection = $__4.default;
-  var Index = $__6.default;
-  var normalizeFilter = $__8.normalizeFilter;
+  if (!$__10 || !$__10.__esModule)
+    $__10 = {default: $__10};
+  var PromiseSync = $__0.default;
+  var ReadOnlyObjectStore = $__2.default;
+  var Cursor = $__4.default;
+  var CursorDirection = $__6.default;
+  var Index = $__8.default;
+  var normalizeFilter = $__10.normalizeFilter;
   var FIELDS = Object.freeze({
     objectStore: Symbol("objectStore"),
     indexes: Symbol("indexes"),
@@ -32,62 +35,34 @@ define(["./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./
       add: function(record) {
         var key = arguments[1];
         var request = this[FIELDS.objectStore].add(record, key);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       put: function(record) {
         var key = arguments[1];
         var request = this[FIELDS.objectStore].put(record, key);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       delete: function(filter) {
-        var $__10 = this;
+        var $__12 = this;
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof IDBKeyRange) {
           var request = this[FIELDS.objectStore].delete(filter);
-          return new Promise((function(resolve, reject) {
-            request.onsuccess = (function() {
-              return resolve(request.result);
-            });
-            request.onerror = (function() {
-              return resolve(request.error);
-            });
-          }));
+          return PromiseSync.resolve(request);
         }
-        return new Promise((function(resolve, reject) {
+        return new PromiseSync((function(resolve, reject) {
           var progressPromise = Promise.resolve(null);
-          $__10.forEach(filter, CursorDirection.NEXT, (function(record, primaryKey) {
+          $__12.forEach(filter, CursorDirection.NEXT, (function(record, primaryKey) {
             progressPromise = progressPromise.then((function() {
-              return $__10.delete(primaryKey);
+              return $__12.delete(primaryKey);
             }), reject);
           })).then((function() {
-            return resolve();
+            return resolve(progressPromise);
           }));
         }));
       },
       clear: function() {
         var request = this[FIELDS.objectStore].clear();
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       getIndex: function(indexName) {
         if (this[FIELDS.indexes].has(indexName)) {

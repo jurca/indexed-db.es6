@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import AbstractBaseStorage from "./AbstractBaseStorage"
 import CursorDirection from "./CursorDirection"
 import KeyRange from "./KeyRange"
@@ -75,7 +76,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        argument will be set to the primary key of the record, and the
    *        third argument will be set to the key referencing the record (the
    *        primary key if traversing an object store).
-   * @return {Promise<boolean>} A promise that resolves to {@code true} if
+   * @return {PromiseSync<boolean>} A promise that resolves to {@code true} if
    *         there is a record matching the provided filter.
    */
   exists(filter) {
@@ -91,8 +92,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        argument will be set to the primary key of the record, and the
    *        third argument will be set to the key referencing the record (the
    *        primary key if traversing an object store).
-   * @return {Promise<number>} A promise that resolves to the number of records
-   *         satisfying the filter.
+   * @return {PromiseSync<number>} A promise that resolves to the number of
+   *         records satisfying the filter.
    */
   count(filter = undefined) {
     filter = normalizeFilter(filter, this.keyPath)
@@ -102,10 +103,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
     }
 
     let request = this[FIELDS.storage].count(filter)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -130,8 +128,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        argument will be set to the primary key of the record, and the
    *        third argument will be set to the key referencing the record (the
    *        primary key if traversing an object store).
-   * @return {Promise<number>} A promise that resolves to the number of records
-   *         satisfying the filter.
+   * @return {PromiseSync<number>} A promise that resolves to the number of
+   *         records satisfying the filter.
    */
   forEach(filter, direction, callback) {
     filter = normalizeFilter(filter, this.keyPath)
@@ -145,7 +143,7 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
     }
 
     let count = 0
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       this.openCursor(keyRange, direction).
         then(iterate).
         catch(reject)
@@ -183,11 +181,11 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        or strings {@code "NEXT"} and {@code "PREVIOUS"}. The letter case
    *        used in the strings does not matter. Defaults to
    *        {@code CursorDirection.NEXT}.
-   * @return {Promise<Array<*>>} A promise that resolves to an array of all
+   * @return {PromiseSync<Array<*>>} A promise that resolves to an array of all
    *         records matching the filter, listed in the specified order.
    */
   getAll(filter = undefined, direction = CursorDirection.NEXT) {
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       let records = []
 
       this.forEach(filter, direction, (record) => {
@@ -297,6 +295,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
  * @param {function(): AbstractReadOnlyStorage} storageFactory A function that
  *        creates a new read-only transaction and returns this storage accessor
  *        each time it is invoked.
+ * @return {Promise<RecordList<*>>} A promise that resolves to a record list of
+ *         the fetched records matching the filter.
  */
 function list(storage, keyRange, filter, direction, unique, pageSize,
     storageFactory) {

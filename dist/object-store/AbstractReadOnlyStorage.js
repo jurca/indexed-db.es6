@@ -1,4 +1,4 @@
-define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordList", "./utils"], function($__0,$__2,$__4,$__6,$__8) {
+define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordList", "./utils"], function($__0,$__2,$__4,$__6,$__8,$__10) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -10,14 +10,17 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
     $__6 = {default: $__6};
   if (!$__8 || !$__8.__esModule)
     $__8 = {default: $__8};
-  var AbstractBaseStorage = $__0.default;
-  var CursorDirection = $__2.default;
-  var KeyRange = $__4.default;
-  var RecordList = $__6.default;
-  var $__9 = $__8,
-      compileFieldRangeFilter = $__9.compileFieldRangeFilter,
-      normalizeFilter = $__9.normalizeFilter,
-      keyRangeToFieldRangeObject = $__9.keyRangeToFieldRangeObject;
+  if (!$__10 || !$__10.__esModule)
+    $__10 = {default: $__10};
+  var PromiseSync = $__0.default;
+  var AbstractBaseStorage = $__2.default;
+  var CursorDirection = $__4.default;
+  var KeyRange = $__6.default;
+  var RecordList = $__8.default;
+  var $__11 = $__10,
+      compileFieldRangeFilter = $__11.compileFieldRangeFilter,
+      normalizeFilter = $__11.normalizeFilter,
+      keyRangeToFieldRangeObject = $__11.keyRangeToFieldRangeObject;
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     unique: Symbol("unique"),
@@ -46,17 +49,10 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
           return this.forEach(filter, CursorDirection.NEXT, (function() {}));
         }
         var request = this[FIELDS.storage].count(filter);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       forEach: function(filter, direction, callback) {
-        var $__10 = this;
+        var $__12 = this;
         filter = normalizeFilter(filter, this.keyPath);
         var keyRange;
         if (filter instanceof Function) {
@@ -66,8 +62,8 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
           filter = null;
         }
         var count = 0;
-        return new Promise((function(resolve, reject) {
-          $__10.openCursor(keyRange, direction).then(iterate).catch(reject);
+        return new PromiseSync((function(resolve, reject) {
+          $__12.openCursor(keyRange, direction).then(iterate).catch(reject);
           function iterate(cursor) {
             if (cursor.done) {
               resolve(count);
@@ -84,10 +80,10 @@ define(["./AbstractBaseStorage", "./CursorDirection", "./KeyRange", "./RecordLis
       getAll: function() {
         var filter = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
-        var $__10 = this;
-        return new Promise((function(resolve, reject) {
+        var $__12 = this;
+        return new PromiseSync((function(resolve, reject) {
           var records = [];
-          $__10.forEach(filter, direction, (function(record) {
+          $__12.forEach(filter, direction, (function(record) {
             records.push(record);
           })).then((function() {
             return resolve(records);

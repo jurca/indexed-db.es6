@@ -1,8 +1,11 @@
-define(["./ReadOnlyCursor"], function($__0) {
+define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
-  var ReadOnlyCursor = $__0.default;
+  if (!$__2 || !$__2.__esModule)
+    $__2 = {default: $__2};
+  var PromiseSync = $__0.default;
+  var ReadOnlyCursor = $__2.default;
   var FIELDS = Object.freeze({cursor: Symbol("cursor")});
   var Cursor = (function($__super) {
     function Cursor(cursorRequest) {
@@ -12,25 +15,11 @@ define(["./ReadOnlyCursor"], function($__0) {
     return ($traceurRuntime.createClass)(Cursor, {
       update: function(record) {
         var request = this[FIELDS.cursor].update(record);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       delete: function() {
         var request = this[FIELDS.cursor].delete();
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       }
     }, {}, $__super);
   }(ReadOnlyCursor));

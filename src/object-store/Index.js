@@ -42,8 +42,8 @@ export default class Index extends ReadOnlyIndex {
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value. Defaults to
    *        {@code false}.
-   * @return {Promise<Cursor>} A promise that resolves to a cursor pointing to
-   *         the first matched record.
+   * @return {PromiseSync<Cursor>} A promise that resolves to a cursor pointing
+   *         to the first matched record.
    */
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT,
       unique = false) {

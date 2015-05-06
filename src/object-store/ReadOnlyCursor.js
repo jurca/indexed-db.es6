@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import CursorDirection from "./CursorDirection"
 
 /**
@@ -145,7 +146,7 @@ export default class ReadOnlyCursor {
    * @param {number=} stepsCount The number or records the cursor should
    *        advance, {@code 1} points to the immediate next record in the
    *        sequence of records the cursor traverses.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
+   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the next record.
    * @throw {Error} Thrown if the cursor is done traversing the record sequence
    *        or has already been used to retrieve the next record.
@@ -164,10 +165,7 @@ export default class ReadOnlyCursor {
     request.result.advance(stepsCount)
     this[FIELDS.flags].hasAdvanced = true
     
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    }).then(() => {
+    return PromiseSync.resolve(request).then(() => {
       return new (this.constructor)(request)
     })
   }
@@ -191,7 +189,7 @@ export default class ReadOnlyCursor {
    *        which the cursor should iterate. When set to {@code undefined}, the
    *        cursor will advance to the next record. Defaults to
    *        {@code undefined}.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
+   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the next record.
    * @throw {Error} Thrown if the cursor is done traversing the record sequence
    *        or has already been used to retrieve the next record.
@@ -209,10 +207,7 @@ export default class ReadOnlyCursor {
     request.result.continue(nextKey)
     this[FIELDS.flags].hasAdvanced = true
     
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    }).then(() => {
+    return PromiseSync.resolve(request).then(() => {
       return new this.constructor(request)
     })
   }

@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import ReadOnlyObjectStore from "./ReadOnlyObjectStore"
 import Cursor from "./Cursor"
 import CursorDirection from "./CursorDirection"
@@ -64,14 +65,11 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
    *        record. This parameter must be specified only if this object store
    *        uses out-of-line keys and does not use a key generator.
-   * @return {Promise<(number|string|Date|Array)>}
+   * @return {PromiseSync<(number|string|Date|Array)>}
    */
   add(record, key = undefined) {
     let request = this[FIELDS.objectStore].add(record, key)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -84,15 +82,12 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
    *        record. This parameter must be specified only if this object store
    *        uses out-of-line keys.
-   * @return {Promise<(number|string|Date|Array)>} A promise that resolves to
+   * @return {PromiseSync<(number|string|Date|Array)>} A promise that resolves to
    *         the record key when the operation is successfuly queued.
    */
   put(record, key = undefined) {
     let request = this[FIELDS.objectStore].put(record, key)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -104,7 +99,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    *        record, the second argument will be set to the primary key of the
    *        record, and the third argument will be set to the key referencing
    *        the record (the primary key if traversing an object store).
-   * @return {Promise<undefined>} A promise that resolves when all matching
+   * @return {PromiseSync<undefined>} A promise that resolves when all matching
    *         records have been deleted.
    */
   delete(filter) {
@@ -112,13 +107,10 @@ export default class ObjectStore extends ReadOnlyObjectStore {
 
     if (filter instanceof IDBKeyRange) {
       let request = this[FIELDS.objectStore].delete(filter)
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => resolve(request.result)
-        request.onerror = () => resolve(request.error)
-      })
+      return PromiseSync.resolve(request)
     }
 
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       let progressPromise = Promise.resolve(null)
 
       this.forEach(filter, CursorDirection.NEXT, (record, primaryKey) => {
@@ -126,22 +118,19 @@ export default class ObjectStore extends ReadOnlyObjectStore {
           () => this.delete(primaryKey),
           reject
         )
-      }).then(() => resolve())
+      }).then(() => resolve(progressPromise))
     })
   }
 
   /**
    * Deletes all records in this object store.
    *
-   * @return {Promise<undefined>} A promise that resolves when all records have
+   * @return {PromiseSync<undefined>} A promise that resolves when all records have
    *         been deleted.
    */
   clear() {
     let request = this[FIELDS.objectStore].clear()
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -182,8 +171,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
    *        {@code "PREVIOUS"}. The letter case used in the strings does not
    *        matter. Defaults to {@code CursorDirection.NEXT}.
-   * @return {Promise<Cursor>} A promise that resolves to a cursor pointing to
-   *         the first matched record.
+   * @return {PromiseSync<Cursor>} A promise that resolves to a cursor pointing
+   *         to the first matched record.
    */
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
     return super.openCursor(keyRange, direction)

@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import ReadOnlyCursor from "./ReadOnlyCursor"
 
 /**
@@ -43,10 +44,7 @@ export default class Cursor extends ReadOnlyCursor {
    */
   update(record) {
     let request = this[FIELDS.cursor].update(record)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -57,9 +55,6 @@ export default class Cursor extends ReadOnlyCursor {
    */
   delete() {
     let request = this[FIELDS.cursor].delete()
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 }

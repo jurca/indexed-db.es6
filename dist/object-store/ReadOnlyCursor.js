@@ -1,8 +1,11 @@
-define(["./CursorDirection"], function($__0) {
+define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
-  var CursorDirection = $__0.default;
+  if (!$__2 || !$__2.__esModule)
+    $__2 = {default: $__2};
+  var PromiseSync = $__0.default;
+  var CursorDirection = $__2.default;
   var FIELDS = Object.freeze({
     request: Symbol("request"),
     flags: Symbol("flags")
@@ -33,7 +36,7 @@ define(["./CursorDirection"], function($__0) {
     return ($traceurRuntime.createClass)(ReadOnlyCursor, {
       advance: function() {
         var stepsCount = arguments[0] !== (void 0) ? arguments[0] : 1;
-        var $__2 = this;
+        var $__4 = this;
         if (this[FIELDS.flags].hasAdvanced) {
           throw new Error("This cursor instance has already advanced to another " + "record, use the new returned cursor");
         }
@@ -43,20 +46,13 @@ define(["./CursorDirection"], function($__0) {
         var request = this[FIELDS.request];
         request.result.advance(stepsCount);
         this[FIELDS.flags].hasAdvanced = true;
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        })).then((function() {
-          return new ($__2.constructor)(request);
+        return PromiseSync.resolve(request).then((function() {
+          return new ($__4.constructor)(request);
         }));
       },
       continue: function() {
         var nextKey = arguments[0];
-        var $__2 = this;
+        var $__4 = this;
         if (this[FIELDS.flags].hasAdvanced) {
           throw new Error("This cursor instance");
         }
@@ -66,15 +62,8 @@ define(["./CursorDirection"], function($__0) {
         var request = this[FIELDS.request];
         request.result.continue(nextKey);
         this[FIELDS.flags].hasAdvanced = true;
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        })).then((function() {
-          return new $__2.constructor(request);
+        return PromiseSync.resolve(request).then((function() {
+          return new $__4.constructor(request);
         }));
       }
     }, {});

@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage"
 import CursorDirection from "./CursorDirection"
 import ReadOnlyCursor from "./ReadOnlyCursor"
@@ -76,32 +77,29 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    *
    * @param {(number|string|Date|Array|IDBKeyRange)} key The index key or key
    *        range for which a record primary key should be retrieved.
-   * @return {Promise<(undefined|number|string|Date|Array)>} A promise that
+   * @return {PromiseSync<(undefined|number|string|Date|Array)>} A promise that
    *         resolves to the primary key of the first record matching the
    *         specified index key or key range. The promise resolves to
    *         {@code undefined} if no record is found.
    */
   getPrimaryKey(key) {
     let request = this[FIELDS.storage].getKey(key)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
    * Traverses the keys in this index in the ascending order and resolves into
    * the primary keys of all traversed records.
    *
-   * @return {Promise<(number|string|Date|Array)[]>} A promise that resolves to
-   *         a list of all record primary keys obtained by getting the primary
-   *         of records traversed by traversing the key of this index in the
-   *         ascending order.
+   * @return {PromiseSync<(number|string|Date|Array)[]>} A promise that
+   *         resolves to a list of all record primary keys obtained by getting
+   *         the primary of records traversed by traversing the key of this
+   *         index in the ascending order.
    */
   getAllPrimaryKeys() {
     let primaryKeys = [];
 
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       this.openKeyCursor().
           then(iterate).
           catch(reject)
@@ -137,7 +135,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value. Defaults to
    *        {@code false}.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
+   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the first matched record.
    */
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT,
@@ -163,10 +161,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    }).then(() => {
+    return PromiseSync.resolve(request).then(() => {
       return new cursorConstructor(request)
     })
   }
@@ -189,7 +184,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value. Defaults to
    *        {@code false}.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
+   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the first matched record.
    */
   openKeyCursor(keyRange = undefined, direction = CursorDirection.NEXT,
@@ -213,10 +208,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     let request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection)
 
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    }).then(() => {
+    return PromiseSync.resolve(request).then(() => {
       return new ReadOnlyCursor(request)
     })
   }

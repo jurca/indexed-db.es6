@@ -1,4 +1,4 @@
-define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], function($__0,$__2,$__4) {
+define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], function($__0,$__2,$__4,$__6) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -6,9 +6,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
     $__2 = {default: $__2};
   if (!$__4 || !$__4.__esModule)
     $__4 = {default: $__4};
-  var AbstractReadOnlyStorage = $__0.default;
-  var CursorDirection = $__2.default;
-  var ReadOnlyCursor = $__4.default;
+  if (!$__6 || !$__6.__esModule)
+    $__6 = {default: $__6};
+  var PromiseSync = $__0.default;
+  var AbstractReadOnlyStorage = $__2.default;
+  var CursorDirection = $__4.default;
+  var ReadOnlyCursor = $__6.default;
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     cursorConstructor: Symbol("cursorConstructor")
@@ -32,20 +35,13 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
     return ($traceurRuntime.createClass)(ReadOnlyIndex, {
       getPrimaryKey: function(key) {
         var request = this[FIELDS.storage].getKey(key);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        }));
+        return PromiseSync.resolve(request);
       },
       getAllPrimaryKeys: function() {
-        var $__6 = this;
+        var $__8 = this;
         var primaryKeys = [];
-        return new Promise((function(resolve, reject) {
-          $__6.openKeyCursor().then(iterate).catch(reject);
+        return new PromiseSync((function(resolve, reject) {
+          $__8.openKeyCursor().then(iterate).catch(reject);
           function iterate(cursor) {
             if (cursor.done) {
               resolve(primaryKeys);
@@ -75,14 +71,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
           cursorDirection += "unique";
         }
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        })).then((function() {
+        return PromiseSync.resolve(request).then((function() {
           return new cursorConstructor(request);
         }));
       },
@@ -104,14 +93,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyCursor"], f
           cursorDirection += "unique";
         }
         var request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection);
-        return new Promise((function(resolve, reject) {
-          request.onsuccess = (function() {
-            return resolve(request.result);
-          });
-          request.onerror = (function() {
-            return resolve(request.error);
-          });
-        })).then((function() {
+        return PromiseSync.resolve(request).then((function() {
           return new ReadOnlyCursor(request);
         }));
       }

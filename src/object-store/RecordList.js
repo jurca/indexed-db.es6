@@ -27,7 +27,7 @@ export default class RecordList extends Array {
   /**
    * Initializes the record list.
    *
-   * @param {*} items The records of the record list.
+   * @param {*[]} items The records of the record list.
    * @param {function(): AbstractReadOnlyStorage} storageFactory A function
    *        that creates a new read-only transaction and returns this storage
    *        accessor each time it is invoked.

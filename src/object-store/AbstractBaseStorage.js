@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import CursorDirection from "./CursorDirection"
 
 /**
@@ -85,7 +86,7 @@ export default class AbstractBaseStorage {
    *
    * @param {(number|string|Date|Array|Object|IDBKeyRange)} key The key value
    *        identifying the record.
-   * @return {Promise<*>} A promise that resolves to the record, or
+   * @return {PromiseSync<*>} A promise that resolves to the record, or
    *         {@code undefined} if the record does not exist. The also promise
    *         resolves to {@code undefined} if the record exists, but it is the
    *         {@code undefined} value.
@@ -102,10 +103,7 @@ export default class AbstractBaseStorage {
     }
 
     let request = this[FIELDS.storage].get(key)
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    })
+    return PromiseSync.resolve(request)
   }
 
   /**
@@ -121,7 +119,7 @@ export default class AbstractBaseStorage {
    *        {@code "PREVIOUS"}. The letter case used in the strings does not
    *        matter.
    *        Defaults to {@code CursorDirection.NEXT}.
-   * @return {Promise<ReadOnlyCursor>} A promise that resolves to a cursor
+   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the first matched record.
    */
   openCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
@@ -143,10 +141,7 @@ export default class AbstractBaseStorage {
     let cursorDirection = direction.value.toLowerCase().substring(0, 4)
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
     
-    return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(request.result)
-      request.onerror = () => resolve(request.error)
-    }).then(() => {
+    return PromiseSync.resolve(request).then(() => {
       return new cursorConstructor(request)
     })
   }
