@@ -69,7 +69,7 @@ describe("ReadOnlyTransaction", () => {
     transaction.abort()
   })
   
-  fit("should execute error listeners on error", (done) => {
+  it("should execute error listeners on error", (done) => {
     let transaction = database.startTransaction(OBJECT_STORE_NAME)
     transaction.addErrorListener(() => done())
     transaction.completionPromise.catch(() => {})
