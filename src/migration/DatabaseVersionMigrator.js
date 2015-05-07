@@ -1,4 +1,5 @@
 
+import PromiseSync from "../PromiseSync"
 import Transaction from "../transaction/Transaction"
 import ObjectStoreMigrator from "./ObjectStoreMigrator"
 
@@ -92,9 +93,9 @@ export default class DatabaseVersionMigrator {
       let transaction = new Transaction(nativeTransaction, () => transaction)
       
       try {
-        return Promise.resolve(onComplete(transaction, callbackData))
+        return PromiseSync.resolve(onComplete(transaction, callbackData))
       } catch (error) {
-        return Promise.reject(error)
+        return PromiseSync.reject(error)
       }
     }).catch((error) => {
       if (openedDatabase) {
@@ -152,6 +153,7 @@ function upgradeSchema(nativeDatabase, nativeTransaction, descriptors) {
 function openConnection(request, onUpgradeReady) {
   return new Promise((resolve, reject) => {
     let wasBlocked = false
+    let upgradeTrigerred = false
     let upgradeExecuted = false
     
     request.onsuccess = () => {
@@ -172,6 +174,7 @@ function openConnection(request, onUpgradeReady) {
         return
       }
       
+      upgradeTrigerred = true
       onUpgradeReady(request.result, request.transaction).catch((error) => {
         reject(error)
         request.transaction.abort()
@@ -179,8 +182,8 @@ function openConnection(request, onUpgradeReady) {
       upgradeExecuted = true
     }
     
-    request.onerror = () => {
-      if (wasBlocked) {
+    request.onerror = (event) => {
+      if (wasBlocked || upgradeTrigerred) {
         event.preventDefault()
         return
       }
