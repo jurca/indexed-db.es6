@@ -254,6 +254,11 @@ describe("AbstractReadOnlyStorage", () => {
         recordList.fetchNextPage()
       }).toThrow()
       
+      transaction = database.startReadOnlyTransaction(
+        OBJECT_STORE_NAME,
+        OBJECT_STORE_NAME2
+      )
+      objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
       return objectStore.list(undefined, CursorDirection.NEXT, 2)
     }).then((recordList) => {
       expect(recordList.hasNextPage).toBeTruthy()
