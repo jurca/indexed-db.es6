@@ -95,8 +95,9 @@ export default class ReadOnlyTransaction {
       executeEventListeners(this[FIELDS.abortListeners])
     }
 
-    transaction.onerror = () => {
+    transaction.onerror = (event) => {
       executeEventListeners(this[FIELDS.errorListeners], transaction.error)
+      event.preventDefault()
     }
 
     this.addErrorListener((error) => {

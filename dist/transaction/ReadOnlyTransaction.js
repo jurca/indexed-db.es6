@@ -36,8 +36,9 @@ define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"]
       transaction.onabort = (function() {
         executeEventListeners($__4[FIELDS.abortListeners]);
       });
-      transaction.onerror = (function() {
+      transaction.onerror = (function(event) {
         executeEventListeners($__4[FIELDS.errorListeners], transaction.error);
+        event.preventDefault();
       });
       this.addErrorListener((function(error) {
         if ($__4[FIELDS.errorListeners].size < 2) {
