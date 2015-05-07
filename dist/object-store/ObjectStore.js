@@ -50,7 +50,7 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
           return PromiseSync.resolve(request);
         }
         return new PromiseSync((function(resolve, reject) {
-          var progressPromise = Promise.resolve(null);
+          var progressPromise = PromiseSync.resolve(null);
           $__12.forEach(filter, CursorDirection.NEXT, (function(record, primaryKey) {
             progressPromise = progressPromise.then((function() {
               return $__12.delete(primaryKey);

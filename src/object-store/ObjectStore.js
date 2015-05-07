@@ -111,7 +111,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
     }
 
     return new PromiseSync((resolve, reject) => {
-      let progressPromise = Promise.resolve(null)
+      let progressPromise = PromiseSync.resolve(null)
 
       this.forEach(filter, CursorDirection.NEXT, (record, primaryKey) => {
         progressPromise = progressPromise.then(

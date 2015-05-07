@@ -135,7 +135,7 @@ describe("ObjectStore", () => {
         
         done()
       })
-    })
+    }).catch(error => fail(error))
   })
   
   it("should clear all records", (done) => {
