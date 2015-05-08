@@ -43,4 +43,4 @@ define(["./validation"], function($__0) {
     __esModule: true
   };
 });
-//# sourceURL=src/schema/UpgradedDatabaseSchema.js
+//# sourceURL=es6/schema/UpgradedDatabaseSchema.js

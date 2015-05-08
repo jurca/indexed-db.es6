@@ -110,4 +110,4 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
     __esModule: true
   };
 });
-//# sourceURL=src/migration/RecordFetcher.js
+//# sourceURL=es6/migration/RecordFetcher.js

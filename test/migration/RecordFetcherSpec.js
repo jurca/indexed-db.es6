@@ -1,6 +1,6 @@
 
-import RecordFetcher from "../../dist/migration/RecordFetcher"
-import UpgradedDatabaseSchema from "../../dist/schema/UpgradedDatabaseSchema"
+import RecordFetcher from "../../amd/migration/RecordFetcher"
+import UpgradedDatabaseSchema from "../../amd/schema/UpgradedDatabaseSchema"
 
 describe("RecordFetcher", () => {
   

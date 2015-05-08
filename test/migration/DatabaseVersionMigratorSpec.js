@@ -1,8 +1,8 @@
 
 import DatabaseVersionMigrator
-    from "../../dist/migration/DatabaseVersionMigrator"
-import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
-import IndexSchema from "../../dist/schema/IndexSchema"
+    from "../../amd/migration/DatabaseVersionMigrator"
+import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
+import IndexSchema from "../../amd/schema/IndexSchema"
 
 describe("DatabaseVersionMigrator", () => {
   

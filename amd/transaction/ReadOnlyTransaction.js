@@ -97,4 +97,4 @@ define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"]
     __esModule: true
   };
 });
-//# sourceURL=src/transaction/ReadOnlyTransaction.js
+//# sourceURL=es6/transaction/ReadOnlyTransaction.js

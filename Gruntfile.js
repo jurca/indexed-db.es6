@@ -10,9 +10,9 @@ module.exports = function (grunt) {
       build: {
         files: [{
           expand: true,
-          cwd: "src",
+          cwd: "es6",
           src: "**/*.js",
-          dest: "dist"
+          dest: "amd"
         }]
       }
     },
@@ -23,7 +23,7 @@ module.exports = function (grunt) {
         spawn: false
       },
       scripts: {
-        files: ["src/**/*.js"],
+        files: ["es6/**/*.js"],
         tasks: ["traceur"]
       }
     }

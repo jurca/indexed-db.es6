@@ -34,4 +34,4 @@ define(["./ReadOnlyIndex", "./Cursor", "./CursorDirection"], function($__0,$__2,
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/Index.js
+//# sourceURL=es6/object-store/Index.js

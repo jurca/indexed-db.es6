@@ -41,4 +41,4 @@ define(["../object-store/ObjectStore", "./ReadOnlyTransaction"], function($__0,$
     __esModule: true
   };
 });
-//# sourceURL=src/transaction/Transaction.js
+//# sourceURL=es6/transaction/Transaction.js

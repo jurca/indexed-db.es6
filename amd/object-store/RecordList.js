@@ -93,4 +93,4 @@ define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/RecordList.js
+//# sourceURL=es6/object-store/RecordList.js

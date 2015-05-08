@@ -88,4 +88,4 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/ObjectStore.js
+//# sourceURL=es6/object-store/ObjectStore.js

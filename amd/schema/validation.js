@@ -27,4 +27,4 @@ define([], function() {
     __esModule: true
   };
 });
-//# sourceURL=src/schema/validation.js
+//# sourceURL=es6/schema/validation.js

@@ -113,4 +113,4 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
     __esModule: true
   };
 });
-//# sourceURL=src/Database.js
+//# sourceURL=es6/Database.js

@@ -112,4 +112,4 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
     __esModule: true
   };
 });
-//# sourceURL=src/migration/DatabaseVersionMigrator.js
+//# sourceURL=es6/migration/DatabaseVersionMigrator.js

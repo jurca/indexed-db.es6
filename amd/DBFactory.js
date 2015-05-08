@@ -145,4 +145,4 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/DBFactory.js
+//# sourceURL=es6/DBFactory.js

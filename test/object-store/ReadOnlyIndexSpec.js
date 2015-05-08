@@ -1,10 +1,10 @@
 
-import DBFactory from "../../dist/DBFactory"
-import CursorDirection from "../../dist/object-store/CursorDirection"
-import KeyRange from "../../dist/object-store/KeyRange"
-import DatabaseSchema from "../../dist/schema/DatabaseSchema"
-import IndexSchema from "../../dist/schema/IndexSchema"
-import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
+import DBFactory from "../../amd/DBFactory"
+import CursorDirection from "../../amd/object-store/CursorDirection"
+import KeyRange from "../../amd/object-store/KeyRange"
+import DatabaseSchema from "../../amd/schema/DatabaseSchema"
+import IndexSchema from "../../amd/schema/IndexSchema"
+import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
 
 describe("ReadOnlyIndex", () => {
   

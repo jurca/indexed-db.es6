@@ -110,4 +110,4 @@ define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./R
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/ReadOnlyIndex.js
+//# sourceURL=es6/object-store/ReadOnlyIndex.js

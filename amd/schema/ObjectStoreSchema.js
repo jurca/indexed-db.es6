@@ -33,4 +33,4 @@ define(["./IndexSchema", "./validation"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/schema/ObjectStoreSchema.js
+//# sourceURL=es6/schema/ObjectStoreSchema.js

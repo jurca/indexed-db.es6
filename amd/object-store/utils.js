@@ -180,4 +180,4 @@ define(["./KeyRange"], function($__0) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/utils.js
+//# sourceURL=es6/object-store/utils.js

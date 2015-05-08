@@ -31,4 +31,4 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/Cursor.js
+//# sourceURL=es6/object-store/Cursor.js

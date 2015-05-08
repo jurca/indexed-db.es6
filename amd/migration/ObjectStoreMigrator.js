@@ -70,4 +70,4 @@ define([], function() {
     __esModule: true
   };
 });
-//# sourceURL=src/migration/ObjectStoreMigrator.js
+//# sourceURL=es6/migration/ObjectStoreMigrator.js

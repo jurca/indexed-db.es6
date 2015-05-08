@@ -1,7 +1,7 @@
 
-import DBFactory from "../../dist/DBFactory"
-import DatabaseSchema from "../../dist/schema/DatabaseSchema"
-import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
+import DBFactory from "../../amd/DBFactory"
+import DatabaseSchema from "../../amd/schema/DatabaseSchema"
+import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
 
 describe("ReadOnlyTransaction", () => {
   

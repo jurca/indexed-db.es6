@@ -248,4 +248,4 @@ define([], function() {
     __esModule: true
   };
 });
-//# sourceURL=src/PromiseSync.js
+//# sourceURL=es6/PromiseSync.js

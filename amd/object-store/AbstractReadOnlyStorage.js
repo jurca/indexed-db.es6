@@ -162,4 +162,4 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/AbstractReadOnlyStorage.js
+//# sourceURL=es6/object-store/AbstractReadOnlyStorage.js

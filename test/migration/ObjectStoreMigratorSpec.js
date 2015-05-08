@@ -1,8 +1,8 @@
 
-import PromiseSync from "../../dist/PromiseSync"
-import ObjectStoreMigrator from "../../dist/migration/ObjectStoreMigrator"
-import IndexSchema from "../../dist/schema/IndexSchema"
-import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
+import PromiseSync from "../../amd/PromiseSync"
+import ObjectStoreMigrator from "../../amd/migration/ObjectStoreMigrator"
+import IndexSchema from "../../amd/schema/IndexSchema"
+import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
 
 describe("ObjectStoreMigrator", () => {
   

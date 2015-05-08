@@ -1,9 +1,9 @@
 
-import DatabaseMigrator from "../../dist/migration/DatabaseMigrator"
-import DatabaseSchema from "../../dist/schema/DatabaseSchema"
-import DBFactory from "../../dist/DBFactory"
-import ObjectStoreSchema from "../../dist/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema from "../../dist/schema/UpgradedDatabaseSchema"
+import DatabaseMigrator from "../../amd/migration/DatabaseMigrator"
+import DatabaseSchema from "../../amd/schema/DatabaseSchema"
+import DBFactory from "../../amd/DBFactory"
+import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
+import UpgradedDatabaseSchema from "../../amd/schema/UpgradedDatabaseSchema"
 
 describe("DatabaseMigrator", () => {
   

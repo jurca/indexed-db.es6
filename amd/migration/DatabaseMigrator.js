@@ -112,4 +112,4 @@ define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchem
     __esModule: true
   };
 });
-//# sourceURL=src/migration/DatabaseMigrator.js
+//# sourceURL=es6/migration/DatabaseMigrator.js

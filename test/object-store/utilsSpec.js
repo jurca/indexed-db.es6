@@ -1,7 +1,7 @@
 
-import KeyRange from "../../dist/object-store/KeyRange"
+import KeyRange from "../../amd/object-store/KeyRange"
 import {keyRangeToFieldRangeObject, compileFieldRangeFilter, normalizeFilter}
-    from "../../dist/object-store/utils"
+    from "../../amd/object-store/utils"
 
 describe("utils", () => {
   

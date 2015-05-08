@@ -81,4 +81,4 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/AbstractBaseStorage.js
+//# sourceURL=es6/object-store/AbstractBaseStorage.js

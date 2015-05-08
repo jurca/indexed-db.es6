@@ -31,4 +31,4 @@ define([], function() {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/CursorDirection.js
+//# sourceURL=es6/object-store/CursorDirection.js

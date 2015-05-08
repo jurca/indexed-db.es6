@@ -76,4 +76,4 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/ReadOnlyCursor.js
+//# sourceURL=es6/object-store/ReadOnlyCursor.js

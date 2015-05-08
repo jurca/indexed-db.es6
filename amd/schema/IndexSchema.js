@@ -20,4 +20,4 @@ define([], function() {
     __esModule: true
   };
 });
-//# sourceURL=src/schema/IndexSchema.js
+//# sourceURL=es6/schema/IndexSchema.js

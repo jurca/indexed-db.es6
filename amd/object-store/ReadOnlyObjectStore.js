@@ -47,4 +47,4 @@ define(["./AbstractReadOnlyStorage", "./ReadOnlyIndex"], function($__0,$__2) {
     __esModule: true
   };
 });
-//# sourceURL=src/object-store/ReadOnlyObjectStore.js
+//# sourceURL=es6/object-store/ReadOnlyObjectStore.js
