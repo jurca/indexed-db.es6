@@ -17,7 +17,6 @@ require.config({
   baseUrl: '/base',
 
   paths: {
-    'typed-enum': 'bower_components/typed-enum/dist/enum'
   },
 
   // dynamically load all test files
