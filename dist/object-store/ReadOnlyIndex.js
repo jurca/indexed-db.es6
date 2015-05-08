@@ -12,6 +12,7 @@ define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./R
   var AbstractReadOnlyStorage = $__2.default;
   var CursorDirection = $__4.default;
   var ReadOnlyCursor = $__6.default;
+  var CURSOR_DIRECTIONS = [CursorDirection.NEXT, CursorDirection.PREVIOUS, "NEXT", "PREVIOUS", "PREV"];
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     cursorConstructor: Symbol("cursorConstructor")
@@ -61,12 +62,13 @@ define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./R
         }
         var cursorConstructor = this[FIELDS.cursorConstructor];
         if (typeof direction === "string") {
-          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+          if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
             throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
           }
-          direction = CursorDirection[direction.toUpperCase()];
+        } else {
+          direction = direction.value;
         }
-        var cursorDirection = direction.value.toLowerCase().substring(0, 4);
+        var cursorDirection = direction.toLowerCase().substring(0, 4);
         if (unique) {
           cursorDirection += "unique";
         }
@@ -83,12 +85,13 @@ define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./R
           keyRange = undefined;
         }
         if (typeof direction === "string") {
-          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+          if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
             throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
           }
-          direction = CursorDirection[direction.toUpperCase()];
+        } else {
+          direction = direction.value;
         }
-        var cursorDirection = direction.value.toLowerCase().substring(0, 4);
+        var cursorDirection = direction.toLowerCase().substring(0, 4);
         if (unique) {
           cursorDirection += "unique";
         }

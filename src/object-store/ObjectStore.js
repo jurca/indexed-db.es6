@@ -169,8 +169,9 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(CursorDirection|string)=} direction The direction in which the
    *        cursor will traverse the records. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
-   *        {@code "PREVIOUS"}. The letter case used in the strings does not
-   *        matter. Defaults to {@code CursorDirection.NEXT}.
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter.
+   *        Defaults to {@code CursorDirection.NEXT}.
    * @return {PromiseSync<Cursor>} A promise that resolves to a cursor pointing
    *         to the first matched record.
    */

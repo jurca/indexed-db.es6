@@ -125,6 +125,10 @@ describe("AbstractBaseStorage", () => {
       return objectStore.openCursor(null, "PReViouS")
     }).then((cursor) => {
       expect(cursor.record).toBe("xyz")
+      
+      return objectStore.openCursor(null, "prEv")
+    }).then((cursor) => {
+      expect(cursor.record).toBe("xyz")
     }).then(() => {
       done()
     }).catch(error => fail(error))

@@ -3,6 +3,19 @@ import PromiseSync from "../PromiseSync"
 import CursorDirection from "./CursorDirection"
 
 /**
+ * Values allowed as cursor directions.
+ * 
+ * @type {(CursorDirection|string)[]}
+ */
+const CURSOR_DIRECTIONS = [
+  CursorDirection.NEXT,
+  CursorDirection.PREVIOUS,
+  "NEXT",
+  "PREVIOUS",
+  "PREV"
+]
+
+/**
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
@@ -116,8 +129,8 @@ export default class AbstractBaseStorage {
    * @param {(CursorDirection|string)=} direction The direction in which the
    *        cursor will traverse the records. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
-   *        {@code "PREVIOUS"}. The letter case used in the strings does not
-   *        matter.
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter.
    *        Defaults to {@code CursorDirection.NEXT}.
    * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
    *         pointing to the first matched record.
@@ -130,15 +143,15 @@ export default class AbstractBaseStorage {
     let cursorConstructor = this[FIELDS.cursorConstructor]
     
     if (typeof direction === "string") {
-      if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+      if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
         throw new Error("When using a string as cursor direction, use NEXT " +
             `or PREVIOUS, ${direction} provided`);
       }
-      
-      direction = CursorDirection[direction.toUpperCase()];
+    } else {
+      direction = direction.value
     }
 
-    let cursorDirection = direction.value.toLowerCase().substring(0, 4)
+    let cursorDirection = direction.toLowerCase().substring(0, 4)
     let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
     
     return PromiseSync.resolve(request).then(() => {

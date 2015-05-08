@@ -167,6 +167,10 @@ describe("ReadOnlyIndex", () => {
       return index.openCursor(null, "PReViouS")
     }).then((cursor) => {
       expect(cursor.key).toBe("d")
+      
+      return index.openKeyCursor(null, "prEV")
+    }).then((cursor) => {
+      expect(cursor.key).toBe("d")
     }).then(() => {
       done()
     }).catch(error => fail(error))
@@ -178,6 +182,10 @@ describe("ReadOnlyIndex", () => {
       expect(cursor.key).toBe("a")
       
       return index.openKeyCursor(null, "PReViouS")
+    }).then((cursor) => {
+      expect(cursor.key).toBe("d")
+      
+      return index.openKeyCursor(null, "prEV")
     }).then((cursor) => {
       expect(cursor.key).toBe("d")
     }).then(() => {

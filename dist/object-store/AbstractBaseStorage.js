@@ -6,6 +6,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
     $__2 = {default: $__2};
   var PromiseSync = $__0.default;
   var CursorDirection = $__2.default;
+  var CURSOR_DIRECTIONS = [CursorDirection.NEXT, CursorDirection.PREVIOUS, "NEXT", "PREVIOUS", "PREV"];
   var FIELDS = Object.freeze({
     storage: Symbol("storage"),
     cursorConstructor: Symbol("cursorConstructor")
@@ -44,12 +45,13 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
         }
         var cursorConstructor = this[FIELDS.cursorConstructor];
         if (typeof direction === "string") {
-          if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+          if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
             throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
           }
-          direction = CursorDirection[direction.toUpperCase()];
+        } else {
+          direction = direction.value;
         }
-        var cursorDirection = direction.value.toLowerCase().substring(0, 4);
+        var cursorDirection = direction.toLowerCase().substring(0, 4);
         var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
         return PromiseSync.resolve(request).then((function() {
           return new cursorConstructor(request);

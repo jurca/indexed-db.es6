@@ -5,6 +5,19 @@ import CursorDirection from "./CursorDirection"
 import ReadOnlyCursor from "./ReadOnlyCursor"
 
 /**
+ * Values allowed as cursor directions.
+ * 
+ * @type {(CursorDirection|string)[]}
+ */
+const CURSOR_DIRECTIONS = [
+  CursorDirection.NEXT,
+  CursorDirection.PREVIOUS,
+  "NEXT",
+  "PREVIOUS",
+  "PREV"
+]
+
+/**
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
@@ -130,8 +143,9 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * @param {(CursorDirection|string)} direction The direction in which the
    *        cursor will traverse the records. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
-   *        {@code "PREVIOUS"}. The letter case used in the strings does not
-   *        matter. Defaults to {@code CursorDirection.NEXT}.
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter.
+   *        Defaults to {@code CursorDirection.NEXT}.
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value. Defaults to
    *        {@code false}.
@@ -147,15 +161,15 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     let cursorConstructor = this[FIELDS.cursorConstructor]
     
     if (typeof direction === "string") {
-      if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+      if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
         throw new Error("When using a string as cursor direction, use NEXT " +
             `or PREVIOUS, ${direction} provided`);
       }
-      
-      direction = CursorDirection[direction.toUpperCase()];
+    } else {
+      direction = direction.value
     }
 
-    let cursorDirection = direction.value.toLowerCase().substring(0, 4)
+    let cursorDirection = direction.toLowerCase().substring(0, 4)
     if (unique) {
       cursorDirection += "unique"
     }
@@ -179,8 +193,9 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * @param {(CursorDirection|string)=} direction The direction in which the
    *        cursor will traverse the records. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
-   *        {@code "PREVIOUS"}. The letter case used in the strings does not
-   *        matter. Defaults to {@code CursorDirection.NEXT}.
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter.
+   *        Defaults to {@code CursorDirection.NEXT}.
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value. Defaults to
    *        {@code false}.
@@ -194,15 +209,15 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
     }
     
     if (typeof direction === "string") {
-      if (["NEXT", "PREVIOUS"].indexOf(direction.toUpperCase()) === -1) {
+      if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
         throw new Error("When using a string as cursor direction, use NEXT " +
             `or PREVIOUS, ${direction} provided`);
       }
-      
-      direction = CursorDirection[direction.toUpperCase()];
+    } else {
+      direction = direction.value
     }
 
-    let cursorDirection = direction.value.toLowerCase().substring(0, 4)
+    let cursorDirection = direction.toLowerCase().substring(0, 4)
     if (unique) {
       cursorDirection += "unique"
     }
