@@ -137,7 +137,7 @@ describe("ReadOnlyIndex", () => {
     let index = objectStore.getIndex("otherIndex")
     let direction = CursorDirection.NEXT
     index.openKeyCursor(undefined, direction, true).then((cursor) => {
-      expect(cursor.record).toBeNull()
+      expect(cursor.record).toBeUndefined()
       expect(cursor.key).toBe("a")
       expect(cursor.primaryKey).toBe(11)
       

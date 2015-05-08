@@ -28,12 +28,15 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
       this.unique = cursor ? (cursor.direction.indexOf("unique") > -1) : null;
       this.key = cursor ? cursor.key : null;
       this.primaryKey = cursor ? cursor.primaryKey : null;
-      this.record = cursor ? (cursor.value || null) : null;
       if (this.constructor === ReadOnlyCursor) {
         Object.freeze(this);
       }
     }
     return ($traceurRuntime.createClass)(ReadOnlyCursor, {
+      get record() {
+        var cursor = this[FIELDS.request].result;
+        return cursor ? cursor.value : null;
+      },
       advance: function() {
         var stepsCount = arguments[0] !== (void 0) ? arguments[0] : 1;
         var $__4 = this;

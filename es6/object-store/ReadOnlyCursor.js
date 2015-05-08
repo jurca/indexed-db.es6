@@ -116,18 +116,21 @@ export default class ReadOnlyCursor {
      */
     this.primaryKey = cursor ? cursor.primaryKey : null
 
-    /**
-     * The record this cursor points to. This field is {@code null} when the
-     * cursor has finished traversing the records or has been opened as a key
-     * cursor.
-     *
-     * @type {*}
-     */
-    this.record = cursor ? (cursor.value || null) : null
-
     if (this.constructor === ReadOnlyCursor) {
       Object.freeze(this)
     }
+  }
+  
+  /**
+   * The record this cursor points to. This value is {@code null} when the
+   * cursor has finished traversing the records. This value is
+   * {@code undefined} if the cursor has been opened as a key cursor.
+   *
+   * @return {?(undefined|*)}
+   */
+  get record() {
+    let cursor = this[FIELDS.request].result
+    return cursor ? cursor.value : null
   }
 
   /**
