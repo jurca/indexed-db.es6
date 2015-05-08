@@ -307,10 +307,6 @@ The following browsers are supported (all tests are passing):
 
 - Google Chrome
 - Chromium
-
-The following browsers will be supported (some tests are passing, issues are
-being resolved):
-
 - Firefox
 
 The following browsers are theoretically compatible (each seems to use engine
@@ -321,7 +317,7 @@ of one of the supported browsers), but not tested:
 - Opera Mobile
 - Android Browser (4.4+)
 - Chrome for Android
-- Firefox for Android (after fixing compatibility with Firefox)
+- Firefox for Android
 
 The following browsers are not supported at the moment:
 
@@ -332,6 +328,11 @@ The following browsers are not supported at the moment:
     primary key, the next version should fix this
   - Requires Apple hardware to run legally
 - iOS Safari: same issues as Safari
+
+You can still use these browsers with `indexed-db.es6`, or any browser without
+any native IndexedDB support that support
+[WebSQL](http://www.w3.org/TR/webdatabase/) using the
+[IndexedDBShim](https://github.com/axemclion/IndexedDBShim).
 
 ## The current state of this project
 
@@ -382,3 +383,6 @@ said, you may not need such a tool and may be looking for a simpler solution:
   that's up to you to decide).
 - [YDN DB](https://github.com/yathit/ydn-db) if you don't need any support for
   versioning your database.
+- [IDBWrapper](https://github.com/jensarps/IDBWrapper) if you don't need
+  transacions on multiple object stores and prefer callbacks to promises, and
+  don't need any high-level API. 
