@@ -1,3 +1,5 @@
+![build status](https://travis-ci.org/jurca/indexed-db.es6.svg?branch=master)
+
 # indexed-db.es6
 
 The indexed-db.es6 is ES6-style wrapper of the native
