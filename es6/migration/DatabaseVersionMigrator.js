@@ -91,6 +91,7 @@ export default class DatabaseVersionMigrator {
       })
       
       let transaction = new Transaction(nativeTransaction, () => transaction)
+      transaction.completionPromise.catch(() => {})
       
       try {
         return PromiseSync.resolve(onComplete(transaction, callbackData))

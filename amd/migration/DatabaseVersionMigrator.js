@@ -35,6 +35,7 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
           var transaction = new Transaction(nativeTransaction, (function() {
             return transaction;
           }));
+          transaction.completionPromise.catch((function() {}));
           try {
             return PromiseSync.resolve(onComplete(transaction, callbackData));
           } catch (error) {
