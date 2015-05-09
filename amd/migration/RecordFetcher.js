@@ -1,11 +1,14 @@
-define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) {
+define(["../Database", "../object-store/CursorDirection", "../schema/UpgradedDatabaseSchema"], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
   var Database = $__0.default;
-  var UpgradedDatabaseSchema = $__2.default;
+  var CursorDirection = $__2.default;
+  var UpgradedDatabaseSchema = $__4.default;
   var RecordFetcher = (function() {
     function RecordFetcher() {}
     return ($traceurRuntime.createClass)(RecordFetcher, {fetchRecords: function(databaseName, objectStores) {
@@ -53,22 +56,15 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
   function fetchRecords(objectStore, preprocessor) {
     return new Promise((function(resolve, reject) {
       var records = [];
-      var cursorPromise = objectStore.openCursor();
-      cursorPromise.then(iterate).catch(reject);
-      function iterate(cursor) {
-        if (cursor.done) {
-          resolve(records);
-          return ;
-        }
+      objectStore.openCursor(null, CursorDirection.NEXT, (function(cursor) {
         var primaryKey = cursor.primaryKey;
         if (primaryKey instanceof Object) {
           Object.freeze(primaryKey);
         }
         var preprocessedRecord = preprocessor(cursor.record, primaryKey);
         if (preprocessedRecord === UpgradedDatabaseSchema.DELETE_RECORD) {
-          cursor.delete().then((function() {
-            return cursor.advance();
-          })).then(iterate).catch(reject);
+          cursor.delete();
+          cursor.continue();
           return ;
         } else if (preprocessedRecord !== UpgradedDatabaseSchema.SKIP_RECORD) {
           records.push({
@@ -76,8 +72,12 @@ define(["../Database", "../schema/UpgradedDatabaseSchema"], function($__0,$__2) 
             record: preprocessedRecord
           });
         } else {}
-        cursor.advance().then(iterate).catch(reject);
-      }
+        cursor.continue();
+      })).then((function() {
+        return resolve(records);
+      })).catch((function(error) {
+        return reject(error);
+      }));
     }));
   }
   function openConnection(request, objectStoreNames) {

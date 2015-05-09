@@ -37,9 +37,13 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
         var request = this[FIELDS.storage].get(key);
         return PromiseSync.resolve(request);
       },
-      openCursor: function() {
+      openCursor: function(keyRange, direction, recordCallback) {
+        return this.createCursorFactory(keyRange, direction)(recordCallback);
+      },
+      createCursorFactory: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
+        var $__4 = this;
         if (keyRange === null) {
           keyRange = undefined;
         }
@@ -52,14 +56,57 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
           direction = direction.value;
         }
         var cursorDirection = direction.toLowerCase().substring(0, 4);
-        var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return PromiseSync.resolve(request).then((function() {
-          return new cursorConstructor(request);
-        }));
+        return (function(recordCallback) {
+          var request = $__4[FIELDS.storage].openCursor(keyRange, cursorDirection);
+          return iterateCursor(request, cursorConstructor, recordCallback);
+        });
       }
     }, {});
   }());
   var $__default = AbstractBaseStorage;
+  function iterateCursor(request, cursorConstructor, recordCallback) {
+    return new PromiseSync((function(resolve, reject) {
+      var traversedRecords = 0;
+      var canIterate = true;
+      request.onerror = (function() {
+        return reject(request.error);
+      });
+      request.onsuccess = (function() {
+        if (!canIterate) {
+          console.warn("Cursor iteration was requested asynchronously, " + "ignoring the new cursor position");
+          return ;
+        }
+        if (!request.result) {
+          resolve(traversedRecords);
+          return ;
+        }
+        traversedRecords++;
+        var iterationRequested = handleCursorIteration(request, cursorConstructor, recordCallback, reject);
+        if (!iterationRequested) {
+          canIterate = false;
+          resolve(traversedRecords);
+        }
+      });
+    }));
+  }
+  function handleCursorIteration(request, cursorConstructor, recordCallback, reject) {
+    var iterationRequested = false;
+    var cursor = new cursorConstructor(request, (function() {
+      iterationRequested = true;
+    }), (function(subRequest) {
+      return PromiseSync.resolve(subRequest).catch((function(error) {
+        reject(error);
+        throw error;
+      }));
+    }));
+    try {
+      recordCallback(cursor);
+    } catch (error) {
+      iterationRequested = false;
+      reject(error);
+    }
+    return iterationRequested;
+  }
   function normalizeCompoundObjectKey(keyPaths, key) {
     var normalizedKey = [];
     keyPaths.forEach((function(keyPath) {

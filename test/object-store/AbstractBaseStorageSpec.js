@@ -83,34 +83,45 @@ describe("AbstractBaseStorage", () => {
   })
   
   it("should open cursor", (done) => {
-    objectStore.openCursor().then((cursor) => {
+    let callbackExecuted = false
+    
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
       expect(cursor.record).toBe("foo")
+      callbackExecuted = true
+    }).then((recordCount) => {
+      expect(callbackExecuted).toBeTruthy()
+      expect(recordCount).toBe(1)
       
-      return objectStore.openCursor(2)
-    }).then((cursor) => {
-      expect(cursor.record).toBe("bar")
+      return objectStore.openCursor(2, CursorDirection.NEXT, (cursor) => {
+        expect(cursor.record).toBe("bar")
+        cursor.continue()
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
       
-      return objectStore.openCursor(KeyRange.lowerBound(2))
-    }).then((cursor) => {
-      expect(cursor.record).toBe("bar")
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.record).toBe("xyz")
-      
-      return objectStore.openCursor(undefined, CursorDirection.PREVIOUS)
-    }).then((cursor) => {
-      expect(cursor.record).toBe("xyz")
+      return objectStore.openCursor(undefined, CursorDirection.PREVIOUS,
+          (cursor) => {
+        expect(cursor.record).toBe("xyz")
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
       
       return objectStore.openCursor(
         KeyRange.upperBound(2, true),
-        CursorDirection.PREVIOUS
+        CursorDirection.PREVIOUS,
+        (cursor) => {
+          expect(cursor.record).toBe("foo")
+        }
       )
-    }).then((cursor) => {
-      expect(cursor.record).toBe("foo")
-    }).then(() => {
-      return transaction.completionPromise
-    }).then(() => {
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
+      
+      return objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+        cursor.advance()
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(3)
+    }).then(() => transaction.completionPromise).then(() => {
       done()
     }).catch((error) => {
       console.error(error)
@@ -119,19 +130,67 @@ describe("AbstractBaseStorage", () => {
   })
   
   it("should allow strings to specify cursor direction", (done) => {
-    objectStore.openCursor(null, "NeXt").then((cursor) => {
+    objectStore.openCursor(null, "NeXt", (cursor) => {
       expect(cursor.record).toBe("foo")
-      
-      return objectStore.openCursor(null, "PReViouS")
-    }).then((cursor) => {
-      expect(cursor.record).toBe("xyz")
-      
-      return objectStore.openCursor(null, "prEv")
-    }).then((cursor) => {
-      expect(cursor.record).toBe("xyz")
+    }).then(() => {
+      return objectStore.openCursor(null, "PReViouS", (cursor) => {
+        expect(cursor.record).toBe("xyz")
+      })
+    }).then(() => {
+      return objectStore.openCursor(null, "prEv", (cursor) => {
+        expect(cursor.record).toBe("xyz")
+      })
     }).then(() => {
       done()
     }).catch(error => fail(error))
   })
   
+  it("should create cursor factory", (done) => {
+    let callbackExecuted = false
+    
+    objectStore.createCursorFactory()((cursor) => {
+      expect(cursor.record).toBe("foo")
+      callbackExecuted = true
+    }).then((recordCount) => {
+      expect(callbackExecuted).toBeTruthy()
+      expect(recordCount).toBe(1)
+      
+      return objectStore.createCursorFactory(2)((cursor) => {
+        expect(cursor.record).toBe("bar")
+        cursor.continue()
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
+      
+      let factory = objectStore.createCursorFactory(
+        undefined,
+        CursorDirection.PREVIOUS
+      )
+      return factory((cursor) => {
+        expect(cursor.record).toBe("xyz")
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
+      
+      return objectStore.createCursorFactory(
+        KeyRange.upperBound(2, true),
+        CursorDirection.PREVIOUS
+      )((cursor) => {
+        expect(cursor.record).toBe("foo")
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
+      
+      return objectStore.createCursorFactory(null)((cursor) => {
+        cursor.advance()
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(3)
+    }).then(() => transaction.completionPromise).then(() => {
+      done()
+    }).catch((error) => {
+      console.error(error)
+      fail(error.message)
+    })
+  })
 })

@@ -1,5 +1,6 @@
 
 import DBFactory from "../../amd/DBFactory"
+import CursorDirection from "../../amd/object-store/CursorDirection"
 import DatabaseSchema from "../../amd/schema/DatabaseSchema"
 import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
 
@@ -44,62 +45,61 @@ describe("ReadOnlyCursor", () => {
   })
   
   it("should traverse all records", (done) => {
-    objectStore.openCursor().then((cursor) => {
-      expect(cursor.key).toBe(1)
-      expect(cursor.primaryKey).toBe(1)
-      expect(cursor.record).toBe("foo")
-      expect(cursor.unique).toBeFalsy()
-      expect(cursor.direction.value).toBe("NEXT")
-      expect(cursor.done).toBeFalsy()
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+      switch (cursor.key) {
+        case 1:
+          expect(cursor.primaryKey).toBe(1)
+          expect(cursor.record).toBe("foo")
+          expect(cursor.unique).toBeFalsy()
+          expect(cursor.direction.value).toBe("NEXT")
+          break
+        case 2:
+          expect(cursor.primaryKey).toBe(2)
+          expect(cursor.record).toBe("bar")
+          break
+        case 3:
+          expect(cursor.primaryKey).toBe(3)
+          expect(cursor.record).toBe("xyz")
+          break
+        default:
+          throw new Error("unexepected record")
+      }
       
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.key).toBe(2)
-      expect(cursor.primaryKey).toBe(2)
-      expect(cursor.record).toBe("bar")
-      
-      return cursor.advance()
-    }).then((cursor) => {
-      expect(cursor.key).toBe(3)
-      expect(cursor.primaryKey).toBe(3)
-      expect(cursor.record).toBe("xyz")
-      expect(cursor.done).toBeFalsy()
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.done).toBeTruthy()
+      cursor.continue()
+    }).then((recordCount) => {
+      expect(recordCount).toBe(3)
       
       done()
     })
   })
   
   it("should allow skipping records by keys and recourd counts", (done) => {
-    objectStore.openCursor().then((cursor) => {
-      expect(cursor.key).toBe(1)
-      expect(cursor.record).toBe("foo")
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+      if (cursor.key === 1) {
+        expect(cursor.record).toBe("foo")
+        cursor.advance(2)
+      } else if (cursor.key === 3) {
+        expect(cursor.record).toBe("xyz")
+        cursor.continue()
+      } else {
+        throw new Error("unexpected record")
+      }
+    }).then((recordCount) => {
+      expect(recordCount).toBe(2)
       
-      return cursor.advance(2)
-    }).then((cursor) => {
-      expect(cursor.key).toBe(3)
-      expect(cursor.record).toBe("xyz")
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.done).toBeTruthy()
-      
-      return objectStore.openCursor()
-    }).then((cursor) => {
-      expect(cursor.key).toBe(1)
-      expect(cursor.record).toBe("foo")
-      
-      return cursor.continue(3)
-    }).then((cursor) => {
-      expect(cursor.key).toBe(3)
-      expect(cursor.record).toBe("xyz")
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor).toBeTruthy()
+      return objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+        if (cursor.key === 1) {
+          expect(cursor.record).toBe("foo")
+          cursor.continue(3)
+        } else if (cursor.key === 3) {
+          expect(cursor.record).toBe("xyz")
+          cursor.continue()
+        } else {
+          throw new Error("unexpected record")
+        }
+      })
+    }).then((recordCount) => {
+      expect(recordCount).toBe(2)
       
       done()
     })

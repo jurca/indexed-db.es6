@@ -190,16 +190,13 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
   let nextItems = []
 
   return new Promise((resolve, reject) => {
-    storage.openCursor(keyRange, cursorDirection, unique).
-        then(iterate).
-        catch(reject)
-
-    function iterate(cursor) {
-      if (cursor.done) {
-        finalize(false, null, null)
-        return
-      }
-
+    let cursorFactory = storage.createCursorFactory(
+      keyRange,
+      cursorDirection,
+      unique
+    )
+    
+    cursorFactory((cursor) => {
       if (!unique) {
         let shouldSkip =
           (
@@ -211,9 +208,7 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
           )
 
         if (shouldSkip) {
-          cursor.advance().
-              then(iterate).
-              catch(reject)
+          cursor.continue()
           return
         }
       }
@@ -221,15 +216,14 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
       if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
         if (nextItems.length === pageSize) {
           finalize(true, cursor.key, cursor.primaryKey)
+          return
         } else {
           nextItems.push(cursor.record)
         }
       }
-
-      cursor.advance().
-          then(iterate).
-          catch(reject)
-    }
+      
+      cursor.continue()
+    }).then(() => finalize(false, null, null)).catch(error => reject(error))
 
     function finalize(hasNextPage, nextKey, nextPrimaryKey) {
       resolve(new RecordList(nextItems, storageFactory, nextKey,

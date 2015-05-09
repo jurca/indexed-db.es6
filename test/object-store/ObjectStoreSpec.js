@@ -159,8 +159,10 @@ describe("ObjectStore", () => {
   })
   
   it("should open a read-write cursor", (done) => {
-    objectStore.openCursor().then((cursor) => {
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
       cursor.delete()
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
       
       return transaction.completionPromise
     }).then(() => {

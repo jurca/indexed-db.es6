@@ -1,5 +1,6 @@
 
 import DBFactory from "../../amd/DBFactory"
+import CursorDirection from "../../amd/object-store/CursorDirection"
 import DatabaseSchema from "../../amd/schema/DatabaseSchema"
 import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
 
@@ -45,13 +46,11 @@ describe("Cursor", () => {
   })
   
   it("should update records", (done) => {
-    objectStore.openCursor().then((cursor) => {
-      return cursor.update("updated, yeah!")
-    }).then((primaryKey) => {
-      expect(primaryKey).toBe(1)
-      
-      return transaction.completionPromise
-    }).then(() => {
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+      cursor.update("updated, yeah!").then((primaryKey) => {
+        expect(primaryKey).toBe(1)
+      })
+    }).then(() => transaction.completionPromise).then(() => {
       transaction = database.startReadOnlyTransaction(OBJECT_STORE_NAME)
       objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
       
@@ -64,11 +63,9 @@ describe("Cursor", () => {
   })
   
   it("should delete records", (done) => {
-    objectStore.openCursor().then((cursor) => {
-      return cursor.delete()
-    }).then(() => {
-      return transaction.completionPromise
-    }).then(() => {
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
+      cursor.delete()
+    }).then(() => transaction.completionPromise).then(() => {
       transaction = database.startReadOnlyTransaction(OBJECT_STORE_NAME)
       objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
       

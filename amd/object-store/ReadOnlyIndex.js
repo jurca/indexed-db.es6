@@ -39,70 +39,111 @@ define(["../PromiseSync", "./AbstractReadOnlyStorage", "./CursorDirection", "./R
         return PromiseSync.resolve(request);
       },
       getAllPrimaryKeys: function() {
-        var $__8 = this;
         var primaryKeys = [];
-        return new PromiseSync((function(resolve, reject) {
-          $__8.openKeyCursor().then(iterate).catch(reject);
-          function iterate(cursor) {
-            if (cursor.done) {
-              resolve(primaryKeys);
-              return ;
-            }
-            primaryKeys.push(cursor.primaryKey);
-            cursor.advance().then(iterate).catch(reject);
-          }
+        return this.openKeyCursor(null, CursorDirection.NEXT, false, (function(cursor) {
+          primaryKeys.push(cursor.primaryKey);
+          cursor.continue();
+        })).then((function() {
+          return primaryKeys;
         }));
       },
-      openCursor: function() {
+      openCursor: function(keyRange, direction, unique, recordCallback) {
+        var factory = this.createCursorFactory(keyRange, direction, unique);
+        return factory(recordCallback);
+      },
+      openKeyCursor: function(keyRange, direction, unique, recordCallback) {
+        var factory = this.createKeyCursorFactory(keyRange, direction, unique);
+        return factory(recordCallback);
+      },
+      createCursorFactory: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         var unique = arguments[2] !== (void 0) ? arguments[2] : false;
+        var $__8 = this;
         if (keyRange === null) {
           keyRange = undefined;
         }
         var cursorConstructor = this[FIELDS.cursorConstructor];
-        if (typeof direction === "string") {
-          if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
-            throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
-          }
-        } else {
-          direction = direction.value;
-        }
-        var cursorDirection = direction.toLowerCase().substring(0, 4);
-        if (unique) {
-          cursorDirection += "unique";
-        }
-        var request = this[FIELDS.storage].openCursor(keyRange, cursorDirection);
-        return PromiseSync.resolve(request).then((function() {
-          return new cursorConstructor(request);
-        }));
+        var cursorDirection = toNativeCursorDirection(direction, unique);
+        return (function(recordCallback) {
+          var request = $__8[FIELDS.storage].openCursor(keyRange, cursorDirection);
+          return iterateCursor(request, cursorConstructor, recordCallback);
+        });
       },
-      openKeyCursor: function() {
+      createKeyCursorFactory: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         var unique = arguments[2] !== (void 0) ? arguments[2] : false;
+        var $__8 = this;
         if (keyRange === null) {
           keyRange = undefined;
         }
-        if (typeof direction === "string") {
-          if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
-            throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
-          }
-        } else {
-          direction = direction.value;
-        }
-        var cursorDirection = direction.toLowerCase().substring(0, 4);
-        if (unique) {
-          cursorDirection += "unique";
-        }
-        var request = this[FIELDS.storage].openKeyCursor(keyRange, cursorDirection);
-        return PromiseSync.resolve(request).then((function() {
-          return new ReadOnlyCursor(request);
-        }));
+        var cursorDirection = toNativeCursorDirection(direction, unique);
+        return (function(recordCallback) {
+          var request;
+          request = $__8[FIELDS.storage].openKeyCursor(keyRange, cursorDirection);
+          return iterateCursor(request, ReadOnlyCursor, recordCallback);
+        });
       }
     }, {}, $__super);
   }(AbstractReadOnlyStorage));
   var $__default = ReadOnlyIndex;
+  function iterateCursor(request, cursorConstructor, recordCallback) {
+    return new PromiseSync((function(resolve, reject) {
+      var traversedRecords = 0;
+      var canIterate = true;
+      request.onerror = (function() {
+        return reject(request.error);
+      });
+      request.onsuccess = (function() {
+        if (!canIterate) {
+          console.warn("Cursor iteration was requested asynchronously, " + "ignoring the new cursor position");
+        }
+        if (!request.result) {
+          resolve(traversedRecords);
+          return ;
+        }
+        traversedRecords++;
+        var iterationRequested = handleCursorIteration(request, cursorConstructor, recordCallback, reject);
+        if (!iterationRequested) {
+          canIterate = false;
+          resolve(traversedRecords);
+        }
+      });
+    }));
+  }
+  function handleCursorIteration(request, cursorConstructor, recordCallback, reject) {
+    var iterationRequested = false;
+    var cursor = new cursorConstructor(request, (function() {
+      iterationRequested = true;
+    }), (function(subRequest) {
+      return PromiseSync.resolve(subRequest).catch((function(error) {
+        reject(error);
+        throw error;
+      }));
+    }));
+    try {
+      recordCallback(cursor);
+    } catch (error) {
+      iterationRequested = false;
+      reject(error);
+    }
+    return iterationRequested;
+  }
+  function toNativeCursorDirection(direction, unique) {
+    if (typeof direction === "string") {
+      if (CURSOR_DIRECTIONS.indexOf(direction.toUpperCase()) === -1) {
+        throw new Error("When using a string as cursor direction, use NEXT " + ("or PREVIOUS, " + direction + " provided"));
+      }
+    } else {
+      direction = direction.value;
+    }
+    var cursorDirection = direction.toLowerCase().substring(0, 4);
+    if (unique) {
+      cursorDirection += "unique";
+    }
+    return cursorDirection;
+  }
   return {
     get default() {
       return $__default;

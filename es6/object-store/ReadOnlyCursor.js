@@ -7,7 +7,8 @@ import CursorDirection from "./CursorDirection"
  */
 const FIELDS = Object.freeze({
   request: Symbol("request"),
-  flags: Symbol("flags")
+  flags: Symbol("flags"),
+  iterationCalback: Symbol("iterationCalback")
 })
 
 /**
@@ -21,8 +22,11 @@ export default class ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
+   * @param {function()} iterationCalback The callback to call when either the
+   *        {@code advance} or the {@code continue} method is called. Repeated
+   *        calls of this function must not have any effect.
    */
-  constructor(cursorRequest) {
+  constructor(cursorRequest, iterationCalback) {
     /**
      * The IndexedDB native request used to retrieve the native cursor. The
      * request is resolved, and will be used to retrieve the subsequent
@@ -31,6 +35,15 @@ export default class ReadOnlyCursor {
      * @type {IDBRequest}
      */
     this[FIELDS.request] = cursorRequest
+    
+    /**
+     * The callback to call when either the {@code advance} or the
+     * {@code continue} method is called (the cursor is advanced to the next
+     * record).
+     * 
+     * @type {function()}
+     */
+    this[FIELDS.iterationCalback] = iterationCalback
 
     /**
      * Cursor state flags.
@@ -50,33 +63,16 @@ export default class ReadOnlyCursor {
     let cursor = cursorRequest.result
 
     let direction
-    if (!cursor) {
-      direction = null
-    } else if (cursor.direction.substring(0, 4) === "next") {
+    if (cursor.direction.substring(0, 4) === "next") {
       direction = CursorDirection.NEXT
     } else {
       direction = CursorDirection.PREVIOUS
     }
 
     /**
-     * Set to {@code true} if there are no more records available and the last
-     * record has already been processed. All other fields of this cursor are
-     * set to {@code null} in such a case.
-     *
-     * Set to {@code false} if the cursor has not finished traversing the
-     * records or there is pointing to the last available record.
-     *
-     * @type {boolean}
-     */
-    this.done = !cursor
-
-    /**
      * The direction in which this cursor is traversing the records.
      *
-     * This field is {@code null} if the cursor has finished traversing the
-     * records.
-     *
-     * @type {?CursorDirection}
+     * @type {CursorDirection}
      */
     this.direction = direction
 
@@ -84,12 +80,9 @@ export default class ReadOnlyCursor {
      * Set to {@code true} if this cursor skips repeated key values, set to
      * {@code false} otherwise.
      *
-     * This field is {@code null} if the cursor has finished traversing the
-     * records.
-     *
-     * @type {?boolean}
+     * @type {boolean}
      */
-    this.unique = cursor ? (cursor.direction.indexOf("unique") > -1) : null
+    this.unique = cursor.direction.indexOf("unique") > -1
 
     /**
      * The key by which this cursor points to its current record. This is
@@ -97,24 +90,18 @@ export default class ReadOnlyCursor {
      * an object store, or value of the index key record field if the cursor is
      * traversing an index.
      *
-     * This field is {@code null} if the cursor has finished traversing the
-     * records.
-     *
-     * @type {?(number|string|Date|Array)}
+     * @type {(number|string|Date|Array)}
      */
-    this.key = cursor ? cursor.key : null
+    this.key = cursor.key
 
     /**
      * The primary key of the record this cursor points to. The field value is
      * always the same as the {@codelink key} field if the cursor is traversing
      * an object store.
      *
-     * This field is {@code null} if the cursor has finished traversing the
-     * records.
-     *
-     * @type {?(number|string|Date|Array)}
+     * @type {(number|string|Date|Array)}
      */
-    this.primaryKey = cursor ? cursor.primaryKey : null
+    this.primaryKey = cursor.primaryKey
 
     if (this.constructor === ReadOnlyCursor) {
       Object.freeze(this)
@@ -122,15 +109,14 @@ export default class ReadOnlyCursor {
   }
   
   /**
-   * The record this cursor points to. This value is {@code null} when the
-   * cursor has finished traversing the records. This value is
-   * {@code undefined} if the cursor has been opened as a key cursor.
+   * The record this cursor points to. The returned value is {@code undefined}
+   * if the cursor has been opened as a key cursor.
    *
-   * @return {?(undefined|*)}
+   * @return {(undefined|*)} The record this cursor points to.
    */
   get record() {
     let cursor = this[FIELDS.request].result
-    return cursor ? cursor.value : null
+    return cursor.value
   }
 
   /**
@@ -143,34 +129,22 @@ export default class ReadOnlyCursor {
    * Repeated calls to this method on the same instance, or calling this method
    * after the {@codelink continue} method has been called, throw an error.
    *
-   * Calling this method on a cursor that points after the last available
-   * record in the sequence throws an error.
-   *
-   * @param {number=} stepsCount The number or records the cursor should
+   * @param {number=} recordCount The number or records the cursor should
    *        advance, {@code 1} points to the immediate next record in the
    *        sequence of records the cursor traverses.
-   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
-   *         pointing to the next record.
-   * @throw {Error} Thrown if the cursor is done traversing the record sequence
-   *        or has already been used to retrieve the next record.
+   * @throw {Error} Thrown if the cursor has already been used to iterate to
+   *        the next record.
    */
-  advance(stepsCount = 1) {
+  advance(recordCount = 1) {
     if (this[FIELDS.flags].hasAdvanced) {
       throw new Error("This cursor instance has already advanced to another " +
-          "record, use the new returned cursor")
-    }
-    if (this.done) {
-      throw new Error("The cursor has already reached the end of the " +
-          "records sequence")
+          "record")
     }
 
     let request = this[FIELDS.request]
-    request.result.advance(stepsCount)
+    request.result.advance(recordCount)
     this[FIELDS.flags].hasAdvanced = true
-    
-    return PromiseSync.resolve(request).then(() => {
-      return new (this.constructor)(request)
-    })
+    this[FIELDS.iterationCalback]()
   }
 
   /**
@@ -185,33 +159,22 @@ export default class ReadOnlyCursor {
    * Repeated calls to this method on the same instance, or calling this method
    * after the {@codelink advance} method has been called, throw an error.
    *
-   * Calling this method on a cursor that points after the last available
-   * record in the sequence throws an error.
-   *
    * @param {(undefined|number|string|Date|Array)=} nextKey The next key to
    *        which the cursor should iterate. When set to {@code undefined}, the
    *        cursor will advance to the next record. Defaults to
    *        {@code undefined}.
-   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
-   *         pointing to the next record.
-   * @throw {Error} Thrown if the cursor is done traversing the record sequence
-   *        or has already been used to retrieve the next record.
+   * @throw {Error} Thrown if the cursor has already been used to iterate to
+   *        the next record.
    */
   continue(nextKey = undefined) {
     if (this[FIELDS.flags].hasAdvanced) {
-      throw new Error("This cursor instance")
-    }
-    if (this.done) {
-      throw new Error("The cursor has already reached the end of the " +
-          "records sequence")
+      throw new Error("This cursor instance has already advanced to another " +
+          "record")
     }
 
     let request = this[FIELDS.request]
     request.result.continue(nextKey)
     this[FIELDS.flags].hasAdvanced = true
-    
-    return PromiseSync.resolve(request).then(() => {
-      return new this.constructor(request)
-    })
+    this[FIELDS.iterationCalback]()
   }
 }

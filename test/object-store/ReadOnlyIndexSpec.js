@@ -99,98 +99,151 @@ describe("ReadOnlyIndex", () => {
   
   it("should traverse the records using a cursor", (done) => {
     let index = objectStore.getIndex("otherIndex")
-    index.openCursor(undefined, CursorDirection.NEXT, true).then((cursor) => {
-      expect(cursor.record).toEqual({
-        id: 11,
-        name: "John",
-        keyField: 1,
-        otherKey: "a"
-      })
+    index.openCursor(undefined, CursorDirection.NEXT, true, (cursor) => {
+      switch (cursor.primaryKey) {
+        case 11:
+          expect(cursor.record).toEqual({
+            id: 11,
+            name: "John",
+            keyField: 1,
+            otherKey: "a"
+          })
+          break
+        case 17:
+          expect(cursor.record).toEqual({
+            id: 17,
+            name: "Joshua",
+            keyField: 3,
+            otherKey: ["c", "d"]
+          })
+          break
+        default:
+          fail("unexpected record")
+          break
+      }
       
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.record).toEqual({
-        id: 17,
-        name: "Joshua",
-        keyField: 3,
-        otherKey: ["c", "d"]
-      })
+      cursor.advance()
+    }).then((iterationCount) => {
+      expect(iterationCount).toBe(3)
+      done()
+    })
+  })
+  
+  it("should provide a cursor factory for traversing the records", (done) => {
+    let index = objectStore.getIndex("otherIndex")
+    let factory = index.createCursorFactory(
+      undefined,
+      CursorDirection.NEXT,
+      true
+    )
+    factory((cursor) => {
+      switch (cursor.primaryKey) {
+        case 11:
+          expect(cursor.record).toEqual({
+            id: 11,
+            name: "John",
+            keyField: 1,
+            otherKey: "a"
+          })
+          break
+        case 17:
+          expect(cursor.record).toEqual({
+            id: 17,
+            name: "Joshua",
+            keyField: 3,
+            otherKey: ["c", "d"]
+          })
+          break
+        default:
+          fail("unexpected record")
+          break
+      }
       
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.record).toEqual({
-        id: 17,
-        name: "Joshua",
-        keyField: 3,
-        otherKey: ["c", "d"]
-      })
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.done).toBeTruthy()
-      
+      cursor.advance()
+    }).then((iterationCount) => {
+      expect(iterationCount).toBe(3)
       done()
     })
   })
   
   it("should traverse the primary keys using a key cursor", (done) => {
     let index = objectStore.getIndex("otherIndex")
-    let direction = CursorDirection.NEXT
-    index.openKeyCursor(undefined, direction, true).then((cursor) => {
+    index.openKeyCursor(undefined, CursorDirection.NEXT, true, (cursor) => {
       expect(cursor.record).toBeUndefined()
-      expect(cursor.key).toBe("a")
-      expect(cursor.primaryKey).toBe(11)
+      switch (cursor.key) {
+        case "a":
+          expect(cursor.primaryKey).toBe(11)
+          break
+        case "c":
+        case "d":
+          expect(cursor.primaryKey).toBe(17)
+          break
+      }
       
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.key).toBe("c")
-      expect(cursor.primaryKey).toBe(17)
+      cursor.continue()
+    }).then((recordCount) => {
+      expect(recordCount).toBe(3)
+      done()
+    })
+  })
+  
+  it("should provide a key cursor factory for traversing the primary keys",
+      (done) => {
+    let index = objectStore.getIndex("otherIndex")
+    let factory = index.createKeyCursorFactory(
+      undefined,
+      CursorDirection.NEXT,
+      true
+    )
+    factory((cursor) => {
+      expect(cursor.record).toBeUndefined()
+      switch (cursor.key) {
+        case "a":
+          expect(cursor.primaryKey).toBe(11)
+          break
+        case "c":
+        case "d":
+          expect(cursor.primaryKey).toBe(17)
+          break
+      }
       
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.key).toBe("d")
-      expect(cursor.primaryKey).toBe(17)
-      
-      return cursor.continue()
-    }).then((cursor) => {
-      expect(cursor.done).toBeTruthy()
-      
+      cursor.continue()
+    }).then((recordCount) => {
+      expect(recordCount).toBe(3)
       done()
     })
   })
   
   it("should allow strings to specify cursor direction", (done) => {
     let index = objectStore.getIndex("otherIndex")
-    index.openCursor(null, "NeXt").then((cursor) => {
+    
+    index.openCursor(null, "NeXt", false, (cursor) => {
       expect(cursor.key).toBe("a")
-      
-      return index.openCursor(null, "PReViouS")
-    }).then((cursor) => {
-      expect(cursor.key).toBe("d")
-      
-      return index.openKeyCursor(null, "prEV")
-    }).then((cursor) => {
-      expect(cursor.key).toBe("d")
     }).then(() => {
-      done()
-    }).catch(error => fail(error))
+      return index.openCursor(null, "PReViouS", false, (cursor) => {
+        expect(cursor.key).toBe("d")
+      })
+    }).then(() => {
+      return index.openCursor(null, "prEV", false, (cursor) => {
+        expect(cursor.key).toBe("d")
+      })
+    }).then(() => done()).catch(error => fail(error))
   })
   
   it("should allow strings to specify key cursor direction", (done) => {
     let index = objectStore.getIndex("otherIndex")
-    index.openKeyCursor(null, "NeXt").then((cursor) => {
+    
+    index.openKeyCursor(null, "NeXt", false, (cursor) => {
       expect(cursor.key).toBe("a")
-      
-      return index.openKeyCursor(null, "PReViouS")
-    }).then((cursor) => {
-      expect(cursor.key).toBe("d")
-      
-      return index.openKeyCursor(null, "prEV")
-    }).then((cursor) => {
-      expect(cursor.key).toBe("d")
     }).then(() => {
-      done()
-    }).catch(error => fail(error))
+      return index.openKeyCursor(null, "PReViouS", false, (cursor) => {
+        expect(cursor.key).toBe("d")
+      })
+    }).then(() => {
+      return index.openKeyCursor(null, "prEV", false, (cursor) => {
+        expect(cursor.key).toBe("d")
+      })
+    }).then(() => done()).catch(error => fail(error))
   })
   
 })

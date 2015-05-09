@@ -59,28 +59,29 @@ define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
     var storage = storageFactory();
     var nextItems = [];
     return new Promise((function(resolve, reject) {
-      storage.openCursor(keyRange, cursorDirection, unique).then(iterate).catch(reject);
-      function iterate(cursor) {
-        if (cursor.done) {
-          finalize(false, null, null);
-          return ;
-        }
+      var cursorFactory = storage.createCursorFactory(keyRange, cursorDirection, unique);
+      cursorFactory((function(cursor) {
         if (!unique) {
           var shouldSkip = ((cursorDirection === CursorDirection.NEXT) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) > 0)) || ((cursorDirection === CursorDirection.PREVIOUS) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) < 0));
           if (shouldSkip) {
-            cursor.advance().then(iterate).catch(reject);
+            cursor.continue();
             return ;
           }
         }
         if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
           if (nextItems.length === pageSize) {
             finalize(true, cursor.key, cursor.primaryKey);
+            return ;
           } else {
             nextItems.push(cursor.record);
           }
         }
-        cursor.advance().then(iterate).catch(reject);
-      }
+        cursor.continue();
+      })).then((function() {
+        return finalize(false, null, null);
+      })).catch((function(error) {
+        return reject(error);
+      }));
       function finalize(hasNextPage, nextKey, nextPrimaryKey) {
         resolve(new RecordList(nextItems, storageFactory, nextKey, nextPrimaryKey, cursorDirection, unique, filter, pageSize, hasNextPage));
       }

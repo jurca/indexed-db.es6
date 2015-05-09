@@ -135,6 +135,7 @@ describe("DatabaseVersionMigrator", () => {
       (done) => {
     createDatabase().then(() => {
       return upgradeDatabase((transaction) => {
+        transaction.completionPromise.catch(() => {})
         let objectStore = transaction.getObjectStore("fooBar3")
         objectStore.add({ keyed: "abc" })
         return objectStore.add({ keyed: "abc" })

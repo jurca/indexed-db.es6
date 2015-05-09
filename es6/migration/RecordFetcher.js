@@ -1,5 +1,6 @@
 
 import Database from "../Database"
+import CursorDirection from "../object-store/CursorDirection"
 import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema"
 
 /**
@@ -133,17 +134,7 @@ function fetchRecords(objectStore, preprocessor) {
   return new Promise((resolve, reject) => {
     let records = []
     
-    let cursorPromise = objectStore.openCursor()
-    cursorPromise.
-        then(iterate).
-        catch(reject)
-    
-    function iterate(cursor) {
-      if (cursor.done) {
-        resolve(records)
-        return
-      }
-      
+    objectStore.openCursor(null, CursorDirection.NEXT, (cursor) => {
       let primaryKey = cursor.primaryKey
       if (primaryKey instanceof Object) {
         Object.freeze(primaryKey)
@@ -151,10 +142,8 @@ function fetchRecords(objectStore, preprocessor) {
       
       let preprocessedRecord = preprocessor(cursor.record, primaryKey)
       if (preprocessedRecord === UpgradedDatabaseSchema.DELETE_RECORD) {
-        cursor.delete().
-            then(() => cursor.advance()).
-            then(iterate).
-            catch(reject)
+        cursor.delete()
+        cursor.continue()
         return
       } else if (preprocessedRecord !== UpgradedDatabaseSchema.SKIP_RECORD) {
         records.push({
@@ -165,10 +154,8 @@ function fetchRecords(objectStore, preprocessor) {
         // SKIP_RECORD returned, do nothing
       }
       
-      cursor.advance().
-          then(iterate).
-          catch(reject)
-    }
+      cursor.continue()
+    }).then(() => resolve(records)).catch(error => reject(error))
   })
 }
 

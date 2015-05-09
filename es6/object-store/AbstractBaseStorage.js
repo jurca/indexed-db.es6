@@ -36,8 +36,9 @@ export default class AbstractBaseStorage {
    *
    * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
    *        store or index.
-   * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
-   *        the cursor to use when traversing the storage records.
+   * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)}
+   *        cursorConstructor Constructor of the cursor to use when traversing
+   *        the storage records.
    */
   constructor(storage, cursorConstructor) {
     if (this.constructor === AbstractBaseStorage) {
@@ -79,7 +80,7 @@ export default class AbstractBaseStorage {
      * The constructor function of the cursor to use to create cursor
      * instances.
      *
-     * @type {function(new: ReadyOnlyCursor)}
+     * @type {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)}
      */
     this[FIELDS.cursorConstructor] = cursorConstructor
   }
@@ -122,20 +123,48 @@ export default class AbstractBaseStorage {
   /**
    * Opens a read-only cursor that traverses the records of this storage,
    * resolving to the traversed records.
+   * 
+   * The returned promise resolves once the record callback does not invoke
+   * the {@code continue} nor the {@code advance} method synchronously or the
+   * cursor reaches the end of available records.
    *
-   * @param {?(IDBKeyRange)} keyRange A key range to use to filter the records
-   *        by matching the values of their primary keys against this key
-   *        range.
+   * @param {?(number|string|Date|Array|IDBKeyRange)} keyRange A key range to
+   *        use to filter the records by matching the values of their primary
+   *        keys against this key range.
+   * @param {(CursorDirection|string)} direction The direction in which the
+   *        cursor will traverse the records. Use either the
+   *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter.
+   * @param {function(ReadOnlyCursor)} recordCallback A callback executed every
+   *        time the cursor traverses to a record.
+   * @return {PromiseSync<number>} A promise that resolves to the number of
+   *         records the cursor traversed.
+   */
+  openCursor(keyRange, direction, recordCallback) {
+    return this.createCursorFactory(keyRange, direction)(recordCallback)
+  }
+  
+  /**
+   * Creates a factory function for opening cursors on this storage with the
+   * specified configuration for the duration of the current transaction.
+   * 
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange)=} keyRange A key
+   *        range to use to filter the records by matching the values of their
+   *        primary keys against this key range.
    * @param {(CursorDirection|string)=} direction The direction in which the
    *        cursor will traverse the records. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
    *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
    *        used in the strings does not matter.
-   *        Defaults to {@code CursorDirection.NEXT}.
-   * @return {PromiseSync<ReadOnlyCursor>} A promise that resolves to a cursor
-   *         pointing to the first matched record.
+   * @return {function(ReadOnlyCursor): PromiseSync<number>} A cursor factory.
+   *         The factory accepts a callback to execute on every record the
+   *         cursor iterates over. The promise returned by the factory resolves
+   *         once the record callback does not invoke the {@code continue} nor
+   *         the {@code advance} method synchronously or the cursor reaches the
+   *         end of available records.
    */
-  openCursor(keyRange = undefined, direction = CursorDirection.NEXT) {
+  createCursorFactory(keyRange = undefined, direction = CursorDirection.NEXT) {
     if (keyRange === null) {
       keyRange = undefined
     }
@@ -152,12 +181,99 @@ export default class AbstractBaseStorage {
     }
 
     let cursorDirection = direction.toLowerCase().substring(0, 4)
-    let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
     
-    return PromiseSync.resolve(request).then(() => {
-      return new cursorConstructor(request)
-    })
+    return (recordCallback) => {
+      let request = this[FIELDS.storage].openCursor(keyRange, cursorDirection)
+      return iterateCursor(request, cursorConstructor, recordCallback)
+    }
   }
+}
+
+/**
+ * Iterates the cursor to which the provided Indexed DB request resolves. The
+ * method will iterate the cursor over the records in this storage within the
+ * range specified when the cursor was opened until the provided callback does
+ * not request iterating to the next record or the last matching record is
+ * reached.
+ * 
+ * @param {IDBRequest} request Indexed DB request that resolves to a cursor
+ *        every time the cursor iterates to a record.
+ * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)} cursorConstructor
+ * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
+ *        passing a high-level cursor instance pointing to the current record
+ *        in each iteration of the cursor.
+ * @return {PromiseSync<number>} A promise that resolves to the number of
+ *         records the cursor traversed.
+ */
+function iterateCursor(request, cursorConstructor, recordCallback) {
+  return new PromiseSync((resolve, reject) => {
+    let traversedRecords = 0
+    let canIterate = true
+    
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      if (!canIterate) {
+        console.warn("Cursor iteration was requested asynchronously, " +
+            "ignoring the new cursor position")
+        return
+      }
+      
+      if (!request.result) {
+        resolve(traversedRecords)
+        return
+      }
+      
+      traversedRecords++
+      
+      let iterationRequested = handleCursorIteration(
+        request,
+        cursorConstructor,
+        recordCallback,
+        reject
+      )
+      
+      if (!iterationRequested) {
+        canIterate = false
+        resolve(traversedRecords)
+      }
+    }
+  })
+}
+
+/**
+ * Handles a single iteration of a Indexed DB cursor iterating the records in
+ * the storage.
+ * 
+ * @param {IDBRequest} request Indexed DB request resolved to a cursor.
+ * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)} cursorConstructor
+ *        Constructor of the high-level cursor implementation to use.
+ * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
+ *        passing a high-level cursor instance pointing to the current record.
+ * @param {function(Error)) reject Callback to call if any sub-operation
+ *        triggered by the callback results in an error.
+ * @return {boolean} {@code true} if the cursor should iterate to the next
+ *         record.
+ */
+function handleCursorIteration(request, cursorConstructor, recordCallback,
+    reject) {
+  let iterationRequested = false
+  let cursor = new cursorConstructor(request, () => {
+    iterationRequested = true
+  }, (subRequest) => {
+    return PromiseSync.resolve(subRequest).catch((error) => {
+      reject(error)
+      throw error
+    })
+  })
+  
+  try {
+    recordCallback(cursor)
+  } catch (error) {
+    iterationRequested = false
+    reject(error)
+  }
+  
+  return iterationRequested
 }
 
 /**

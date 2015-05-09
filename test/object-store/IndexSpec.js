@@ -68,19 +68,19 @@ describe("Index", () => {
   })
   
   it("should open a read-write cursor", (done) => {
-    objectStore.getIndex("someIndex").openCursor().then((cursor) => {
+    let index = objectStore.getIndex("someIndex")
+    index.openCursor(null, CursorDirection.NEXT, false, (cursor) => {
       cursor.delete()
-      return transaction.completionPromise
-    }).then(() => {
+    }).then(() => transaction.completionPromise).then(() => {
       transaction = database.startReadOnlyTransaction(OBJECT_STORE_NAME)
       objectStore = transaction.getObjectStore(OBJECT_STORE_NAME)
       
-      objectStore.count().then((count) => {
-        expect(count).toBe(2)
-        
-        done()
-      })
-    })
+      return objectStore.count()
+    }).then((count) => {
+      expect(count).toBe(2)
+      
+      done()
+    }).catch(error => fail(error))
   })
 
 })

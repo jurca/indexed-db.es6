@@ -19,12 +19,17 @@ define(["./ReadOnlyIndex", "./Cursor", "./CursorDirection"], function($__0,$__2,
       $traceurRuntime.superConstructor(Index).call(this, storage, Cursor, storageFactory);
       Object.freeze(this);
     }
-    return ($traceurRuntime.createClass)(Index, {openCursor: function() {
+    return ($traceurRuntime.createClass)(Index, {
+      openCursor: function(keyRange, direction, unique, recordCallback) {
+        return $traceurRuntime.superGet(this, Index.prototype, "openCursor").call(this, keyRange, direction, unique, recordCallback);
+      },
+      createCursorFactory: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         var unique = arguments[2] !== (void 0) ? arguments[2] : false;
-        return $traceurRuntime.superGet(this, Index.prototype, "openCursor").call(this, keyRange, direction, unique);
-      }}, {}, $__super);
+        return $traceurRuntime.superGet(this, Index.prototype, "createCursorFactory").call(this, keyRange, direction, unique);
+      }
+    }, {}, $__super);
   }(ReadOnlyIndex));
   var $__default = Index;
   return {

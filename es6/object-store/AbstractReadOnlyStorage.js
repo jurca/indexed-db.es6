@@ -120,8 +120,9 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * @param {(CursorDirection|string)} direction The direction in which the
    *        records should be traversed. Use either the
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
-   *        {@code "PREVIOUS"}. The letter case used in the strings does not
-   *        matter. Defaults to {@code CursorDirection.NEXT}.
+   *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
+   *        used in the strings does not matter. Defaults to
+   *        {@code CursorDirection.NEXT}.
    * @param {function(*, (number|string|Date|Array), (number|string|Date|Array))}
    *        callback The callback to execute on the records matching the
    *        filter. The first argument will be set to the record, the second
@@ -141,29 +142,17 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
       keyRange = filter
       filter = null
     }
+    
+    let recordCount = 0
 
-    let count = 0
-    return new PromiseSync((resolve, reject) => {
-      this.openCursor(keyRange, direction).
-        then(iterate).
-        catch(reject)
-
-      function iterate(cursor) {
-        if (cursor.done) {
-          resolve(count)
-          return
-        }
-
-        if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
-          callback(cursor.record, cursor.primaryKey, cursor.key)
-          count++
-        }
-
-        cursor.advance().
-            then(iterate).
-            catch(reject)
+    return this.createCursorFactory(keyRange, direction)((cursor) => {
+      if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
+        callback(cursor.record, cursor.primaryKey, cursor.key)
+        recordCount++
       }
-    })
+      
+      cursor.continue()
+    }).then(() => recordCount)
   }
 
   /**
@@ -178,9 +167,9 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        the record (the primary key if traversing an object store).
    * @param {CursorDirection} direction The direction in which the records are
    *        to be listed. Use either the {@code CursorDirection.*} constants,
-   *        or strings {@code "NEXT"} and {@code "PREVIOUS"}. The letter case
-   *        used in the strings does not matter. Defaults to
-   *        {@code CursorDirection.NEXT}.
+   *        or strings {@code "NEXT"} and {@code "PREVIOUS"} (or {@code "PREV"}
+   *        for short). The letter case used in the strings does not matter.
+   *        Defaults to {@code CursorDirection.NEXT}.
    * @return {PromiseSync<Array<*>>} A promise that resolves to an array of all
    *         records matching the filter, listed in the specified order.
    */
@@ -229,9 +218,9 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        the record (the primary key if traversing an object store).
    * @param {CursorDirection} direction The direction in which the records are
    *        to be listed. Use either the {@code CursorDirection.*} constants,
-   *        or strings {@code "NEXT"} and {@code "PREVIOUS"}. The letter case
-   *        used in the strings does not matter. Defaults to
-   *        {@code CursorDirection.NEXT}.
+   *        or strings {@code "NEXT"} and {@code "PREVIOUS"} (or {@code "PREV"}
+   *        for short). The letter case used in the strings does not matter.
+   *        Defaults to {@code CursorDirection.NEXT}.
    * @param {number} pageSize The number of records per page.
    * @return {Promise<RecordList<*>>} A promise that resolves to a record list
    *         of the fetched records matching the filter.
@@ -303,28 +292,18 @@ function list(storage, keyRange, filter, direction, unique, pageSize,
   return new Promise((resolve, reject) => {
     let items = []
 
-    storage.openCursor(keyRange, direction).
-        then(iterate).
-        catch(reject)
-
-    function iterate(cursor) {
-      if (cursor.done) {
-        finalize(false, null, null)
-        return
-      }
-
+    storage.createCursorFactory(keyRange, direction)((cursor) => {
       if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
         if (items.length === pageSize) {
           finalize(true, cursor.key, cursor.primaryKey)
+          return
         } else {
           items.push(cursor.record)
         }
       }
-
-      cursor.advance().
-          then(iterate).
-          catch(reject)
-    }
+      
+      cursor.continue()
+    }).then(() => finalize(false, null, null)).catch(error => reject(error))
 
     function finalize(hasNextPage, nextKey, nextPrimaryKey) {
       resolve(new RecordList(items, storageFactory, nextKey, nextPrimaryKey,

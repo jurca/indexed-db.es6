@@ -73,10 +73,13 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         this[FIELDS.indexes].set(indexName, index);
         return index;
       },
-      openCursor: function() {
+      openCursor: function(keyRange, direction, recordCallback) {
+        return $traceurRuntime.superGet(this, ObjectStore.prototype, "openCursor").call(this, keyRange, direction, recordCallback);
+      },
+      createCursorFactory: function() {
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
-        return $traceurRuntime.superGet(this, ObjectStore.prototype, "openCursor").call(this, keyRange, direction);
+        return $traceurRuntime.superGet(this, ObjectStore.prototype, "createCursorFactory").call(this, keyRange, direction);
       }
     }, {}, $__super);
   }(ReadOnlyObjectStore));

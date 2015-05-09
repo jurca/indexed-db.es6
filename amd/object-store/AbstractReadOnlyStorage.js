@@ -52,7 +52,6 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
         return PromiseSync.resolve(request);
       },
       forEach: function(filter, direction, callback) {
-        var $__12 = this;
         filter = normalizeFilter(filter, this.keyPath);
         var keyRange;
         if (filter instanceof Function) {
@@ -61,20 +60,15 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
           keyRange = filter;
           filter = null;
         }
-        var count = 0;
-        return new PromiseSync((function(resolve, reject) {
-          $__12.openCursor(keyRange, direction).then(iterate).catch(reject);
-          function iterate(cursor) {
-            if (cursor.done) {
-              resolve(count);
-              return ;
-            }
-            if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
-              callback(cursor.record, cursor.primaryKey, cursor.key);
-              count++;
-            }
-            cursor.advance().then(iterate).catch(reject);
+        var recordCount = 0;
+        return this.createCursorFactory(keyRange, direction)((function(cursor) {
+          if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
+            callback(cursor.record, cursor.primaryKey, cursor.key);
+            recordCount++;
           }
+          cursor.continue();
+        })).then((function() {
+          return recordCount;
         }));
       },
       getAll: function() {
@@ -121,21 +115,21 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
   function list(storage, keyRange, filter, direction, unique, pageSize, storageFactory) {
     return new Promise((function(resolve, reject) {
       var items = [];
-      storage.openCursor(keyRange, direction).then(iterate).catch(reject);
-      function iterate(cursor) {
-        if (cursor.done) {
-          finalize(false, null, null);
-          return ;
-        }
+      storage.createCursorFactory(keyRange, direction)((function(cursor) {
         if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
           if (items.length === pageSize) {
             finalize(true, cursor.key, cursor.primaryKey);
+            return ;
           } else {
             items.push(cursor.record);
           }
         }
-        cursor.advance().then(iterate).catch(reject);
-      }
+        cursor.continue();
+      })).then((function() {
+        return finalize(false, null, null);
+      })).catch((function(error) {
+        return reject(error);
+      }));
       function finalize(hasNextPage, nextKey, nextPrimaryKey) {
         resolve(new RecordList(items, storageFactory, nextKey, nextPrimaryKey, direction, unique, filter, pageSize, hasNextPage));
       }
