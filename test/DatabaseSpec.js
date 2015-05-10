@@ -146,4 +146,37 @@ describe("Database", () => {
     })
   })
   
+  it("should return promise when closing connection", (done) => {
+    let done1 = false
+    let done2 = false
+    let done3 = false
+    
+    let transaction = database.startTransaction("fooBar")
+    transaction.getObjectStore("fooBar").get(1).then(() => {
+      transaction.getObjectStore("fooBar").get(2)
+    })
+    transaction.completionPromise.then(() => {
+      done1 = true
+    })
+    
+    transaction = database.startReadOnlyTransaction("fooBar")
+    transaction.getObjectStore("fooBar").get(1)
+    transaction.completionPromise.then(() => {
+      done2 = true
+    })
+    
+    let store = database.getObjectStore("fooBar")
+    store.get(1).then(() => {
+      done3 = true
+    })
+    
+    database.close().then(() => {
+      expect(done1).toBeTruthy()
+      expect(done2).toBeTruthy()
+      expect(done3).toBeTruthy()
+      
+      done()
+    })
+  })
+  
 })

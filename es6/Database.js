@@ -17,7 +17,8 @@ const TRANSACTION_MODES = Object.freeze({
  */
 const FIELDS = Object.freeze({
   database: Symbol("database"),
-  versionChangeListeners: Symbol("versionChangeListeners")
+  versionChangeListeners: Symbol("versionChangeListeners"),
+  activeTransactions: Symbol("activeTransactions")
 })
 
 /**
@@ -68,6 +69,13 @@ export default class Database {
      * @type {Set<function(number)>}
      */
     this[FIELDS.versionChangeListeners] = new Set()
+    
+    /**
+     * The transactions that currently are in progress.
+     * 
+     * @type {Set<ReadOnlyTransaction>}
+     */
+    this[FIELDS.activeTransactions] = new Set()
 
     database.onversionchange = (event) => {
       let newVersion = event.newVersion
@@ -141,9 +149,16 @@ export default class Database {
       TRANSACTION_MODES.READ_WRITE
     )
     
-    return new Transaction(nativeTransaction, (objectStoreName) => {
+    let transaction = new Transaction(nativeTransaction, (objectStoreName) => {
       return this.startReadOnlyTransaction(objectStoreName)
     })
+    
+    this[FIELDS.activeTransactions].add(transaction)
+    transaction.completionPromise.then(() => {
+      this[FIELDS.activeTransactions].delete(transaction)
+    })
+    
+    return transaction
   }
 
   /**
@@ -177,9 +192,17 @@ export default class Database {
       TRANSACTION_MODES.READ_ONLY
     )
     
-    return new ReadOnlyTransaction(nativeTransaction, (objectStoreName) => {
+    let transaction = new ReadOnlyTransaction(nativeTransaction,
+        (objectStoreName) => {
       return this.startReadOnlyTransaction(objectStoreName)
     })
+    
+    this[FIELDS.activeTransactions].add(transaction)
+    transaction.completionPromise.then(() => {
+      this[FIELDS.activeTransactions].delete(transaction)
+    })
+    
+    return transaction
   }
 
   /**
@@ -273,10 +296,27 @@ export default class Database {
    * Closes this connection to the database.
    *
    * The connection is closed asynchronously, but no more operations can be
-   * made using this connection once this method is called.
+   * made using this connection once this method is called, even using the
+   * still active transactions.
+   * 
+   * The promise returned by this method resolves once all pending transactions
+   * started from this connection are completed (the connection is not actually
+   * closed until all pending transactions are completed).
+   * 
+   * Note that any pending {@code versionchange} transactions (database schema
+   * upgrades or database deletions) will not happen until the connection is
+   * actually closed (after the returned promise returns).
+   * 
+   * @return {Promise<undefined>} A promise resolved when all pending
+   *         transactions are completed.
    */
   close() {
     this[FIELDS.database].close()
+    
+    let transactions = Array.from(this[FIELDS.activeTransactions])
+    return Promise.all(transactions.map((transaction) => {
+      return transaction.completionPromise
+    })).catch(() => {}).then(() => {})
   }
 }
 

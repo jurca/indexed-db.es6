@@ -12,7 +12,8 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
   });
   var FIELDS = Object.freeze({
     database: Symbol("database"),
-    versionChangeListeners: Symbol("versionChangeListeners")
+    versionChangeListeners: Symbol("versionChangeListeners"),
+    activeTransactions: Symbol("activeTransactions")
   });
   var Database = (function() {
     function Database(database) {
@@ -22,6 +23,7 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
       this.objectStoreNames = Object.freeze(Array.from(database.objectStoreNames));
       this[FIELDS.database] = database;
       this[FIELDS.versionChangeListeners] = new Set();
+      this[FIELDS.activeTransactions] = new Set();
       database.onversionchange = (function(event) {
         var newVersion = event.newVersion;
         $__4[FIELDS.versionChangeListeners].forEach((function(listener) {
@@ -52,9 +54,14 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           objectStoreNames = objectStoreNames[0];
         }
         var nativeTransaction = this[FIELDS.database].transaction(objectStoreNames, TRANSACTION_MODES.READ_WRITE);
-        return new Transaction(nativeTransaction, (function(objectStoreName) {
+        var transaction = new Transaction(nativeTransaction, (function(objectStoreName) {
           return $__4.startReadOnlyTransaction(objectStoreName);
         }));
+        this[FIELDS.activeTransactions].add(transaction);
+        transaction.completionPromise.then((function() {
+          $__4[FIELDS.activeTransactions].delete(transaction);
+        }));
+        return transaction;
       },
       startReadOnlyTransaction: function() {
         for (var objectStoreNames = [],
@@ -65,9 +72,14 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           objectStoreNames = objectStoreNames[0];
         }
         var nativeTransaction = this[FIELDS.database].transaction(objectStoreNames, TRANSACTION_MODES.READ_ONLY);
-        return new ReadOnlyTransaction(nativeTransaction, (function(objectStoreName) {
+        var transaction = new ReadOnlyTransaction(nativeTransaction, (function(objectStoreName) {
           return $__4.startReadOnlyTransaction(objectStoreName);
         }));
+        this[FIELDS.activeTransactions].add(transaction);
+        transaction.completionPromise.then((function() {
+          $__4[FIELDS.activeTransactions].delete(transaction);
+        }));
+        return transaction;
       },
       getObjectStore: function(objectStoreName) {
         var transaction = this.startReadOnlyTransaction(objectStoreName);
@@ -91,6 +103,10 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
       },
       close: function() {
         this[FIELDS.database].close();
+        var transactions = Array.from(this[FIELDS.activeTransactions]);
+        return Promise.all(transactions.map((function(transaction) {
+          return transaction.completionPromise;
+        }))).catch((function() {})).then((function() {}));
       }
     }, {});
   }());
