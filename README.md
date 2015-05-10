@@ -332,9 +332,9 @@ The following browsers are not supported at the moment:
 - iOS Safari: same issues as Safari
 
 You can still use these browsers with `indexed-db.es6`, or any browser without
-any native IndexedDB support that support
+any native IndexedDB support that supports
 [WebSQL](http://www.w3.org/TR/webdatabase/) using the
-[IndexedDBShim](https://github.com/axemclion/IndexedDBShim).
+[IndexedDBShim](https://github.com/axemclion/IndexedDBShim) polyfill.
 
 ## The current state of this project
 
