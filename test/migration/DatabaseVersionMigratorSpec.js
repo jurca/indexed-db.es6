@@ -1,4 +1,5 @@
 
+import PromiseSync from "../../amd/PromiseSync"
 import DatabaseVersionMigrator
     from "../../amd/migration/DatabaseVersionMigrator"
 import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
@@ -33,8 +34,8 @@ describe("DatabaseVersionMigrator", () => {
   })
   
   it("should create new database", (done) => {
-    createDatabase().then(() => {
-      return openConnection()
+    connectForUpgrade(1).then((request) => {
+      return createDatabase(request).then(() => PromiseSync.resolve(request))
     }).then((database) => {
       let objectStores = Array.from(database.objectStoreNames)
       
@@ -55,10 +56,11 @@ describe("DatabaseVersionMigrator", () => {
   })
   
   it("should upgrade existing db schema", (done) => {
-    createDatabase().then(() => {
-      return upgradeDatabase(() => {}, {})
-    }).then(() => {
-      return openConnection()
+    connectForUpgrade(1).then((request) => {
+      return createDatabase(request).then(() => request)
+    }).then((request) => {
+      return upgradeDatabase(request, () => {}, {}).
+          then(() => PromiseSync.resolve(request))
     }).then((database) => {
       let objectStores = Array.from(database.objectStoreNames)
       
@@ -70,29 +72,21 @@ describe("DatabaseVersionMigrator", () => {
     }).catch(error => fail(error))
   })
   
-  it("should reject modifying schema if database is of the target version",
-      (done) => {
-    createDatabase().then(() => {
-      return createDatabase()
-    }).then(() => {
-      fail("the version migrator should have rejected")
-    }).catch(error => {
-      done()
-    })
-  })
-  
   it("should execute completion callback", (done) => {
     let callbackExecuted = false
     
-    createDatabase().then(() => {
-      return upgradeDatabase((transaction, data) => {
+    connectForUpgrade(1).then((request) => {
+      return createDatabase(request).then(() => request)
+    }).then((request) => {
+      return upgradeDatabase(request, (transaction, data) => {
         expect(data).toEqual({ some: ["stuff"] })
         
         callbackExecuted = true
       }, {
         some: ["stuff"]
-      })
-    }).then(() => {
+      }).then(() => PromiseSync.resolve(request))
+    }).then((database) => {
+      database.close()
       expect(callbackExecuted).toBeTruthy()
       
       done()
@@ -100,8 +94,10 @@ describe("DatabaseVersionMigrator", () => {
   })
   
   it("should allow completion callback to modify data", (done) => {
-    createDatabase().then(() => {
-      return upgradeDatabase((transaction) => {
+    connectForUpgrade(1).then((request) => {
+      return createDatabase(request).then(() => request)
+    }).then((request) => {
+      return upgradeDatabase(request, (transaction) => {
         let objectStore = transaction.getObjectStore("fooBar")
         
         return objectStore.add({ keyed: "abc" }).then(() => {
@@ -109,20 +105,15 @@ describe("DatabaseVersionMigrator", () => {
         }).then(() => {
           return objectStore.add({ keyed: "ghi" })
         })
-      })
-    }).then(() => {
-      return openConnection()
+      }).then(() => PromiseSync.resolve(request))
     }).then((database) => {
       let transaction = database.transaction("fooBar")
       let objectStore = transaction.objectStore("fooBar")
       let request = objectStore.count()
       
-      return new Promise((resolve, reject) => {
-        request.onsuccess = () => {
-          resolve(request.result)
-          database.close()
-        }
-        request.onerror = () => reject(request.error)
+      return new PromiseSync.resolve(request).then((recordCount) => {
+        database.close()
+        return recordCount
       })
     }).then((recordCount) => {
       expect(recordCount).toBe(3)
@@ -133,8 +124,15 @@ describe("DatabaseVersionMigrator", () => {
   
   it("should execute the callback within the versionchange transaction",
       (done) => {
-    createDatabase().then(() => {
-      return upgradeDatabase((transaction) => {
+    let database = null
+    let transaction = null
+    connectForUpgrade(2).then((request) => {
+      return createDatabase(request).then(() => request)
+    }).then((request) => {
+      database = request.result
+      transaction = request.transaction
+      
+      return upgradeDatabase(request, (transaction) => {
         transaction.completionPromise.catch(() => {})
         let objectStore = transaction.getObjectStore("fooBar3")
         objectStore.add({ keyed: "abc" })
@@ -143,6 +141,9 @@ describe("DatabaseVersionMigrator", () => {
     }).then(() => {
       fail("the transaction should have failed")
     }).catch((error) => {
+      transaction.abort()
+      database.close()
+      
       return openConnection()
     }).then((database) => {
       expect(database.version).toBe(1)
@@ -154,14 +155,25 @@ describe("DatabaseVersionMigrator", () => {
   })
   
   it("should cancel versionchange transaction on early error", (done) => {
-    createDatabase().then(() => {
-      return upgradeDatabase((transaction) => {
+    let database = null
+    let transaction = null
+    
+    connectForUpgrade(2).then((request) => {
+      return createDatabase(request).then(() => request)
+    }).then((request) => {
+      database = request.result
+      transaction = request.transaction
+      
+      return upgradeDatabase(request, (transaction) => {
         let objectStore = transaction.getObjectStore("fooBar")
         return objectStore.add({ keyed: "abc" }, /invalid key/)
       })
     }).then(() => {
       fail("the transaction should have failed")
     }).catch((error) => {
+      transaction.abort()
+      database.close()
+      
       return openConnection()
     }).then((database) => {
       expect(database.version).toBe(1)
@@ -172,35 +184,58 @@ describe("DatabaseVersionMigrator", () => {
     }).catch(error => fail(error))
   })
   
-  function upgradeDatabase(callback, data) {
+  function upgradeDatabase(request, callback, data) {
     let migrator = new DatabaseVersionMigrator(
-      DB_NAME,
-      2,
+      request.result,
+      request.transaction,
       SCHEMA_V2
     )
     
     return migrator.executeMigration(callback, data)
   }
   
-  function createDatabase() {
+  function createDatabase(request) {
     let migrator = new DatabaseVersionMigrator(
-      DB_NAME,
-      1,
+      request.result,
+      request.transaction,
       SCHEMA_V1
     )
     
     return migrator.executeMigration(() => {}, {})
   }
+  
+  function connectForUpgrade(version) {
+    let request = indexedDB.open(DB_NAME, version)
+    
+    return new PromiseSync((resolve, reject) => {
+      request.onsuccess = () => {
+        request.result.close()
+        reject(new Error("No upgrade triggered"))
+      }
+      
+      request.onupgradeneeded = () => {
+        resolve(request)
+      }
+      
+      request.onblocked = () => reject(new Error("blocked"))
+      
+      request.onerror = (event) => {
+        event.preventDefault()
+        reject(request.error)
+      }
+    })
+  }
 
   function openConnection() {
     let request = indexedDB.open(DB_NAME)
     
-    return new Promise((resolve, reject) => {
+    return new PromiseSync((resolve, reject) => {
       request.onsuccess = () => {
         resolve(request.result)
       }
       
-      request.onerror = () => {
+      request.onerror = (event) => {
+        event.preventDefault()
         reject(request.error)
       }
     })

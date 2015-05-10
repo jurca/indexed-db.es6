@@ -1,5 +1,6 @@
 
 import Database from "./Database"
+import PromiseSync from "./PromiseSync"
 import DatabaseMigrator from "./migration/DatabaseMigrator"
 
 /**
@@ -208,14 +209,19 @@ function openConnection(databaseName, sortedSchemaDescriptors) {
         upgradeTriggered = true
       }
       
-      request.transaction.abort()
+      let database = request.result
+      let transaction = request.transaction
+      
       if (wasBlocked) {
+        transaction.abort()
         return
       }
       
-      upgradeSchemaAndReconnect(databaseName, migrationPromise, event,
-          sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver,
-          migrationPromiseRejector)
+      upgradeDatabaseSchema(databaseName, event, migrationPromise, database,
+          transaction, sortedSchemaDescriptors, migrationPromiseResolver,
+          migrationPromiseRejector).catch((error) => {
+        transaction.abort()
+      })
     }
 
     request.onerror = (event) => {
@@ -266,70 +272,43 @@ function handleConnectionError(event, error, wasBlocked, upgradeTriggered,
  * executes the promise resolution/rejection callbacks.
  * 
  * @param {string} databaseName The name of the database to upgrade.
+ * @param {Event} event The {@code upgradeneeded} event.
  * @param {Promise<undefined>} migrationPromise The database schema migration
  *        promise to pass to the migration listeners.
- * @param {Event} event The {@code upgradeneeded} event.
+ * @param {IDBDatabase} database The native Indexed DB database to upgrade.
+ * @param {IDBTransaction} transaction The native {@code versionchange}
+ *        transaction to use to manipulate the data.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
  *        sortedSchemaDescriptors The database schema descriptors, sorted in
  *        ascending order by the schema version number.
- * @param {function(Database)} resolve Connection promise resolver.
- * @param {function(Error)} reject Connection promise rejector.
  * @param {function()} migrationPromiseResolver Schema migration promise
  *        resolver.
  * @param {function(Error)} migrationPromiseRejector Schema migration promise
  *        rejector.
+ * @return {PromiseSync<undefined>} A promise resolved when the schema has been
+ *         upgraded.
  */
-function upgradeSchemaAndReconnect(databaseName, migrationPromise, event,
-    sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver,
+function upgradeDatabaseSchema(databaseName, event, migrationPromise,
+    database, transaction, sortedSchemaDescriptors, migrationPromiseResolver,
     migrationPromiseRejector) {
-  Promise.resolve().then(() => {
-    return upgradeDatabaseSchema(
-      databaseName,
-      migrationPromise,
-      event,
-      sortedSchemaDescriptors
-    )
-  }).then(() => {
-    migrationPromiseResolver()
-    return openConnection(
-      databaseName,
-      sortedSchemaDescriptors
-    )
-  }).then((database) => {
-    resolve(database)
-  }).catch((error) => {
-    reject(error)
-    migrationPromiseRejector(error)
-  })
-}
-
-/**
- * Handles the provided {@code upgradeneeded} event that has occurred during
- * the opening of a database that was not blocked.
- * 
- * The function executes the database migration listeners and executes the
- * database schema migration.
- * 
- * @param {string} databaseName The name of the database to upgrade.
- * @param {Promise<undefined>} migrationPromise The database schema migration
- *        promise to pass to the migration listeners.
- * @param {Event} event The {@code upgradeneeded} event.
- * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
- *        sortedSchemaDescriptors The database schema descriptors, sorted in
- *        ascending order by the schema version number.
- */
-function upgradeDatabaseSchema(databaseName, migrationPromise, event,
-    sortedSchemaDescriptors) {
-  executeMigrationListeners(databaseName, event.oldVersion,
-      event.newVersion, migrationPromise)
+  executeMigrationListeners(databaseName, event.oldVersion, event.newVersion,
+      migrationPromise)
   
   let migrator = new DatabaseMigrator(
-    databaseName,
+    database,
+    transaction,
     sortedSchemaDescriptors,
     event.oldVersion
   )
   
-  return migrator.executeMigration()
+  return PromiseSync.resolve().then(() => {
+    return migrator.executeMigration()
+  }).then(() => {
+    migrationPromiseResolver()
+  }).catch((error) => {
+    migrationPromiseRejector(error)
+    throw error
+  })
 }
 
 /**

@@ -10,42 +10,31 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
   var Transaction = $__2.default;
   var ObjectStoreMigrator = $__4.default;
   var FIELDS = Object.freeze({
-    databaseName: Symbol("databaseName"),
-    targetVersion: Symbol("targetVersion"),
+    database: Symbol("database"),
+    transaction: Symbol("transaction"),
     objectStores: Symbol("objectStores")
   });
   var DatabaseVersionMigrator = (function() {
-    function DatabaseVersionMigrator(databaseName, targetVersion, objectStores) {
-      this[FIELDS.databaseName] = databaseName;
-      this[FIELDS.targetVersion] = targetVersion;
+    function DatabaseVersionMigrator(database, transaction, objectStores) {
+      this[FIELDS.database] = database;
+      this[FIELDS.transaction] = transaction;
       this[FIELDS.objectStores] = objectStores;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseVersionMigrator, {executeMigration: function(onComplete, callbackData) {
-        var $__6 = this;
-        var openedDatabase;
-        var request = indexedDB.open(this[FIELDS.databaseName], this[FIELDS.targetVersion]);
-        return openConnection(request, (function(nativeDatabase, nativeTransaction) {
-          openedDatabase = nativeDatabase;
-          var objectStores = $__6[FIELDS.objectStores];
-          upgradeSchema(nativeDatabase, nativeTransaction, objectStores);
-          var objectStoreNames = $__6[FIELDS.objectStores].map((function(objectStore) {
-            return objectStore.name;
-          }));
+        var nativeDatabase = this[FIELDS.database];
+        var nativeTransaction = this[FIELDS.transaction];
+        var objectStores = this[FIELDS.objectStores];
+        upgradeSchema(nativeDatabase, nativeTransaction, objectStores);
+        return PromiseSync.resolve().then((function() {
           var transaction = new Transaction(nativeTransaction, (function() {
             return transaction;
           }));
           transaction.completionPromise.catch((function() {}));
-          try {
-            return PromiseSync.resolve(onComplete(transaction, callbackData));
-          } catch (error) {
-            return PromiseSync.reject(error);
-          }
-        })).catch((function(error) {
-          if (openedDatabase) {
-            openedDatabase.close();
-          }
-          throw error;
+          var promise = PromiseSync.resolve(onComplete(transaction, callbackData));
+          return promise.then((function() {
+            return undefined;
+          }));
         }));
       }}, {});
   }());
@@ -65,45 +54,6 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
       var nativeObjectStore = objectStoreNames.indexOf(objectStoreName) > -1 ? nativeTransaction.objectStore(objectStoreName) : null;
       var objectStoreMigrator = new ObjectStoreMigrator(nativeDatabase, nativeObjectStore, objectStoreDescriptor);
       objectStoreMigrator.executeMigration();
-    }));
-  }
-  function openConnection(request, onUpgradeReady) {
-    return new Promise((function(resolve, reject) {
-      var wasBlocked = false;
-      var upgradeTrigerred = false;
-      var upgradeExecuted = false;
-      request.onsuccess = (function() {
-        var database = request.result;
-        database.close();
-        if (!upgradeExecuted) {
-          reject(new Error("The database was already at version " + database.version));
-        }
-        resolve();
-      });
-      request.onupgradeneeded = (function() {
-        if (wasBlocked) {
-          request.transaction.abort();
-          return ;
-        }
-        upgradeTrigerred = true;
-        onUpgradeReady(request.result, request.transaction).catch((function(error) {
-          reject(error);
-          request.transaction.abort();
-        }));
-        upgradeExecuted = true;
-      });
-      request.onerror = (function(event) {
-        if (wasBlocked || upgradeTrigerred) {
-          event.preventDefault();
-          return ;
-        }
-        reject(request.error);
-      });
-      request.onblocked = (function() {
-        wasBlocked = true;
-        var error = new Error("The database upgrade could not be performed " + "because the attempt was blocked by a connection that remained " + "opened after receiving the notification");
-        reject(error);
-      });
     }));
   }
   return {

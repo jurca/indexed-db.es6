@@ -1,19 +1,22 @@
-define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
+define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
   var Database = $__0.default;
-  var DatabaseMigrator = $__2.default;
+  var PromiseSync = $__2.default;
+  var DatabaseMigrator = $__4.default;
   var migrationListeners = new Set();
   var DBFactory = (function() {
     function DBFactory() {}
     return ($traceurRuntime.createClass)(DBFactory, {}, {
       open: function(databaseName) {
         for (var schemaDescriptors = [],
-            $__12 = 1; $__12 < arguments.length; $__12++)
-          schemaDescriptors[$__12 - 1] = arguments[$__12];
+            $__14 = 1; $__14 < arguments.length; $__14++)
+          schemaDescriptors[$__14 - 1] = arguments[$__14];
         if (!schemaDescriptors.length) {
           throw new Error("The list of schema descriptors must not be empty");
         }
@@ -64,11 +67,15 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
         if (!wasBlocked) {
           upgradeTriggered = true;
         }
-        request.transaction.abort();
+        var database = request.result;
+        var transaction = request.transaction;
         if (wasBlocked) {
+          transaction.abort();
           return ;
         }
-        upgradeSchemaAndReconnect(databaseName, migrationPromise, event, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector);
+        upgradeDatabaseSchema(databaseName, event, migrationPromise, database, transaction, sortedSchemaDescriptors, migrationPromiseResolver, migrationPromiseRejector).catch((function(error) {
+          transaction.abort();
+        }));
       });
       request.onerror = (function(event) {
         handleConnectionError(event, request.error, wasBlocked, upgradeTriggered, reject, migrationPromiseRejector);
@@ -89,32 +96,26 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
     reject(request.error);
     migrationPromiseRejector(request.error);
   }
-  function upgradeSchemaAndReconnect(databaseName, migrationPromise, event, sortedSchemaDescriptors, resolve, reject, migrationPromiseResolver, migrationPromiseRejector) {
-    Promise.resolve().then((function() {
-      return upgradeDatabaseSchema(databaseName, migrationPromise, event, sortedSchemaDescriptors);
+  function upgradeDatabaseSchema(databaseName, event, migrationPromise, database, transaction, sortedSchemaDescriptors, migrationPromiseResolver, migrationPromiseRejector) {
+    executeMigrationListeners(databaseName, event.oldVersion, event.newVersion, migrationPromise);
+    var migrator = new DatabaseMigrator(database, transaction, sortedSchemaDescriptors, event.oldVersion);
+    return PromiseSync.resolve().then((function() {
+      return migrator.executeMigration();
     })).then((function() {
       migrationPromiseResolver();
-      return openConnection(databaseName, sortedSchemaDescriptors);
-    })).then((function(database) {
-      resolve(database);
     })).catch((function(error) {
-      reject(error);
       migrationPromiseRejector(error);
+      throw error;
     }));
   }
-  function upgradeDatabaseSchema(databaseName, migrationPromise, event, sortedSchemaDescriptors) {
-    executeMigrationListeners(databaseName, event.oldVersion, event.newVersion, migrationPromise);
-    var migrator = new DatabaseMigrator(databaseName, sortedSchemaDescriptors, event.oldVersion);
-    return migrator.executeMigration();
-  }
   function executeMigrationListeners(databaseName, oldVersion, newVersion, completionPromise) {
-    var $__8 = true;
-    var $__9 = false;
-    var $__10 = undefined;
+    var $__10 = true;
+    var $__11 = false;
+    var $__12 = undefined;
     try {
-      for (var $__6 = void 0,
-          $__5 = (migrationListeners)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__8 = ($__6 = $__5.next()).done); $__8 = true) {
-        var listener = $__6.value;
+      for (var $__8 = void 0,
+          $__7 = (migrationListeners)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__10 = ($__8 = $__7.next()).done); $__10 = true) {
+        var listener = $__8.value;
         {
           try {
             listener(databaseName, oldVersion, newVersion, completionPromise);
@@ -123,17 +124,17 @@ define(["./Database", "./migration/DatabaseMigrator"], function($__0,$__2) {
           }
         }
       }
-    } catch ($__11) {
-      $__9 = true;
-      $__10 = $__11;
+    } catch ($__13) {
+      $__11 = true;
+      $__12 = $__13;
     } finally {
       try {
-        if (!$__8 && $__5.return != null) {
-          $__5.return();
+        if (!$__10 && $__7.return != null) {
+          $__7.return();
         }
       } finally {
-        if ($__9) {
-          throw $__10;
+        if ($__11) {
+          throw $__12;
         }
       }
     }

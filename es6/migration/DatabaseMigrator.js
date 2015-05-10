@@ -1,15 +1,16 @@
 
+import PromiseSync from "../PromiseSync"
 import RecordFetcher from "./RecordFetcher"
 import DatabaseVersionMigrator from "./DatabaseVersionMigrator"
 import DatabaseSchema from "../schema/DatabaseSchema"
 import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema"
-import Transaction from "../transaction/Transaction"
 
 /**
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
-  databaseName: Symbol("databaseName"),
+  database: Symbol("database"),
+  transaction: Symbol("transaction"),
   schemaDescriptors: Symbol("schemaDescriptors"),
   currentVersion: Symbol("currentVersion")
 })
@@ -22,8 +23,9 @@ export default class DatabaseMigrator {
   /**
    * Initializes the database migrator.
    *
-   * @param {string} databaseName The name of the Indexed DB database to
-   *        upgrade.
+   * @param {IDBDatabase} database The native Indexed DB database to upgrade.
+   * @param {IDBTransaction} transaction The native {@code versionchange}
+   *        transaction to use to manipulate the data.
    * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])}
    *        schemaDescriptors Descriptors of the database schema for all known
    *        database versions.
@@ -31,7 +33,7 @@ export default class DatabaseMigrator {
    *        positive integer, or set to {@code 0} if the database is being
    *        created.
    */
-  constructor(databaseName, schemaDescriptors, currentVersion) {
+  constructor(database, transaction, schemaDescriptors, currentVersion) {
     if (!schemaDescriptors.length) {
       throw new Error("The list of schema descriptors cannot be empty")
     }
@@ -50,9 +52,17 @@ export default class DatabaseMigrator {
     /**
      * The native Indexed DB database connection.
      *
-     * @type {@IDBDatabase}
+     * @type {IDBDatabase}
      */
-    this[FIELDS.databaseName] = databaseName
+    this[FIELDS.database] = database
+    
+    /**
+     * The native {@code versionchange} transaction to use to manipulate the
+     * data.
+     * 
+     * @type {IDBTransaction}
+     */
+    this[FIELDS.transaction] = transaction
 
     /**
      * Descriptors of the database schemas across the versions of the database,
@@ -65,7 +75,7 @@ export default class DatabaseMigrator {
      * @type {(DatabaseSchema|UpgradedDatabaseSchema)[]}
      */
     this[FIELDS.schemaDescriptors] = Object.freeze(sortedSchemasCopy)
-
+    
     /**
      * The current version of the database, before the migration was started.
      * The version number is either a positive integer, or {@code 0} if the
@@ -82,13 +92,14 @@ export default class DatabaseMigrator {
    * Processes the schema descriptors and upgrades the database to the greatest
    * described version.
    * 
-   * @return {Promise<undefined>} A promise that resolves when the schema is
+   * @return {PromiseSync<undefined>} A promise that resolves when the schema is
    *         upgraded to the greatest version specified in the schema
    *         descriptors.
    */
   executeMigration() {
     return migrateDatabase(
-      this[FIELDS.databaseName],
+      this[FIELDS.database],
+      this[FIELDS.transaction],
       this[FIELDS.schemaDescriptors],
       this[FIELDS.currentVersion]
     )
@@ -104,25 +115,28 @@ export default class DatabaseMigrator {
  *        descriptors of the database schemas for various versions, sorted in
  *        ascending order by the version number.
  * @param {number} currentVersion The current version of the database schema.
- * @return {Promise<undefined>} A promise that resolves when the schema is
+ * @return {PromiseSync<undefined>} A promise that resolves when the schema is
  *         upgraded to the greatest version specified in the schema
  *         descriptors.
  */
-function migrateDatabase(databaseName, schemaDescriptors, currentVersion) {
+function migrateDatabase(nativeDatabase, nativeTransaction, schemaDescriptors,
+    currentVersion) {
   let descriptorsToProcess = schemaDescriptors.filter((descriptor) => {
     return descriptor.version > currentVersion
   })
   
   if (!descriptorsToProcess.length) {
-    return Promise.resolve(undefined)
+    return PromiseSync.resolve(undefined)
   }
   
   return migrateDatabaseVersion(
-    databaseName,
+    nativeDatabase,
+    nativeTransaction,
     descriptorsToProcess[0]
   ).then(() => {
     return migrateDatabase(
-      databaseName,
+      nativeDatabase,
+      nativeTransaction,
       descriptorsToProcess,
       descriptorsToProcess[0].version
     )
@@ -133,27 +147,31 @@ function migrateDatabase(databaseName, schemaDescriptors, currentVersion) {
  * Performs a single-version database migration to the schema described by the
  * provided database schema descriptor.
  *
- * @param {string} databaseName The native Indexed DB database being migrated.
+ * @param {IDBDatabase} nativeDatabase The native Indexed DB database being
+ *        migrated to a higher version.
+ * @param {IDBTransaction} nativeTransaction The native Indexed DB
+ *        {@code versionchange} transaction to use to manipulate the data.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema)} descriptor Schema
  *        descriptor of the version to which the database is to be upgraded.
- * @return {Promise<undefined>} A promise that resolves once the database has
- *         been upgraded to the schema described by the provided schema
+ * @return {PromiseSync<undefined>} A promise that resolves once the database
+ *         has been upgraded to the schema described by the provided schema
  *         descriptor.
  */
-function migrateDatabaseVersion(databaseName, descriptor) {
+function migrateDatabaseVersion(nativeDatabase, nativeTransaction,
+    descriptor) {
   let fetchPromise
   if (descriptor.fetchBefore && descriptor.fetchBefore.length) {
     let fetcher = new RecordFetcher()
     let objectStores = normalizeFetchBeforeObjectStores(descriptor.fetchBefore)
-    fetchPromise = fetcher.fetchRecords(databaseName, objectStores)
+    fetchPromise = fetcher.fetchRecords(nativeTransaction, objectStores)
   } else {
-    fetchPromise = Promise.resolve({})
+    fetchPromise = PromiseSync.resolve({})
   }
   
   return fetchPromise.then((recordsMap) => {
     let versionMigrator = new DatabaseVersionMigrator(
-      databaseName,
-      descriptor.version,
+      nativeDatabase,
+      nativeTransaction,
       descriptor.objectStores
     )
     

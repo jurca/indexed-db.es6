@@ -1,4 +1,4 @@
-define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchema", "../schema/UpgradedDatabaseSchema", "../transaction/Transaction"], function($__0,$__2,$__4,$__6,$__8) {
+define(["../PromiseSync", "./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchema", "../schema/UpgradedDatabaseSchema"], function($__0,$__2,$__4,$__6,$__8) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -10,18 +10,19 @@ define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchem
     $__6 = {default: $__6};
   if (!$__8 || !$__8.__esModule)
     $__8 = {default: $__8};
-  var RecordFetcher = $__0.default;
-  var DatabaseVersionMigrator = $__2.default;
-  var DatabaseSchema = $__4.default;
-  var UpgradedDatabaseSchema = $__6.default;
-  var Transaction = $__8.default;
+  var PromiseSync = $__0.default;
+  var RecordFetcher = $__2.default;
+  var DatabaseVersionMigrator = $__4.default;
+  var DatabaseSchema = $__6.default;
+  var UpgradedDatabaseSchema = $__8.default;
   var FIELDS = Object.freeze({
-    databaseName: Symbol("databaseName"),
+    database: Symbol("database"),
+    transaction: Symbol("transaction"),
     schemaDescriptors: Symbol("schemaDescriptors"),
     currentVersion: Symbol("currentVersion")
   });
   var DatabaseMigrator = (function() {
-    function DatabaseMigrator(databaseName, schemaDescriptors, currentVersion) {
+    function DatabaseMigrator(database, transaction, schemaDescriptors, currentVersion) {
       if (!schemaDescriptors.length) {
         throw new Error("The list of schema descriptors cannot be empty");
       }
@@ -33,38 +34,39 @@ define(["./RecordFetcher", "./DatabaseVersionMigrator", "../schema/DatabaseSchem
       if (!isVersionValid) {
         throw new Error("The version number must be either a positive " + "integer, or 0 if the database is being created");
       }
-      this[FIELDS.databaseName] = databaseName;
+      this[FIELDS.database] = database;
+      this[FIELDS.transaction] = transaction;
       this[FIELDS.schemaDescriptors] = Object.freeze(sortedSchemasCopy);
       this[FIELDS.currentVersion] = currentVersion;
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseMigrator, {executeMigration: function() {
-        return migrateDatabase(this[FIELDS.databaseName], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion]);
+        return migrateDatabase(this[FIELDS.database], this[FIELDS.transaction], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion]);
       }}, {});
   }());
   var $__default = DatabaseMigrator;
-  function migrateDatabase(databaseName, schemaDescriptors, currentVersion) {
+  function migrateDatabase(nativeDatabase, nativeTransaction, schemaDescriptors, currentVersion) {
     var descriptorsToProcess = schemaDescriptors.filter((function(descriptor) {
       return descriptor.version > currentVersion;
     }));
     if (!descriptorsToProcess.length) {
-      return Promise.resolve(undefined);
+      return PromiseSync.resolve(undefined);
     }
-    return migrateDatabaseVersion(databaseName, descriptorsToProcess[0]).then((function() {
-      return migrateDatabase(databaseName, descriptorsToProcess, descriptorsToProcess[0].version);
+    return migrateDatabaseVersion(nativeDatabase, nativeTransaction, descriptorsToProcess[0]).then((function() {
+      return migrateDatabase(nativeDatabase, nativeTransaction, descriptorsToProcess, descriptorsToProcess[0].version);
     }));
   }
-  function migrateDatabaseVersion(databaseName, descriptor) {
+  function migrateDatabaseVersion(nativeDatabase, nativeTransaction, descriptor) {
     var fetchPromise;
     if (descriptor.fetchBefore && descriptor.fetchBefore.length) {
       var fetcher = new RecordFetcher();
       var objectStores = normalizeFetchBeforeObjectStores(descriptor.fetchBefore);
-      fetchPromise = fetcher.fetchRecords(databaseName, objectStores);
+      fetchPromise = fetcher.fetchRecords(nativeTransaction, objectStores);
     } else {
-      fetchPromise = Promise.resolve({});
+      fetchPromise = PromiseSync.resolve({});
     }
     return fetchPromise.then((function(recordsMap) {
-      var versionMigrator = new DatabaseVersionMigrator(databaseName, descriptor.version, descriptor.objectStores);
+      var versionMigrator = new DatabaseVersionMigrator(nativeDatabase, nativeTransaction, descriptor.objectStores);
       return versionMigrator.executeMigration(descriptor.after || ((function() {})), recordsMap);
     }));
   }

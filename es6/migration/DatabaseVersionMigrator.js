@@ -7,8 +7,8 @@ import ObjectStoreMigrator from "./ObjectStoreMigrator"
  * Private field symbols.
  */
 const FIELDS = Object.freeze({
-  databaseName: Symbol("databaseName"),
-  targetVersion: Symbol("targetVersion"),
+  database: Symbol("database"),
+  transaction: Symbol("transaction"),
   objectStores: Symbol("objectStores")
 })
 
@@ -19,29 +19,27 @@ export default class DatabaseVersionMigrator {
   /**
    * Initializes the database version migrator.
    * 
-   * @param {string} databaseName The name of the database to upgrade.
-   * @param {number} targetVersion The version number to which the database
-   *        should be upgraded. The version must be higher than the current
-   *        version and can be greater by any amount.
+   * @param {IDBDatabase} database The database to upgrade.
+   * @param {IDBTransaction} transaction The {@code versionchange} transaction.
    * @param {(ObjectStoreSchema[]|Object[])} objectStores Descriptors of object
    *        stores representing the schema the database should have after the
    *        migration. Use either {@codelink ObjectStoreSchema} instances or
    *        plain object with compatible structure.
    */
-  constructor(databaseName, targetVersion, objectStores) {
+  constructor(database, transaction, objectStores) {
     /**
-     * The name of the database to upgrade.
+     * The database to upgrade.
      * 
-     * @type {number}
+     * @type {IDBDatabase}
      */
-    this[FIELDS.databaseName] = databaseName
+    this[FIELDS.database] = database
     
     /**
-     * The version number to which the database should be upgraded.
+     * The {@code versionchange} transaction.
      * 
-     * @type {number}
+     * @type {IDBTransaction}
      */
-    this[FIELDS.targetVersion] = targetVersion
+    this[FIELDS.transaction] = transaction
     
     /**
      * Descriptors of object stores representing the schema the database should
@@ -55,11 +53,10 @@ export default class DatabaseVersionMigrator {
   }
   
   /**
-   * Opens a new connection to the database, upgrades the database schema and
-   * executes the provided callback within the same transaction. The method
-   * automatically terminates the created database connection.
+   * Upgrades the database schema and executes the provided callback within the
+   * transaction provided in the constructor.
    * 
-   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
+   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?PromiseSync<undefined>}
    *        onComplete Callback to execute when the schema has been
    *        successfully migrated. If the callback performs database
    *        operations, it must execute the first operation synchronously, the
@@ -68,42 +65,22 @@ export default class DatabaseVersionMigrator {
    * @param {Object<string, {key: (number|string|Date|Array), record: *}[]>}
    *        callbackData The data to pass as the second argument of the
    *        callback.
-   * @return {Promise<undefined>} A promise that resolves when the database
+   * @return {PromiseSync<undefined>} A promise that resolves when the database
    *         schema has been upgraded and the promise returned by the callback
    *         resolves.
    */
   executeMigration(onComplete, callbackData) {
-    let openedDatabase
+    let nativeDatabase = this[FIELDS.database]
+    let nativeTransaction = this[FIELDS.transaction]
+    let objectStores = this[FIELDS.objectStores]
+    upgradeSchema(nativeDatabase, nativeTransaction, objectStores)
     
-    let request = indexedDB.open(
-      this[FIELDS.databaseName],
-      this[FIELDS.targetVersion]
-    )
-    
-    return openConnection(request, (nativeDatabase, nativeTransaction) => {
-      openedDatabase = nativeDatabase
-      
-      let objectStores = this[FIELDS.objectStores]
-      upgradeSchema(nativeDatabase, nativeTransaction, objectStores)
-      
-      let objectStoreNames = this[FIELDS.objectStores].map((objectStore) => {
-        return objectStore.name
-      })
-      
+    return PromiseSync.resolve().then(() => {
       let transaction = new Transaction(nativeTransaction, () => transaction)
       transaction.completionPromise.catch(() => {})
       
-      try {
-        return PromiseSync.resolve(onComplete(transaction, callbackData))
-      } catch (error) {
-        return PromiseSync.reject(error)
-      }
-    }).catch((error) => {
-      if (openedDatabase) {
-        openedDatabase.close()
-      }
-      
-      throw error
+      let promise = PromiseSync.resolve(onComplete(transaction, callbackData))
+      return promise.then(() => undefined)
     })
   }
 }
@@ -140,66 +117,3 @@ function upgradeSchema(nativeDatabase, nativeTransaction, descriptors) {
     objectStoreMigrator.executeMigration()
   })
 }
-
-/**
- * Creates a connection to an Indexed DB database in order to upgrade its
- * schema.
- * 
- * @param {IDBOpenDBRequest} request The database opening request.
- * @param {function(IDBDatabase, IDBTransaction)} onUpgradeReady A callback to
- *        synchronously execute on the {@code upgradeneeded} event.
- * @return {Promise<undefined>} A promise that resolves when the upgrade is
- *         successfuly completed and the database connection is closed.
- */
-function openConnection(request, onUpgradeReady) {
-  return new Promise((resolve, reject) => {
-    let wasBlocked = false
-    let upgradeTrigerred = false
-    let upgradeExecuted = false
-    
-    request.onsuccess = () => {
-      let database = request.result
-      database.close()
-      
-      if (!upgradeExecuted) {
-        reject(new Error("The database was already at version " +
-            database.version))
-      }
-      
-      resolve()
-    }
-    
-    request.onupgradeneeded = () => {
-      if (wasBlocked) {
-        request.transaction.abort()
-        return
-      }
-      
-      upgradeTrigerred = true
-      onUpgradeReady(request.result, request.transaction).catch((error) => {
-        reject(error)
-        request.transaction.abort()
-      })
-      upgradeExecuted = true
-    }
-    
-    request.onerror = (event) => {
-      if (wasBlocked || upgradeTrigerred) {
-        event.preventDefault()
-        return
-      }
-      
-      reject(request.error)
-    }
-    
-    request.onblocked = () => {
-      wasBlocked = true
-      
-      let error = new Error("The database upgrade could not be performed " +
-          "because the attempt was blocked by a connection that remained " +
-          "opened after receiving the notification")
-      reject(error)
-    }
-  })
-}
-
