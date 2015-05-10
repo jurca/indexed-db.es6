@@ -112,17 +112,17 @@ export default class DBFactory {
   /**
    * Attempts to delete the specified database.
    *
-   * The method will trigger the databse deletion handlers on all open database
-   * conections. The attempt will fail if any of the handlers will not close
-   * the database connection, thus blocking the deletion request.
+   * The method will trigger the database deletion handlers on all open
+   * database conections. The attempt will fail if any of the handlers will not
+   * close the database connection, thus blocking the deletion request.
    *
    * The method will resolve to the version number of the deleted database on
    * success, or {@code null} if the database did not exist.
    *
    * Deleting a non-existing database is always successful.
    *
-   * In case the request fails, the returned promise will resolve into the
-   * error that that occured.
+   * In case the request fails, the returned promise will reject with the error
+   * that that occured.
    *
    * @param {string} databaseName The name of the database to delete.
    * @return {Promise<?number>} The promise that resolves to the version number
