@@ -268,8 +268,7 @@ function handleConnectionError(event, error, wasBlocked, upgradeTriggered,
 /**
  * Handles the provided {@code upgradeneeded} event that occurred during
  * opening a database that was not blocked. The function handles database
- * schema upgrade, establishes a new connection to the upgraded database and
- * executes the promise resolution/rejection callbacks.
+ * schema upgrade.
  * 
  * @param {string} databaseName The name of the database to upgrade.
  * @param {Event} event The {@code upgradeneeded} event.
