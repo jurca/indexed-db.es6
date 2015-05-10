@@ -1,12 +1,12 @@
 {
   "name": "indexed-db.es6",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/jurca/indexed-db.es6",
   "authors": [
     "Martin Jurča <mjurca@centrum.cz>"
   ],
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
-  "main": "dist/DBFactory.js",
+  "main": "es6/DBFactory.js",
   "moduleType": [
     "amd",
     "es6"
