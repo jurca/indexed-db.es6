@@ -301,7 +301,7 @@ native Indexed DB API.
 
 The source code is well documented using [JSDoc](http://usejsdoc.org/) docblock
 comments. Go ahead and
-[take a look](https://github.com/jurca/indexed-db.es6/tree/master/src)!
+[take a look](https://github.com/jurca/indexed-db.es6/tree/master/es6)!
 
 ## Browser support
 
