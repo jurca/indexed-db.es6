@@ -338,16 +338,6 @@ any native IndexedDB support that supports
 
 ## The current state of this project
 
-The tests are passing in Google Chrome / Chromium.
-
-There is however an issue with the Firefox being resolved:
-
-There appears to be a bug in the Firefox (tested on version 37) which requires
-all transaction operations to be requests from the context in which the
-transaction was created or a child context of the context - that is, it is
-impossible to request a new operation on the transaction from a Promise
-callback even if the transaction is still alive.
-
 There are no current plans for additional features (unless a good case for
 adding them is made), but the project accepts bug fixes if new bugs are
 discovered.
