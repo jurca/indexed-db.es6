@@ -146,7 +146,7 @@ describe("Database", () => {
     })
   })
   
-  fit("should return the result of the last operation of ran transaction",
+  it("should return the result of the last operation of ran transaction",
       (done) => {
     database.runTransaction("fooBar", (fooBar) => {
       return fooBar.add("a", 1).then(() => fooBar.add("bcd", 2))
