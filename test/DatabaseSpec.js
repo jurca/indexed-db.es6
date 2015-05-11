@@ -146,6 +146,23 @@ describe("Database", () => {
     })
   })
   
+  fit("should return the result of the last operation of ran transaction",
+      (done) => {
+    database.runTransaction("fooBar", (fooBar) => {
+      return fooBar.add("a", 1).then(() => fooBar.add("bcd", 2))
+    }).then((lastPrimaryKey) => {
+      expect(lastPrimaryKey).toBe(2)
+      
+      return database.runReadOnlyTransaction("fooBar", (fooBar) => {
+        return fooBar.get(2)
+      })
+    }).then((returnedRecord) => {
+      expect(returnedRecord).toBe("bcd")
+      
+      done()
+    })
+  })
+  
   it("should return promise when closing connection", (done) => {
     let done1 = false
     let done2 = false
