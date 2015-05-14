@@ -112,10 +112,13 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
   }());
   var $__default = Database;
   function runTransaction(transaction, objectStoreNames, transactionOperations) {
-    var objectStores = objectStoreNames.map((function(objectStoreName) {
+    var callbackArguments = objectStoreNames.map((function(objectStoreName) {
       return transaction.getObjectStore(objectStoreName);
     }));
-    var resultPromise = transactionOperations.apply((void 0), $traceurRuntime.spread(objectStores));
+    callbackArguments.push((function() {
+      return transaction.abort();
+    }));
+    var resultPromise = transactionOperations.apply((void 0), $traceurRuntime.spread(callbackArguments));
     return Promise.resolve(resultPromise).then((function(result) {
       return transaction.completionPromise.then((function() {
         return result;

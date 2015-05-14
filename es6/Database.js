@@ -238,11 +238,15 @@ export default class Database {
    *        array containing a single item - the array of object store names.
    *        It is possible to use a string if only a single object store is
    *        needed.
-   * @param {function(...ObjectStore): Promise<*>} transactionOperations The
-   *        callback containig the operations on the object stores in the
-   *        transaction. The callback should return a promise, the value to
-   *        which the promise resolves will be the result value of the promise
-   *        returned by this method.
+   * @param {function(...ObjectStore, function()): PromiseSync<*>}
+   *        transactionOperations The callback containing the operations on the
+   *        object stores in the transaction.
+   *        The callback will receive the requested object stores as arguments,
+   *        followed by a callback for aborting the transaction.
+   *        The callback should return a synchronous promise (a return value of
+   *        one of the data-related methods of object stores and their
+   *        indexes), the value to which the returned promise resolves will be
+   *        the result value of the promise returned by this function.
    * @return {Promise<*>} A promise that resolves when the transaction is
    *         completed. The promise will resolve to the value to which resolved
    *         the promise returned by the {@codelink transactionOperations}
@@ -273,11 +277,15 @@ export default class Database {
    *        array containing a single item - the array of object store names.
    *        It is possible to use a string if only a single object store is
    *        needed.
-   * @param {function(...ReadOnlyObjectStore): Promise<*>}
-   *        transactionOperations The callback containig the operations on the
-   *        object stores in the transaction. The callback should return a
-   *        promise, the value to which the promise resolves will be the result
-   *        value of the promise returned by this method.
+   * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>}
+   *        transactionOperations The callback containing the operations on the
+   *        object stores in the transaction.
+   *        The callback will receive the requested object stores as arguments,
+   *        followed by a callback for aborting the transaction.
+   *        The callback should return a synchronous promise (a return value of
+   *        one of the data-related methods of object stores and their
+   *        indexes), the value to which the returned promise resolves will be
+   *        the result value of the promise returned by this function.
    * @return {Promise<*>} A promise that resolves when the transaction is
    *         completed. The promise will resolve to the value to which resolved
    *         the promise returned by the {@codelink transactionOperations}
@@ -331,22 +339,27 @@ export default class Database {
  *        when this transaction is completed.
  * @param {string[]} The names of the object stores to pass to the
  *        {@codelink transactionOperations} callback.
- * @param {function(...ReadOnlyObjectStore): Promise<*>} transactionOperations
- *        The callback containig the operations on the object stores in the
- *        transaction. The callback should return a promise, the value to which
- *        the promise resolves will be the result value of the promise returned
- *        by this function.
+ * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>}
+ *        transactionOperations The callback containing the operations on the
+ *        object stores in the transaction.
+ *        The callback will receive the requested object stores as arguments,
+ *        followed by a callback for aborting the transaction.
+ *        The callback should return a synchronous promise (a return value of
+ *        one of the data-related methods of object stores and their indexes),
+ *        the value to which the returned promise resolves will be the result
+ *        value of the promise returned by this function.
  * @return {Promise<*>} A promise that resolves when the transaction is
  *         completed. The promise will resolve to the value to which resolved
  *         the promise returned by the {@codelink transactionOperations}
  *         callback.
  */
 function runTransaction(transaction, objectStoreNames, transactionOperations) {
-  let objectStores = objectStoreNames.map((objectStoreName) => {
+  let callbackArguments = objectStoreNames.map((objectStoreName) => {
     return transaction.getObjectStore(objectStoreName)
   })
+  callbackArguments.push(() => transaction.abort())
   
-  let resultPromise = transactionOperations(...objectStores)
+  let resultPromise = transactionOperations(...callbackArguments)
   return Promise.resolve(resultPromise).then((result) => {
     return transaction.completionPromise.then(() => result)
   })

@@ -119,8 +119,8 @@ a read-only or read-write transaction, and the names of the object stores you
 want to access in the transaction:
 
 ```
-database.runReadOnlyTransaction(["foo", "bar], (foo, bar) => {
-  // do some stuff
+database.runReadOnlyTransaction(["foo", "bar], (foo, bar, abort) => {
+  // do some stuff, or abort the transaction by calling abort()
 }).then((result) => {
   // Do something with the result of the promise returned from the transaction
   // callback. This callback will be called after the transaction is completed.
@@ -129,8 +129,8 @@ database.runReadOnlyTransaction(["foo", "bar], (foo, bar) => {
 })
 
 // read-write transaction:
-database.runTransaction(["foo", "bar"], (foo, bar) => {
-  // do some stuff
+database.runTransaction(["foo", "bar"], (foo, bar, abort) => {
+  // do some stuff, or abort the transaction by calling abort()
 }).then((result) => {
   // Do something with the result of the promise returned from the transaction
   // callback. This callback will be called after the transaction is completed.

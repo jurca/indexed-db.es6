@@ -196,4 +196,28 @@ describe("Database", () => {
     })
   })
   
+  it("should allow aborting transactions started by runReadOnlyTransaction",
+      (done) => {
+    database.runReadOnlyTransaction("fooBar", (fooBar, abort) => {
+      abort()
+    }).then(() => {
+      fail("the transaction should have been aborted")
+      done()
+    }).catch((error) => {
+      done()
+    })
+  })
+  
+  it("should allow aborting transactions started by runTransaction",
+      (done) => {
+    database.runTransaction("fooBar", (fooBar, abort) => {
+      abort()
+    }).then(() => {
+      fail("the transaction should have been aborted")
+      done()
+    }).catch((error) => {
+      done()
+    })
+  })
+  
 })
