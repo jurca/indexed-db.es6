@@ -154,7 +154,7 @@ export default class Database {
     })
     
     this[FIELDS.activeTransactions].add(transaction)
-    transaction.completionPromise.then(() => {
+    transaction.completionPromise.catch(() => {}).then(() => {
       this[FIELDS.activeTransactions].delete(transaction)
     })
     
@@ -198,7 +198,7 @@ export default class Database {
     })
     
     this[FIELDS.activeTransactions].add(transaction)
-    transaction.completionPromise.then(() => {
+    transaction.completionPromise.catch(() => {}).then(() => {
       this[FIELDS.activeTransactions].delete(transaction)
     })
     

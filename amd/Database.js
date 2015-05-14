@@ -58,7 +58,7 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           return $__4.startReadOnlyTransaction(objectStoreName);
         }));
         this[FIELDS.activeTransactions].add(transaction);
-        transaction.completionPromise.then((function() {
+        transaction.completionPromise.catch((function() {})).then((function() {
           $__4[FIELDS.activeTransactions].delete(transaction);
         }));
         return transaction;
@@ -76,7 +76,7 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           return $__4.startReadOnlyTransaction(objectStoreName);
         }));
         this[FIELDS.activeTransactions].add(transaction);
-        transaction.completionPromise.then((function() {
+        transaction.completionPromise.catch((function() {})).then((function() {
           $__4[FIELDS.activeTransactions].delete(transaction);
         }));
         return transaction;
