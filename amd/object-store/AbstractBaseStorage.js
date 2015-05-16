@@ -18,7 +18,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
       }
       var keyPath = storage.keyPath;
       if (keyPath && (typeof keyPath !== "string")) {
-        keyPath = Array.from(keyPath);
+        keyPath = Object.freeze(Array.from(keyPath));
       }
       this.keyPath = keyPath || null;
       this.name = storage.name;

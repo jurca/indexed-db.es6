@@ -48,7 +48,7 @@ export default class AbstractBaseStorage {
 
     let keyPath = storage.keyPath
     if (keyPath && (typeof keyPath !== "string")) {
-      keyPath = Array.from(keyPath)
+      keyPath = Object.freeze(Array.from(keyPath))
     }
     
     /**
