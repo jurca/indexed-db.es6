@@ -65,8 +65,8 @@ define(["./KeyRange"], function($__0) {
         if (fieldRange.upper !== undefined) {
           var upperComparison;
           upperComparison = indexedDB.cmp(fieldRange.upper, fieldValue);
-          var failedTest$__2 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
-          if (failedTest$__2) {
+          var failedTest$__9 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
+          if (failedTest$__9) {
             return false;
           }
         }
@@ -80,6 +80,97 @@ define(["./KeyRange"], function($__0) {
       return fieldFilters.every((function(fieldFilter) {
         return fieldFilter(record);
       }));
+    });
+  }
+  function compileOrderingFieldPaths(orderingFieldPaths) {
+    if (typeof orderingFieldPaths === "string") {
+      orderingFieldPaths = [orderingFieldPaths];
+    }
+    var inverted = [];
+    var getters = [];
+    var $__5 = true;
+    var $__6 = false;
+    var $__7 = undefined;
+    try {
+      for (var $__3 = void 0,
+          $__2 = (orderingFieldPaths)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__5 = ($__3 = $__2.next()).done); $__5 = true) {
+        var fieldPath = $__3.value;
+        {
+          if (fieldPath.charAt(0) === "!") {
+            inverted.push(true);
+            getters.push(compileFieldGetter(fieldPath.substring(1)));
+          } else {
+            inverted.push(false);
+            getters.push(compileFieldGetter(fieldPath));
+          }
+        }
+      }
+    } catch ($__8) {
+      $__6 = true;
+      $__7 = $__8;
+    } finally {
+      try {
+        if (!$__5 && $__2.return != null) {
+          $__2.return();
+        }
+      } finally {
+        if ($__6) {
+          throw $__7;
+        }
+      }
+    }
+    var gettersCount = getters.length;
+    return (function(record1, record2) {
+      for (var i = 0; i < gettersCount; i++) {
+        var getter = getters[i];
+        var value1 = getter(record1);
+        var value2 = getter(record2);
+        var comparison;
+        if (inverted[i]) {
+          comparison = indexedDB.cmp(value2, value1);
+        } else {
+          comparison = indexedDB.cmp(value1, value2);
+        }
+        if (comparison !== 0) {
+          return comparison;
+        }
+      }
+      return 0;
+    });
+  }
+  function compileFieldGetter(fieldPath) {
+    var fields = fieldPath.split(".");
+    return (function(record) {
+      var value = record;
+      var $__5 = true;
+      var $__6 = false;
+      var $__7 = undefined;
+      try {
+        for (var $__3 = void 0,
+            $__2 = (fields)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__5 = ($__3 = $__2.next()).done); $__5 = true) {
+          var field = $__3.value;
+          {
+            if (!(value instanceof Object) || !value.hasOwnProperty(field)) {
+              return undefined;
+            }
+            value = value[field];
+          }
+        }
+      } catch ($__8) {
+        $__6 = true;
+        $__7 = $__8;
+      } finally {
+        try {
+          if (!$__5 && $__2.return != null) {
+            $__2.return();
+          }
+        } finally {
+          if ($__6) {
+            throw $__7;
+          }
+        }
+      }
+      return value;
     });
   }
   function convertFieldMapToKeyRange(filter, keyPaths) {
@@ -176,6 +267,9 @@ define(["./KeyRange"], function($__0) {
     },
     get compileFieldRangeFilter() {
       return compileFieldRangeFilter;
+    },
+    get compileOrderingFieldPaths() {
+      return compileOrderingFieldPaths;
     },
     __esModule: true
   };

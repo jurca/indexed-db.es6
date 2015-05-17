@@ -46,7 +46,7 @@ export function keyRangeToFieldRangeObject(keyRange, keyPath) {
  *        parameter is used to optimize field map filters that specify a the
  *        field constraints matching the field paths - such field map filters
  *        will be optimized to an IDBKeyRange.
- * @return {(undefined|IDBKeyRange|function(*): boolean)} Normalized filter.
+ * @return {(undefined|IDBKeyRange|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} Normalized filter.
  */
 export function normalizeFilter(filter, keyPath) {
   if (keyPath) {
@@ -135,6 +135,89 @@ export function compileFieldRangeFilter(filter) {
     }
 
     return fieldFilters.every(fieldFilter => fieldFilter(record))
+  }
+}
+
+/**
+ * Compiles the provided sequence of ordering field paths to a comparator
+ * function that relies on the native {@code indexedDB.cmp} method.
+ * 
+ * The created comparator evaluates the field paths on the provided values in
+ * the same order they were specified. The resulting values are then compared
+ * using the native {@code indexedDB.cmp} method. The comparator then returns
+ * the comparison, unless the values are equal - in such case the comparator
+ * moves to the next field path unless there are no more field paths left.
+ * 
+ * @param {(string|string[])} orderingFieldPaths The field path(s) to compile
+ *        into a comparator function. A field path may be prefixed by an
+ *        exclamation mark ({@code "!"}) for the reverse order.
+ * @return {function(*, *): number} The compiled comparator function.
+ */
+export function compileOrderingFieldPaths(orderingFieldPaths) {
+  if (typeof orderingFieldPaths === "string") {
+    orderingFieldPaths = [orderingFieldPaths]
+  }
+  
+  let inverted = []
+  let getters = []
+  
+  for (let fieldPath of orderingFieldPaths) {
+    if (fieldPath.charAt(0) === "!") {
+      inverted.push(true)
+      getters.push(compileFieldGetter(fieldPath.substring(1)))
+    } else {
+      inverted.push(false)
+      getters.push(compileFieldGetter(fieldPath))
+    }
+  }
+  
+  let gettersCount = getters.length
+  
+  return (record1, record2) => {
+    for (let i = 0; i < gettersCount; i++) {
+      let getter = getters[i]
+      let value1 = getter(record1)
+      let value2 = getter(record2)
+      
+      let comparison
+      if (inverted[i]) {
+        comparison = indexedDB.cmp(value2, value1)
+      } else {
+        comparison = indexedDB.cmp(value1, value2)
+      }
+      
+      if (comparison !== 0) {
+        return comparison
+      }
+    }
+    
+    return 0
+  }
+}
+
+/**
+ * Compiles the provided field path to a function that retrieves the value of
+ * the field denoted by the field path from the object passed to the function,
+ * or {@code undefined} if the field does not exist in the object.
+ * 
+ * @param {string} fieldPath The field path to compile.
+ * @return {function(*): *} The compiled field getter.
+ */
+function compileFieldGetter(fieldPath) {
+  let fields = fieldPath.split(".")
+  
+  return (record) => {
+    let value = record
+    
+    for (let field of fields) {
+      if (!(value instanceof Object) || !value.hasOwnProperty(field)) {
+        return undefined
+      }
+      
+      value = value[field]
+    }
+    
+    return value
   }
 }
 
