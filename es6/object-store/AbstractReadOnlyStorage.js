@@ -4,8 +4,11 @@ import AbstractBaseStorage from "./AbstractBaseStorage"
 import CursorDirection from "./CursorDirection"
 import KeyRange from "./KeyRange"
 import RecordList from "./RecordList"
-import {compileFieldRangeFilter, normalizeFilter, keyRangeToFieldRangeObject}
-    from "./utils"
+import {
+  compileFieldRangeFilter,
+  normalizeFilter,
+  keyRangeToFieldRangeObject
+} from "./utils"
 
 /**
  * Private field symbols.
@@ -216,10 +219,11 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        record, the second argument will be set to the primary key of the
    *        record, and the third argument will be set to the key referencing
    *        the record (the primary key if traversing an object store).
-   * @param {CursorDirection} direction The direction in which the records are
-   *        to be listed. Use either the {@code CursorDirection.*} constants,
-   *        or strings {@code "NEXT"} and {@code "PREVIOUS"} (or {@code "PREV"}
-   *        for short). The letter case used in the strings does not matter.
+   * @param {(CursorDirection|string)} direction The direction in which the
+   *        records are to be listed. Use either the {@code CursorDirection.*}
+   *        constants, or strings {@code "NEXT"} and {@code "PREVIOUS"} (or
+   *        {@code "PREV"} for short). The letter case used in the strings does
+   *        not matter.
    *        Defaults to {@code CursorDirection.NEXT}.
    * @param {number} pageSize The number of records per page.
    * @return {Promise<RecordList<*>>} A promise that resolves to a record list
