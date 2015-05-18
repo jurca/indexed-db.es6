@@ -15,7 +15,7 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
   });
   var Cursor = (function($__super) {
     function Cursor(cursorRequest, iterationCalback, suboperationCallback) {
-      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, iterationCalback);
+      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, (function() {}));
       this[FIELDS.cursor] = cursorRequest.result;
       this[FIELDS.iterationCalback] = iterationCalback;
       this[FIELDS.suboperationCallback] = suboperationCallback;

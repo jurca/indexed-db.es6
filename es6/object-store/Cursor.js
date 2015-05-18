@@ -32,7 +32,7 @@ export default class Cursor extends ReadOnlyCursor {
    *        resolved when the provided Indexed DB request is completed.
    */
   constructor(cursorRequest, iterationCalback, suboperationCallback) {
-    super(cursorRequest, iterationCalback)
+    super(cursorRequest, () => {})
 
     /**
      * The native cursor.
