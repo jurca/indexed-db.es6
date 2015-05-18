@@ -1,7 +1,11 @@
 
 import KeyRange from "../../amd/object-store/KeyRange"
-import {keyRangeToFieldRangeObject, compileFieldRangeFilter, normalizeFilter}
-    from "../../amd/object-store/utils"
+import {
+  keyRangeToFieldRangeObject,
+  compileFieldRangeFilter,
+  normalizeFilter,
+  compileOrderingFieldPaths
+} from "../../amd/object-store/utils"
 
 describe("utils", () => {
   
@@ -215,6 +219,94 @@ describe("utils", () => {
         num: 4
       })).toBeFalsy()
     })
+    
+  })
+
+  describe("compileOrderingFieldPaths", () => {
+    
+    let records
+    
+    beforeEach(() => {
+      records = [
+        {
+          id: 1,
+          name: "Adam",
+          category: 1,
+          bio: {
+            age: 37,
+            birth: {
+              day: 1,
+              month: 12,
+              year: 1992
+            }
+          }
+        },
+        {
+          id: 2,
+          name: "Joanna",
+          category: 2,
+          bio: {
+            age: 38,
+            birth: {
+              day: 4,
+              month: 6,
+              year: 1972
+            }
+          }
+        },
+        {
+          id: 3,
+          name: "Phteven", // get it?
+          category: 2,
+          bio: {
+            age: 40,
+            birth: {
+              day: 18,
+              month: 3,
+              year: 2002
+            }
+          }
+        },
+        {
+          id: 4,
+          name: "Lucy",
+          category: 4,
+          bio: {
+            age: 26,
+            birth: {
+              day: 9,
+              month: 7,
+              year: 1982
+            }
+          }
+        }
+      ]
+    })
+    
+    it("should handle simple sorting", () => {
+      expectSortResults("id", [1, 2, 3, 4])
+      expectSortResults("name", [1, 2, 4, 3])
+      expectSortResults("!id", [4, 3, 2, 1])
+    })
+    
+    it("should handle sorting by field paths", () => {
+      expectSortResults("bio.age", [4, 1, 2, 3])
+      expectSortResults("!bio.birth.month", [1, 4, 2, 3])
+    })
+    
+    it("should handle sorting by multiple fields", () => {
+      expectSortResults(["!category", "bio.age", "!name"], [4, 2, 3, 1])
+    })
+    
+    function expectSortResults(sortBy, expected) {
+      let comparator = compileOrderingFieldPaths(sortBy)
+      records.sort(comparator)
+      expect(recordsToIds()).toEqual(expected)
+    }
+    
+    function recordsToIds() {
+      return records.map(record => record.id)
+    }
     
   })
   
