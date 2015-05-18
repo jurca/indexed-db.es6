@@ -204,7 +204,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    * @param {?number} limit The maximum number of records to return as a
    *        result. The limit must be a positive integer, or {@code null} if no
    *        limit should be imposed.
-   * @return {PromiseSync<*[]>} A promise that resolves to the 
+   * @return {PromiseSync<*[]>} A promise that resolves to the fetched records.
    */
   query(filter = null, order = CursorDirection.NEXT, offset = 0,
       limit = null) {
