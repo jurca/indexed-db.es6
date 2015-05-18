@@ -270,6 +270,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
  * @param {?number} limit The maximum number of records to return as a result.
  *        The limit must be a positive integer, or {@code null} if no limit
  *        should be imposed.
+ * @return {PromiseSync<*[]>} A promise that resolves to the fetched records.
  */
 function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
     offset, limit) {
@@ -286,6 +287,7 @@ function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
     let primaryKey = cursor.primaryKey
     if (filter && !filter(cursor.record, primaryKey, cursor.key)) {
       cursor.continue()
+      return
     }
     
     recordIndex++

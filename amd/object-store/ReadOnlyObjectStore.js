@@ -98,6 +98,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       var primaryKey = cursor.primaryKey;
       if (filter && !filter(cursor.record, primaryKey, cursor.key)) {
         cursor.continue();
+        return ;
       }
       recordIndex++;
       if (recordIndex < offset) {
