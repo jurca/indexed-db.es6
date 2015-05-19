@@ -177,11 +177,12 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    *        record, the second argument will be set to the primary key of the
    *        record, and the third argument will be set to the key referencing
    *        the record (the primary key if traversing an object store).
-   * @param {(CursorDirection|string|string[]|function(*, *): number) order How
-   *        the resulting records should be sorted. This can be one of the
+   * @param {?(CursorDirection|string|string[]|function(*, *): number) order
+   *        How the resulting records should be sorted. This can be one of the
    *        following:
    *        - a {@code CursorDirection} constant, either {@code NEXT} or
    *          {@code PREVIOUS} for ascending or descending order respectively
+   *        - {@code null} as alias for {@code CursorDirection.NEXT}
    *        - one of the {@code "NEXT"} (alias for
    *          {@code CursorDirection.NEXT}), {@code "PREVIOUS"} or
    *          {@code "PREV"} (aliases for {@code CursorDirection.PREVIOUS})
@@ -388,14 +389,14 @@ function prepareQuery(thisStorage, filter, order) {
   let canOptimizeOrder = canOptimizeSorting(expectedSortingDirection, order)
   
   let storages = new Map()
-  storages.put(normalizeKeyPath(thisStorage.keyPath), {
+  storages.set(normalizeKeyPath(thisStorage.keyPath), {
     storage: thisStorage,
     score: 1 // traversing storage is faster than fetching records by index
   })
   
   for (let indexName of thisStorage.indexNames) {
     let index = thisStorage.getIndex(indexName)
-    storages.push(normalizeKeyPath(index.keyPath), {
+    storages.set(normalizeKeyPath(index.keyPath), {
       storage: index,
       score: 0
     })
@@ -425,9 +426,10 @@ function prepareQuery(thisStorage, filter, order) {
     storage2.score - storage1.score
   })
   
-  let chosenStorage = sortedStorages[0]
+  let chosenStorage = sortedStorages[0].storage
+  let chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath)
   let optimizeSorting = canOptimizeOrder &&
-      (indexedDB.cmp(chosenStorage.keyPath, simplifiedOrderFieldPaths) === 0)
+      (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0)
   
   return {
     storage: chosenStorage,

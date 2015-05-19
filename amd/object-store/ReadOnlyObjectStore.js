@@ -172,7 +172,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     var expectedSortingDirection = order[0].charAt(0) === "!";
     var canOptimizeOrder = canOptimizeSorting(expectedSortingDirection, order);
     var storages = new Map();
-    storages.put(normalizeKeyPath(thisStorage.keyPath), {
+    storages.set(normalizeKeyPath(thisStorage.keyPath), {
       storage: thisStorage,
       score: 1
     });
@@ -185,7 +185,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         var indexName = $__10.value;
         {
           var index = thisStorage.getIndex(indexName);
-          storages.push(normalizeKeyPath(index.keyPath), {
+          storages.set(normalizeKeyPath(index.keyPath), {
             storage: index,
             score: 0
           });
@@ -273,8 +273,9 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     sortedStorages.sort((function(storage1, storage2) {
       storage2.score - storage1.score;
     }));
-    var chosenStorage = sortedStorages[0];
-    var optimizeSorting = canOptimizeOrder && (indexedDB.cmp(chosenStorage.keyPath, simplifiedOrderFieldPaths) === 0);
+    var chosenStorage = sortedStorages[0].storage;
+    var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
+    var optimizeSorting = canOptimizeOrder && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
     return {
       storage: chosenStorage,
       direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,
