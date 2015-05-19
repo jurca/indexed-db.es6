@@ -63,7 +63,8 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         var direction;
         var comparator = null;
         var storage = this;
-        if (CURSOR_DIRECTIONS.indexOf(order) > -1) {
+        var isCursorDirection = ((typeof order === "string") && (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) || (CURSOR_DIRECTIONS.indexOf(order) > -1);
+        if (isCursorDirection) {
           direction = order;
         } else if (order === null) {
           direction = CursorDirection.NEXT;

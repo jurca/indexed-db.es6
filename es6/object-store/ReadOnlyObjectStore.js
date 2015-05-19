@@ -220,7 +220,10 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
     let direction
     let comparator = null
     let storage = this
-    if (CURSOR_DIRECTIONS.indexOf(order) > -1) {
+    let isCursorDirection = ((typeof order === "string") &&
+        (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) ||
+        (CURSOR_DIRECTIONS.indexOf(order) > -1)
+    if (isCursorDirection) {
       direction = order
     } else if (order === null) {
       direction = CursorDirection.NEXT
