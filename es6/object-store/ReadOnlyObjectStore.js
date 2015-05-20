@@ -493,8 +493,8 @@ function normalizeKeyPath(keyPath) {
  * Inserts the provided record into the sorted array of records and their
  * primary keys, keeping it sorted.
  * 
- * @param {*[]} records The array of records into which the provided record
- *        should be inserted.
+ * @param {{record: *, primaryKey: (number|string|Date|Array)}[]} records The
+ *        array of records into which the provided record should be inserted.
  * @param {*} record The record to insert into the records array.
  * @param {(number|string|Date|Array)} primaryKey The primary key of the
  *        record.
@@ -504,7 +504,7 @@ function normalizeKeyPath(keyPath) {
  */
 function insertSorted(records, record, primaryKey, comparator) {
   for (let i = 0; i < records.length; i++) {
-    let comparison = comparator(records[i], record)
+    let comparison = comparator(records[i].record, record)
     if (comparison > 0) {
       records.splice(i, 0, {
         record,
@@ -514,5 +514,8 @@ function insertSorted(records, record, primaryKey, comparator) {
     }
   }
   
-  records.push(record)
+  records.push({
+    record,
+    primaryKey
+  })
 }

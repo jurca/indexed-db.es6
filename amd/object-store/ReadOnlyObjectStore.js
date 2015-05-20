@@ -325,7 +325,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
   }
   function insertSorted(records, record, primaryKey, comparator) {
     for (var i = 0; i < records.length; i++) {
-      var comparison = comparator(records[i], record);
+      var comparison = comparator(records[i].record, record);
       if (comparison > 0) {
         records.splice(i, 0, {
           record: record,
@@ -334,7 +334,10 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         return ;
       }
     }
-    records.push(record);
+    records.push({
+      record: record,
+      primaryKey: primaryKey
+    });
   }
   return {
     get default() {
