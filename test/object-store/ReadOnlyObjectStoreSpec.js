@@ -99,7 +99,7 @@ describe("ReadOnlyObjectStore", () => {
     expect(objectStore.getIndex("someIndex")).toEqual(index)
   })
   
-  describe("query", () => {
+  fdescribe("query", () => {
     beforeEach(() => {
       transaction = database.startTransaction(OBJECT_STORE_NAME3)
       objectStore = transaction.getObjectStore(OBJECT_STORE_NAME3)
