@@ -99,7 +99,7 @@ describe("ReadOnlyObjectStore", () => {
     expect(objectStore.getIndex("someIndex")).toEqual(index)
   })
   
-  fdescribe("query", () => {
+  describe("query", () => {
     beforeEach(() => {
       transaction = database.startTransaction(OBJECT_STORE_NAME3)
       objectStore = transaction.getObjectStore(OBJECT_STORE_NAME3)
@@ -199,6 +199,25 @@ describe("ReadOnlyObjectStore", () => {
         return objectStore.query(null, (r1, r2) => r1.id - r2.id)
       }).then((records) => {
         expect(recordsToIds(records)).toEqual([1, 2, 3, 4])
+        
+        done()
+      }).catch((error) => {
+        fail(error)
+        done()
+      })
+    })
+    
+    it("should allow specifying an offset", (done) => {
+      objectStore.query(null, null, 0).then((records) => {
+        expect(recordsToIds(records)).toEqual([1, 2, 3, 4])
+        
+        return objectStore.query(null, null, 3)
+      }).then((records) => {
+        expect(recordsToIds(records)).toEqual([4])
+        
+        return objectStore.query(null, null, 10)
+      }).then((records) => {
+        expect(recordsToIds(records)).toEqual([])
         
         done()
       }).catch((error) => {
