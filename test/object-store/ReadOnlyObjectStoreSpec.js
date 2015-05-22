@@ -226,6 +226,25 @@ describe("ReadOnlyObjectStore", () => {
       })
     })
     
+    it("should allow specifying the count limit", (done) => {
+      objectStore.query(null, null, 0, null).then((records) => {
+        expect(recordsToIds(records)).toEqual([1, 2, 3, 4])
+        
+        return objectStore.query(null, null, 0, 2)
+      }).then((records) => {
+        expect(recordsToIds(records)).toEqual([1, 2])
+        
+        return objectStore.query(null, null, 0, 10)
+      }).then((records) => {
+        expect(recordsToIds(records)).toEqual([1, 2, 3, 4])
+        
+        done()
+      }).catch((error) => {
+        fail(error)
+        done()
+      })
+    })
+    
     function recordsToIds(records) {
       return records.map(record => record.id)
     }
