@@ -245,6 +245,34 @@ describe("ReadOnlyObjectStore", () => {
       })
     })
     
+    it("should reject negative offset", () => {
+      expect(() => {
+        objectStore.query(null, null, -1)
+      }).toThrow()
+    })
+    
+    it("should reject non-integer offset", () => {
+      expect(() => {
+        objectStore.query(null, null, 1.2)
+      }).toThrow()
+    })
+    
+    it("should reject negative or zero count limit", () => {
+      expect(() => {
+        objectStore.query(null, null, 0, -1)
+      }).toThrow()
+      
+      expect(() => {
+        objectStore.query(null, null, 0, 0)
+      }).toThrow()
+    })
+    
+    it("should reject non-integer count limit", () => {
+      expect(() => {
+        objectStore.query(null, null, 0, 1.2)
+      }).toThrow()
+    })
+    
     function recordsToIds(records) {
       return records.map(record => record.id)
     }
