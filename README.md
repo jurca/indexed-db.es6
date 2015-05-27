@@ -163,7 +163,17 @@ myObjectStore.get(primaryKey).then((record) => {
 })
 ```
 
-...or iterate through the records:
+...or execute a query (the API will attempt to use the defined indexes to
+optimize the performance):
+
+```
+myObjectStore.query(filter, sortBy, offset, limit).then((records) => {
+  // do something
+})
+```
+
+If that is too fancy for you, you can go more low-level to iterate through the
+records:
 
 ```
 import CursorDirection from
