@@ -63,12 +63,8 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         var direction;
         var comparator = null;
         var storage = this;
-        var isCursorDirection = ((typeof order === "string") && (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) || (CURSOR_DIRECTIONS.indexOf(order) > -1);
-        if (isCursorDirection) {
-          direction = order;
-        } else if (order === null) {
-          direction = CursorDirection.NEXT;
-        } else if (order instanceof Function) {
+        order = prepareOrderingSpecificationForQuery(order, this.keyPath);
+        if (order instanceof Function) {
           direction = CursorDirection.NEXT;
           comparator = order;
         } else {
@@ -131,6 +127,22 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       }));
     }));
   }
+  function insertSorted(records, record, primaryKey, comparator) {
+    for (var i = 0; i < records.length; i++) {
+      var comparison = comparator(records[i].record, record);
+      if (comparison > 0) {
+        records.splice(i, 0, {
+          record: record,
+          primaryKey: primaryKey
+        });
+        return ;
+      }
+    }
+    records.push({
+      record: record,
+      primaryKey: primaryKey
+    });
+  }
   function isRecordPresent(records, recordPrimaryKey) {
     var $__12 = true;
     var $__13 = false;
@@ -185,10 +197,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         var indexName = $__10.value;
         {
           var index = thisStorage.getIndex(indexName);
-          storages.set(normalizeKeyPath(index.keyPath), {
-            storage: index,
-            score: 0
-          });
+          if (!index.multiEntry) {
+            storages.set(normalizeKeyPath(index.keyPath), {
+              storage: index,
+              score: 0
+            });
+          }
         }
       }
     } catch ($__15) {
@@ -271,7 +285,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     }
     var sortedStorages = Array.from(storages.values());
     sortedStorages.sort((function(storage1, storage2) {
-      storage2.score - storage1.score;
+      return storage2.score - storage1.score;
     }));
     var chosenStorage = sortedStorages[0].storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
@@ -317,27 +331,31 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     }
     return true;
   }
+  function prepareOrderingSpecificationForQuery(order, keyPath) {
+    if (order === null) {
+      order = CursorDirection.NEXT;
+    }
+    var isCursorDirection = ((typeof order === "string") && (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) || (CURSOR_DIRECTIONS.indexOf(order) > -1);
+    if (isCursorDirection && (typeof order === "string")) {
+      order = CursorDirection[order.toUpperCase()] || CursorDirection.PREVIOUS;
+    }
+    if (order instanceof CursorDirection) {
+      keyPath = normalizeKeyPath(keyPath);
+      if (order === CursorDirection.NEXT) {
+        return keyPath;
+      } else {
+        return keyPath.map((function(fieldPath) {
+          return ("!" + fieldPath);
+        }));
+      }
+    }
+    return order;
+  }
   function normalizeKeyPath(keyPath) {
     if (typeof keyPath === "string") {
       return [keyPath];
     }
     return keyPath;
-  }
-  function insertSorted(records, record, primaryKey, comparator) {
-    for (var i = 0; i < records.length; i++) {
-      var comparison = comparator(records[i].record, record);
-      if (comparison > 0) {
-        records.splice(i, 0, {
-          record: record,
-          primaryKey: primaryKey
-        });
-        return ;
-      }
-    }
-    records.push({
-      record: record,
-      primaryKey: primaryKey
-    });
   }
   return {
     get default() {

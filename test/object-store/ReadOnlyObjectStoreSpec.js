@@ -273,6 +273,113 @@ describe("ReadOnlyObjectStore", () => {
       }).toThrow()
     })
     
+    it("should optimize by preferring object store to index", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query(null, "id").then((records) => {
+        expect(calledCount).toBe(1)
+        done()
+      })
+    })
+    
+    it("should optimize by using index to optimize filtering", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query({ age: 11 }, ["age", "!id"]).then((records) => {
+        expect(calledCount).toBe(0)
+        expect(records.length).toBe(1)
+        expect(records[0].age).toBe(11)
+        done()
+      })
+    })
+    
+    it("must not use multi-entry indexes to optimize queries", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query({ category: 2 }, ["age", "!id"]).then((records) => {
+        expect(calledCount).toBe(1)
+        expect(records.length).toBe(1)
+        done()
+      }).catch((error) => {
+        fail(error)
+        done()
+      })
+    })
+    
+    it("should optimize by using index to optimize sorting", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query(null, "age").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(records.length).toBe(4)
+        
+        objectStore.query(null, ["!age"]).then((records) => {
+          expect(calledCount).toBe(0)
+          expect(records.length).toBe(4)
+          done()
+        })
+      })
+    })
+    
+    it("should prefer optimizing sorting to optimizing filtering", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      let index = objectStore.getIndex("index3")
+      let nativeIndexMethod = index.createCursorFactory
+      let calledIndexCount = 0
+      let calledOn = null
+      index.constructor.prototype.createCursorFactory =
+          function (range, direction) {
+        calledIndexCount++
+        calledOn = this
+        return nativeIndexMethod.call(index, range, direction)
+      }
+      
+      objectStore.query({ category: 2 }, "!age").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(calledIndexCount).toBe(1)
+        expect(calledOn.name).toBe("index3")
+        expect(records.length).toBe(1)
+        index.constructor.prototype.createCursorFactory = nativeIndexMethod
+        done()
+      })
+    })
+    
     function recordsToIds(records) {
       return records.map(record => record.id)
     }

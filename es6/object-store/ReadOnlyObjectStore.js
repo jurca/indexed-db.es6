@@ -221,14 +221,9 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
     let direction
     let comparator = null
     let storage = this
-    let isCursorDirection = ((typeof order === "string") &&
-        (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) ||
-        (CURSOR_DIRECTIONS.indexOf(order) > -1)
-    if (isCursorDirection) {
-      direction = order
-    } else if (order === null) {
-      direction = CursorDirection.NEXT
-    } else if (order instanceof Function) {
+    
+    order = prepareOrderingSpecificationForQuery(order, this.keyPath)
+    if (order instanceof Function) {
       direction = CursorDirection.NEXT
       comparator = order
     } else {
@@ -326,6 +321,37 @@ function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
 }
 
 /**
+ * Inserts the provided record into the sorted array of records and their
+ * primary keys, keeping it sorted.
+ * 
+ * @param {{record: *, primaryKey: (number|string|Date|Array)}[]} records The
+ *        array of records into which the provided record should be inserted.
+ * @param {*} record The record to insert into the records array.
+ * @param {(number|string|Date|Array)} primaryKey The primary key of the
+ *        record.
+ * @param {function(*, *): number} comparator Record comparator by which the
+ *        array is sorted. The comparator is a standard comparator function
+ *        compatible with the {@codelink Array.prototype.sort} method.
+ */
+function insertSorted(records, record, primaryKey, comparator) {
+  for (let i = 0; i < records.length; i++) {
+    let comparison = comparator(records[i].record, record)
+    if (comparison > 0) {
+      records.splice(i, 0, {
+        record,
+        primaryKey
+      })
+      return
+    }
+  }
+  
+  records.push({
+    record,
+    primaryKey
+  })
+}
+
+/**
  * Tests whether the records of the specified primary key is already present in
  * the provided array of records and their primary keys.
  * 
@@ -396,10 +422,12 @@ function prepareQuery(thisStorage, filter, order) {
   
   for (let indexName of thisStorage.indexNames) {
     let index = thisStorage.getIndex(indexName)
-    storages.set(normalizeKeyPath(index.keyPath), {
-      storage: index,
-      score: 0
-    })
+    if (!index.multiEntry) {
+      storages.set(normalizeKeyPath(index.keyPath), {
+        storage: index,
+        score: 0
+      })
+    }
   }
   
   let simplifiedOrderFieldPaths = simplifyOrderingFieldPaths(order)
@@ -423,7 +451,7 @@ function prepareQuery(thisStorage, filter, order) {
   
   let sortedStorages = Array.from(storages.values())
   sortedStorages.sort((storage1, storage2) => {
-    storage2.score - storage1.score
+    return storage2.score - storage1.score
   })
   
   let chosenStorage = sortedStorages[0].storage
@@ -476,6 +504,61 @@ function canOptimizeSorting(expectedSortingDirection, order) {
 }
 
 /**
+ * Preprocesses the raw ordering specification into form that can be used in
+ * query optimization.
+ * 
+ * @param {?(CursorDirection|string|string[]|function(*, *): number) order How
+ *        the resulting records should be sorted. This can be one of the
+ *        following:
+ *        - a {@code CursorDirection} constant, either {@code NEXT} or
+ *          {@code PREVIOUS} for ascending or descending order respectively
+ *        - {@code null} as alias for {@code CursorDirection.NEXT}
+ *        - one of the {@code "NEXT"} (alias for {@code CursorDirection.NEXT}),
+ *          {@code "PREVIOUS"} or {@code "PREV"} (aliases for
+ *          {@code CursorDirection.PREVIOUS})
+ *        - a string containing a field path, meaning the records should be
+ *          sorted by the values of the denoted field (note that the field
+ *          must exist in all records and its value must be a valid IndexedDB
+ *          key value).
+ *          The order is ascending by default, use the {@code "!" prefix} for
+ *          descending order.
+ *          To sort by a field named {@code NEXT}, {@code PREVIOUS} or
+ *          {@code PREV} wrap the field path into an array containing the field
+ *          path.
+ *        - an array of field paths, as described above. The records will be
+ *          sorted by the values of the specified fields lexicographically.
+ *        - a comparator function compatible with the
+ *          {@codelink Array.prototype.sort} method.
+ * @param {(string|string[])} keyPath The key path of this object store.
+ * @return {(string[]|function(*, *): number)} Prepared ordering specification
+ *         ready to be used in query optimization.
+ */
+function prepareOrderingSpecificationForQuery(order, keyPath) {
+  if (order === null) {
+    order = CursorDirection.NEXT
+  }
+  
+  let isCursorDirection = ((typeof order === "string") &&
+      (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) ||
+      (CURSOR_DIRECTIONS.indexOf(order) > -1)
+  if (isCursorDirection && (typeof order === "string")) {
+    order = CursorDirection[order.toUpperCase()] || CursorDirection.PREVIOUS
+  }
+  
+  if (order instanceof CursorDirection) {
+    keyPath = normalizeKeyPath(keyPath)
+    
+    if (order === CursorDirection.NEXT) {
+      return keyPath
+    } else {
+      return keyPath.map(fieldPath => `!${fieldPath}`)
+    }
+  }
+  
+  return order
+}
+
+/**
  * Normalized the provided key path into an array of field paths.
  * 
  * @param {(string|string[])} keyPath The key path to normalize.
@@ -487,35 +570,4 @@ function normalizeKeyPath(keyPath) {
   }
   
   return keyPath
-}
-
-/**
- * Inserts the provided record into the sorted array of records and their
- * primary keys, keeping it sorted.
- * 
- * @param {{record: *, primaryKey: (number|string|Date|Array)}[]} records The
- *        array of records into which the provided record should be inserted.
- * @param {*} record The record to insert into the records array.
- * @param {(number|string|Date|Array)} primaryKey The primary key of the
- *        record.
- * @param {function(*, *): number} comparator Record comparator by which the
- *        array is sorted. The comparator is a standard comparator function
- *        compatible with the {@codelink Array.prototype.sort} method.
- */
-function insertSorted(records, record, primaryKey, comparator) {
-  for (let i = 0; i < records.length; i++) {
-    let comparison = comparator(records[i].record, record)
-    if (comparison > 0) {
-      records.splice(i, 0, {
-        record,
-        primaryKey
-      })
-      return
-    }
-  }
-  
-  records.push({
-    record,
-    primaryKey
-  })
 }
