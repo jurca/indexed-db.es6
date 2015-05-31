@@ -82,8 +82,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
    *        record. This parameter must be specified only if this object store
    *        uses out-of-line keys.
-   * @return {PromiseSync<(number|string|Date|Array)>} A promise that resolves to
-   *         the record key when the operation is successfuly queued.
+   * @return {PromiseSync<(number|string|Date|Array)>} A promise that resolves
+   *         to the record key when the operation is successfuly queued.
    */
   put(record, key = undefined) {
     let request = this[FIELDS.objectStore].put(record, key)
