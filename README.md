@@ -320,16 +320,19 @@ The following browsers are supported (all tests are passing):
 - Google Chrome
 - Chromium
 - Firefox
+- Seznam.cz Browser
+- Opera
+- Chrome for Android
+- Firefox for Android
+- Opera for Android
 
 The following browsers are theoretically compatible (each seems to use engine
 of one of the supported browsers), but not tested:
 
-- Opera
-- Seznam.cz Browser
-- Opera Mobile
 - Android Browser (4.4+)
-- Chrome for Android
-- Firefox for Android
+- Chrome for iOS
+- Firefox for iOS
+- Opera for iOS
 
 The following browsers are not supported at the moment:
 
