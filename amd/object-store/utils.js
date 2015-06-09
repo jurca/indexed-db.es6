@@ -13,12 +13,12 @@ define(["./KeyRange"], function($__0) {
     var upperBound = keyRange.upper;
     var lowerBoundOpen = keyRange.lowerOpen;
     var upperBoundOpen = keyRange.upperOpen;
-    keyPath.forEach((function(fieldPath, index) {
+    keyPath.forEach(function(fieldPath, index) {
       var fieldLowerBound = lowerBound ? lowerBound[index] : undefined;
       var fieldUpperBound = upperBound ? upperBound[index] : undefined;
       var fieldRange = KeyRange.bound(fieldLowerBound, fieldUpperBound, lowerBoundOpen, upperBoundOpen);
       setFieldValue(fieldRangeObject, fieldPath, fieldRange);
-    }));
+    });
     return fieldRangeObject;
   }
   function normalizeFilter(filter, keyPath) {
@@ -42,12 +42,12 @@ define(["./KeyRange"], function($__0) {
   }
   function compileFieldRangeFilter(filter) {
     var fieldPaths = getFieldPaths(filter, false);
-    var fieldFilters = fieldPaths.map((function(fieldPath) {
+    var fieldFilters = fieldPaths.map(function(fieldPath) {
       var fieldRange = getFieldValue(filter, fieldPath);
       if (!(fieldRange instanceof IDBKeyRange)) {
         fieldRange = KeyRange.only(fieldRange);
       }
-      return (function(record) {
+      return function(record) {
         var fieldValue;
         try {
           fieldValue = getFieldValue(record, fieldPath);
@@ -71,16 +71,16 @@ define(["./KeyRange"], function($__0) {
           }
         }
         return true;
-      });
-    }));
-    return (function(record) {
+      };
+    });
+    return function(record) {
       if (!(record instanceof Object)) {
         return false;
       }
-      return fieldFilters.every((function(fieldFilter) {
+      return fieldFilters.every(function(fieldFilter) {
         return fieldFilter(record);
-      }));
-    });
+      });
+    };
   }
   function compileOrderingFieldPaths(orderingFieldPaths) {
     if (typeof orderingFieldPaths === "string") {
@@ -120,7 +120,7 @@ define(["./KeyRange"], function($__0) {
       }
     }
     var gettersCount = getters.length;
-    return (function(record1, record2) {
+    return function(record1, record2) {
       for (var i = 0; i < gettersCount; i++) {
         var getter = getters[i];
         var value1 = getter(record1);
@@ -136,11 +136,11 @@ define(["./KeyRange"], function($__0) {
         }
       }
       return 0;
-    });
+    };
   }
   function compileFieldGetter(fieldPath) {
     var fields = fieldPath.split(".");
-    return (function(record) {
+    return function(record) {
       var value = record;
       var $__5 = true;
       var $__6 = false;
@@ -171,7 +171,7 @@ define(["./KeyRange"], function($__0) {
         }
       }
       return value;
-    });
+    };
   }
   function convertFieldMapToKeyRange(filter, keyPaths) {
     var isOtherFormOfFilter = !(filter instanceof Object) || (filter instanceof Function) || (filter instanceof Array) || (filter instanceof Date) || (filter instanceof IDBKeyRange);
@@ -185,18 +185,18 @@ define(["./KeyRange"], function($__0) {
     if (!fieldPaths) {
       return null;
     }
-    var isKeyFilter = (fieldPaths.length === keyPaths.length) && fieldPaths.every((function(path) {
+    var isKeyFilter = (fieldPaths.length === keyPaths.length) && fieldPaths.every(function(path) {
       return keyPaths.indexOf(path) > -1;
-    }));
+    });
     if (!isKeyFilter) {
       return null;
     }
     if (keyPaths.length === 1) {
       return IDBKeyRange.only(getFieldValue(filter, keyPaths[0]));
     }
-    return new IDBKeyRange.only(keyPaths.map((function(keyPath) {
+    return new IDBKeyRange.only(keyPaths.map(function(keyPath) {
       getFieldValue(filter, keyPath);
-    })));
+    }));
   }
   function getFieldPaths(object) {
     var stopOnKeyRange = arguments[1] !== (void 0) ? arguments[1] : true;
@@ -205,7 +205,7 @@ define(["./KeyRange"], function($__0) {
     generateFieldPaths(object, []);
     return fieldPaths;
     function generateFieldPaths(object, parts) {
-      Object.keys(object).some((function(fieldName) {
+      Object.keys(object).some(function(fieldName) {
         var value = object[fieldName];
         if (stopOnKeyRange && (value instanceof IDBKeyRange)) {
           fieldPaths = null;
@@ -219,7 +219,7 @@ define(["./KeyRange"], function($__0) {
         } else {
           generateFieldPaths(value, fieldPath);
         }
-      }));
+      });
     }
   }
   function setFieldValue(object, fieldPath, value) {
@@ -250,12 +250,12 @@ define(["./KeyRange"], function($__0) {
       return object;
     }
     var currentObject = object;
-    fieldPath.split(".").forEach((function(fieldName) {
+    fieldPath.split(".").forEach(function(fieldName) {
       if (!currentObject.hasOwnProperty(fieldName)) {
         throw new Error(("The field path " + fieldPath + " does not exist in the ") + "provided object");
       }
       currentObject = currentObject[fieldName];
-    }));
+    });
     return currentObject;
   }
   return {

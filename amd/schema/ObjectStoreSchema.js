@@ -6,7 +6,7 @@ define(["./IndexSchema", "./validation"], function($__0,$__2) {
     $__2 = {default: $__2};
   var IndexSchema = $__0.default;
   var getDuplicitNames = $__2.getDuplicitNames;
-  var ObjectStoreSchema = (function() {
+  var ObjectStoreSchema = function() {
     function ObjectStoreSchema(storeName) {
       var keyPath = arguments[1] !== (void 0) ? arguments[1] : "";
       var autoIncrement = arguments[2] !== (void 0) ? arguments[2] : false;
@@ -24,7 +24,7 @@ define(["./IndexSchema", "./validation"], function($__0,$__2) {
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(ObjectStoreSchema, {}, {});
-  }());
+  }();
   var $__default = ObjectStoreSchema;
   return {
     get default() {

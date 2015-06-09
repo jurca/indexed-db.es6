@@ -11,7 +11,7 @@ define(["../object-store/ObjectStore", "./ReadOnlyTransaction"], function($__0,$
     transactionFactory: Symbol("transactionFactory"),
     objectStores: Symbol("objectStores")
   });
-  var Transaction = (function($__super) {
+  var Transaction = function($__super) {
     function Transaction(transaction, transactionFactory) {
       $traceurRuntime.superConstructor(Transaction).call(this, transaction, transactionFactory);
       this[FIELDS.transaction] = transaction;
@@ -24,15 +24,15 @@ define(["../object-store/ObjectStore", "./ReadOnlyTransaction"], function($__0,$
         if (this[FIELDS.objectStores].has(objectStoreName)) {
           return this[FIELDS.objectStores].get(objectStoreName);
         }
-        var transactionFactory = (function() {
+        var transactionFactory = function() {
           return $__4[FIELDS.transactionFactory](objectStoreName);
-        });
+        };
         var idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName);
         var objectStore = new ObjectStore(idbObjectStore, transactionFactory);
         this[FIELDS.objectStores].set(objectStoreName, objectStore);
         return objectStore;
       }}, {}, $__super);
-  }(ReadOnlyTransaction));
+  }(ReadOnlyTransaction);
   var $__default = Transaction;
   return {
     get default() {

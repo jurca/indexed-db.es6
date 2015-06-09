@@ -5,16 +5,16 @@ define([], function() {
   }
   function getDuplicitNames(schemas) {
     var nameOccurrences = new Map();
-    schemas.forEach((function(schema) {
+    schemas.forEach(function(schema) {
       var count = (nameOccurrences.get(schema.name) || 0) + 1;
       nameOccurrences.set(schema.name, count);
-    }));
+    });
     var duplicitNames = [];
-    schemas.forEach((function(count, schemaName) {
+    schemas.forEach(function(count, schemaName) {
       if (count > 1) {
         duplicitNames.push(schemaName);
       }
-    }));
+    });
     return duplicitNames;
   }
   return {

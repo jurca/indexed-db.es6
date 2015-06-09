@@ -12,34 +12,34 @@ define(["../PromiseSync", "../object-store/CursorDirection", "../schema/Upgraded
   var CursorDirection = $__2.default;
   var UpgradedDatabaseSchema = $__4.default;
   var Transaction = $__6.default;
-  var RecordFetcher = (function() {
+  var RecordFetcher = function() {
     function RecordFetcher() {}
     return ($traceurRuntime.createClass)(RecordFetcher, {fetchRecords: function(nativeTransaction, objectStores) {
         if (!objectStores.length) {
           throw new Error("The object stores array cannot be empty");
         }
-        var transaction = new Transaction(nativeTransaction, (function() {
+        var transaction = new Transaction(nativeTransaction, function() {
           return transaction;
-        }));
+        });
         return fetchAllRecords(transaction, objectStores);
       }}, {});
-  }());
+  }();
   var $__default = RecordFetcher;
   function fetchAllRecords(transaction, objectStores) {
-    return PromiseSync.all(objectStores.map((function(descriptor) {
+    return PromiseSync.all(objectStores.map(function(descriptor) {
       return fetchRecords(transaction.getObjectStore(descriptor.objectStore), descriptor.preprocessor);
-    }))).then((function(fetchedRecords) {
+    })).then(function(fetchedRecords) {
       var recordsMap = {};
       for (var i = 0; i < objectStores.length; i++) {
         recordsMap[objectStores[i].objectStore] = fetchedRecords[i];
       }
       return recordsMap;
-    }));
+    });
   }
   function fetchRecords(objectStore, preprocessor) {
-    return new PromiseSync((function(resolve, reject) {
+    return new PromiseSync(function(resolve, reject) {
       var records = [];
-      objectStore.openCursor(null, CursorDirection.NEXT, (function(cursor) {
+      objectStore.openCursor(null, CursorDirection.NEXT, function(cursor) {
         var primaryKey = cursor.primaryKey;
         if (primaryKey instanceof Object) {
           Object.freeze(primaryKey);
@@ -48,7 +48,7 @@ define(["../PromiseSync", "../object-store/CursorDirection", "../schema/Upgraded
         if (preprocessedRecord === UpgradedDatabaseSchema.DELETE_RECORD) {
           cursor.delete();
           cursor.continue();
-          return ;
+          return;
         } else if (preprocessedRecord !== UpgradedDatabaseSchema.SKIP_RECORD) {
           records.push({
             key: primaryKey,
@@ -56,12 +56,12 @@ define(["../PromiseSync", "../object-store/CursorDirection", "../schema/Upgraded
           });
         } else {}
         cursor.continue();
-      })).then((function() {
+      }).then(function() {
         return resolve(records);
-      })).catch((function(error) {
+      }).catch(function(error) {
         return reject(error);
-      }));
-    }));
+      });
+    });
   }
   return {
     get default() {

@@ -21,14 +21,14 @@ define(["../PromiseSync", "./RecordFetcher", "./DatabaseVersionMigrator", "../sc
     schemaDescriptors: Symbol("schemaDescriptors"),
     currentVersion: Symbol("currentVersion")
   });
-  var DatabaseMigrator = (function() {
+  var DatabaseMigrator = function() {
     function DatabaseMigrator(database, transaction, schemaDescriptors, currentVersion) {
       if (!schemaDescriptors.length) {
         throw new Error("The list of schema descriptors cannot be empty");
       }
-      var sortedSchemasCopy = schemaDescriptors.slice().sort((function(desc1, desc2) {
+      var sortedSchemasCopy = schemaDescriptors.slice().sort(function(desc1, desc2) {
         return desc1.version - desc2.version;
-      }));
+      });
       checkSchemaDescriptorTypes(sortedSchemasCopy);
       var isVersionValid = (currentVersion >= 0) && (parseInt(currentVersion, 10) === currentVersion);
       if (!isVersionValid) {
@@ -43,18 +43,18 @@ define(["../PromiseSync", "./RecordFetcher", "./DatabaseVersionMigrator", "../sc
     return ($traceurRuntime.createClass)(DatabaseMigrator, {executeMigration: function() {
         return migrateDatabase(this[FIELDS.database], this[FIELDS.transaction], this[FIELDS.schemaDescriptors], this[FIELDS.currentVersion]);
       }}, {});
-  }());
+  }();
   var $__default = DatabaseMigrator;
   function migrateDatabase(nativeDatabase, nativeTransaction, schemaDescriptors, currentVersion) {
-    var descriptorsToProcess = schemaDescriptors.filter((function(descriptor) {
+    var descriptorsToProcess = schemaDescriptors.filter(function(descriptor) {
       return descriptor.version > currentVersion;
-    }));
+    });
     if (!descriptorsToProcess.length) {
       return PromiseSync.resolve(undefined);
     }
-    return migrateDatabaseVersion(nativeDatabase, nativeTransaction, descriptorsToProcess[0]).then((function() {
+    return migrateDatabaseVersion(nativeDatabase, nativeTransaction, descriptorsToProcess[0]).then(function() {
       return migrateDatabase(nativeDatabase, nativeTransaction, descriptorsToProcess, descriptorsToProcess[0].version);
-    }));
+    });
   }
   function migrateDatabaseVersion(nativeDatabase, nativeTransaction, descriptor) {
     var fetchPromise;
@@ -65,47 +65,47 @@ define(["../PromiseSync", "./RecordFetcher", "./DatabaseVersionMigrator", "../sc
     } else {
       fetchPromise = PromiseSync.resolve({});
     }
-    return fetchPromise.then((function(recordsMap) {
+    return fetchPromise.then(function(recordsMap) {
       var versionMigrator = new DatabaseVersionMigrator(nativeDatabase, nativeTransaction, descriptor.objectStores);
-      return versionMigrator.executeMigration(descriptor.after || ((function() {})), recordsMap);
-    }));
+      return versionMigrator.executeMigration(descriptor.after || (function() {}), recordsMap);
+    });
   }
   function normalizeFetchBeforeObjectStores(objectStores) {
-    return objectStores.map((function(objectStore) {
+    return objectStores.map(function(objectStore) {
       if (typeof objectStore === "string") {
         return {
           objectStore: objectStore,
-          preprocessor: (function(record) {
+          preprocessor: function(record) {
             return record;
-          })
+          }
         };
       } else if (!objectStore.preprocessor) {
         return {
           objectStore: objectStore.objectStore,
-          preprocessor: (function(record) {
+          preprocessor: function(record) {
             return record;
-          })
+          }
         };
       } else {
         return objectStore;
       }
-    }));
+    });
   }
   function checkSchemaDescriptorTypes(schemaDescriptors) {
-    var onlyPlainObjects = schemaDescriptors.every((function(descriptor) {
+    var onlyPlainObjects = schemaDescriptors.every(function(descriptor) {
       return descriptor.constructor === Object;
-    }));
+    });
     if (onlyPlainObjects) {
-      return ;
+      return;
     }
     if (!(schemaDescriptors[0] instanceof DatabaseSchema)) {
       throw new TypeError("The schema descriptor of the lowest described " + ("database version (" + schemaDescriptors[0].version + ") must be a ") + "DatabaseSchema instance, or all schema descriptors must be plain " + "objects");
     }
-    schemaDescriptors.slice(1).forEach((function(descriptor) {
+    schemaDescriptors.slice(1).forEach(function(descriptor) {
       if (!(descriptor instanceof UpgradedDatabaseSchema)) {
         throw new TypeError("The schema descriptors of the upgraded database " + "versions must be UpgradedDatabaseSchema instances, but the " + ("provided descriptor of version " + descriptor.version + " was not an ") + "UpgradedDatabaseSchema instance, or all schema descriptors must " + "be plain objects");
       }
-    }));
+    });
   }
   return {
     get default() {

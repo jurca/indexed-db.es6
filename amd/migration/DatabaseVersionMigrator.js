@@ -14,7 +14,7 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
     transaction: Symbol("transaction"),
     objectStores: Symbol("objectStores")
   });
-  var DatabaseVersionMigrator = (function() {
+  var DatabaseVersionMigrator = function() {
     function DatabaseVersionMigrator(database, transaction, objectStores) {
       this[FIELDS.database] = database;
       this[FIELDS.transaction] = transaction;
@@ -26,35 +26,35 @@ define(["../PromiseSync", "../transaction/Transaction", "./ObjectStoreMigrator"]
         var nativeTransaction = this[FIELDS.transaction];
         var objectStores = this[FIELDS.objectStores];
         upgradeSchema(nativeDatabase, nativeTransaction, objectStores);
-        return PromiseSync.resolve().then((function() {
-          var transaction = new Transaction(nativeTransaction, (function() {
+        return PromiseSync.resolve().then(function() {
+          var transaction = new Transaction(nativeTransaction, function() {
             return transaction;
-          }));
-          transaction.completionPromise.catch((function() {}));
+          });
+          transaction.completionPromise.catch(function() {});
           var promise = PromiseSync.resolve(onComplete(transaction, callbackData));
-          return promise.then((function() {
+          return promise.then(function() {
             return undefined;
-          }));
-        }));
+          });
+        });
       }}, {});
-  }());
+  }();
   var $__default = DatabaseVersionMigrator;
   function upgradeSchema(nativeDatabase, nativeTransaction, descriptors) {
     var objectStoreNames = Array.from(nativeDatabase.objectStoreNames);
-    var newObjectStoreNames = descriptors.map((function(objectStore) {
+    var newObjectStoreNames = descriptors.map(function(objectStore) {
       return objectStore.name;
-    }));
-    objectStoreNames.forEach((function(objectStoreName) {
+    });
+    objectStoreNames.forEach(function(objectStoreName) {
       if (newObjectStoreNames.indexOf(objectStoreName) === -1) {
         nativeDatabase.deleteObjectStore(objectStoreName);
       }
-    }));
-    descriptors.forEach((function(objectStoreDescriptor) {
+    });
+    descriptors.forEach(function(objectStoreDescriptor) {
       var objectStoreName = objectStoreDescriptor.name;
       var nativeObjectStore = objectStoreNames.indexOf(objectStoreName) > -1 ? nativeTransaction.objectStore(objectStoreName) : null;
       var objectStoreMigrator = new ObjectStoreMigrator(nativeDatabase, nativeObjectStore, objectStoreDescriptor);
       objectStoreMigrator.executeMigration();
-    }));
+    });
   }
   return {
     get default() {

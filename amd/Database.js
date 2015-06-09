@@ -15,7 +15,7 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
     versionChangeListeners: Symbol("versionChangeListeners"),
     activeTransactions: Symbol("activeTransactions")
   });
-  var Database = (function() {
+  var Database = function() {
     function Database(database) {
       var $__4 = this;
       this.name = database.name;
@@ -24,22 +24,22 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
       this[FIELDS.database] = database;
       this[FIELDS.versionChangeListeners] = new Set();
       this[FIELDS.activeTransactions] = new Set();
-      database.onversionchange = (function(event) {
+      database.onversionchange = function(event) {
         var newVersion = event.newVersion;
-        $__4[FIELDS.versionChangeListeners].forEach((function(listener) {
+        $__4[FIELDS.versionChangeListeners].forEach(function(listener) {
           try {
             listener(newVersion);
           } catch (error) {
             console.error("An event listener threw an error", error);
           }
-        }));
-      });
-      this.addVersionChangeListener((function() {
+        });
+      };
+      this.addVersionChangeListener(function() {
         if ($__4[FIELDS.versionChangeListeners].size !== 1) {
-          return ;
+          return;
         }
         console.warn("The database just received a versionchange event, but " + "no custom event listener has been registered for this event. " + "The connection to the database will therefore remain open and " + "the database upgrade will be blocked");
-      }));
+      });
     }
     return ($traceurRuntime.createClass)(Database, {
       addVersionChangeListener: function(listener) {
@@ -54,13 +54,13 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           objectStoreNames = objectStoreNames[0];
         }
         var nativeTransaction = this[FIELDS.database].transaction(objectStoreNames, TRANSACTION_MODES.READ_WRITE);
-        var transaction = new Transaction(nativeTransaction, (function(objectStoreName) {
+        var transaction = new Transaction(nativeTransaction, function(objectStoreName) {
           return $__4.startReadOnlyTransaction(objectStoreName);
-        }));
+        });
         this[FIELDS.activeTransactions].add(transaction);
-        transaction.completionPromise.catch((function() {})).then((function() {
+        transaction.completionPromise.catch(function() {}).then(function() {
           $__4[FIELDS.activeTransactions].delete(transaction);
-        }));
+        });
         return transaction;
       },
       startReadOnlyTransaction: function() {
@@ -72,13 +72,13 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
           objectStoreNames = objectStoreNames[0];
         }
         var nativeTransaction = this[FIELDS.database].transaction(objectStoreNames, TRANSACTION_MODES.READ_ONLY);
-        var transaction = new ReadOnlyTransaction(nativeTransaction, (function(objectStoreName) {
+        var transaction = new ReadOnlyTransaction(nativeTransaction, function(objectStoreName) {
           return $__4.startReadOnlyTransaction(objectStoreName);
-        }));
+        });
         this[FIELDS.activeTransactions].add(transaction);
-        transaction.completionPromise.catch((function() {})).then((function() {
+        transaction.completionPromise.catch(function() {}).then(function() {
           $__4[FIELDS.activeTransactions].delete(transaction);
-        }));
+        });
         return transaction;
       },
       getObjectStore: function(objectStoreName) {
@@ -104,26 +104,26 @@ define(["./transaction/ReadOnlyTransaction", "./transaction/Transaction"], funct
       close: function() {
         this[FIELDS.database].close();
         var transactions = Array.from(this[FIELDS.activeTransactions]);
-        return Promise.all(transactions.map((function(transaction) {
+        return Promise.all(transactions.map(function(transaction) {
           return transaction.completionPromise;
-        }))).catch((function() {})).then((function() {}));
+        })).catch(function() {}).then(function() {});
       }
     }, {});
-  }());
+  }();
   var $__default = Database;
   function runTransaction(transaction, objectStoreNames, transactionOperations) {
-    var callbackArguments = objectStoreNames.map((function(objectStoreName) {
+    var callbackArguments = objectStoreNames.map(function(objectStoreName) {
       return transaction.getObjectStore(objectStoreName);
-    }));
-    callbackArguments.push((function() {
+    });
+    callbackArguments.push(function() {
       return transaction.abort();
-    }));
+    });
     var resultPromise = transactionOperations.apply((void 0), $traceurRuntime.spread(callbackArguments));
-    return Promise.resolve(resultPromise).then((function(result) {
-      return transaction.completionPromise.then((function() {
+    return Promise.resolve(resultPromise).then(function(result) {
+      return transaction.completionPromise.then(function() {
         return result;
-      }));
-    }));
+      });
+    });
   }
   return {
     get default() {

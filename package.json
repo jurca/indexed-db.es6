@@ -36,6 +36,6 @@
     "requirejs": "^2.1.16"
   },
   "dependencies": {
-    "traceur": "0.0.88"
+    "traceur": "0.0.90"
   }
 }

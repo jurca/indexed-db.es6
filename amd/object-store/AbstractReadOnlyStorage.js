@@ -26,7 +26,7 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
     unique: Symbol("unique"),
     storageFactory: Symbol("storageFactory")
   });
-  var AbstractReadOnlyStorage = (function($__super) {
+  var AbstractReadOnlyStorage = function($__super) {
     function AbstractReadOnlyStorage(storage, cursorConstructor, storageFactory) {
       $traceurRuntime.superConstructor(AbstractReadOnlyStorage).call(this, storage, cursorConstructor);
       if (this.constructor === AbstractReadOnlyStorage) {
@@ -47,27 +47,27 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
           filter = null;
         }
         var cursorFactory = this.createCursorFactory(keyRange);
-        return new PromiseSync((function(resolve, reject) {
-          cursorFactory((function(cursor) {
+        return new PromiseSync(function(resolve, reject) {
+          cursorFactory(function(cursor) {
             if (filter) {
               if (filter(cursor.record, cursor.primaryKey, cursor.key)) {
                 resolve(true);
-                return ;
+                return;
               }
               cursor.continue();
-              return ;
+              return;
             }
             resolve(true);
-          })).then((function() {
+          }).then(function() {
             return resolve(false);
-          })).catch(reject);
-        }));
+          }).catch(reject);
+        });
       },
       count: function() {
         var filter = arguments[0];
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof Function) {
-          return this.forEach(filter, CursorDirection.NEXT, (function() {}));
+          return this.forEach(filter, CursorDirection.NEXT, function() {});
         }
         var request = this[FIELDS.storage].count(filter);
         return PromiseSync.resolve(request);
@@ -82,28 +82,28 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
           filter = null;
         }
         var recordCount = 0;
-        return this.createCursorFactory(keyRange, direction)((function(cursor) {
+        return this.createCursorFactory(keyRange, direction)(function(cursor) {
           if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
             callback(cursor.record, cursor.primaryKey, cursor.key);
             recordCount++;
           }
           cursor.continue();
-        })).then((function() {
+        }).then(function() {
           return recordCount;
-        }));
+        });
       },
       getAll: function() {
         var filter = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         var $__12 = this;
-        return new PromiseSync((function(resolve, reject) {
+        return new PromiseSync(function(resolve, reject) {
           var records = [];
-          $__12.forEach(filter, direction, (function(record) {
+          $__12.forEach(filter, direction, function(record) {
             records.push(record);
-          })).then((function() {
+          }).then(function() {
             return resolve(records);
-          })).catch(reject);
-        }));
+          }).catch(reject);
+        });
       },
       list: function() {
         var filter = arguments[0];
@@ -121,9 +121,9 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
             filter = compileFieldRangeFilter(filter);
           } else {
             var primaryKeyFilter = compileFieldRangeFilter({primaryKey: filter});
-            filter = (function(record, primaryKey) {
+            filter = function(record, primaryKey) {
               return primaryKeyFilter({primaryKey: primaryKey});
-            });
+            };
           }
         }
         var unique = this[FIELDS.unique];
@@ -131,43 +131,43 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
         return list(this, keyRange, filter, direction, unique, pageSize, storageFactory);
       }
     }, {}, $__super);
-  }(AbstractBaseStorage));
+  }(AbstractBaseStorage);
   var $__default = AbstractReadOnlyStorage;
   function list(storage, keyRange, filter, direction, unique, pageSize, storageFactory) {
-    return new Promise((function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       var items = [];
-      storage.createCursorFactory(keyRange, direction)((function(cursor) {
+      storage.createCursorFactory(keyRange, direction)(function(cursor) {
         if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
           if (items.length === pageSize) {
             finalize(true, cursor.key, cursor.primaryKey);
-            return ;
+            return;
           } else {
             items.push(cursor.record);
           }
         }
         cursor.continue();
-      })).then((function() {
+      }).then(function() {
         return finalize(false, null, null);
-      })).catch((function(error) {
+      }).catch(function(error) {
         return reject(error);
-      }));
+      });
       function finalize(hasNextPage, nextKey, nextPrimaryKey) {
         resolve(new RecordList(items, storageFactory, nextKey, nextPrimaryKey, direction, unique, filter, pageSize, hasNextPage));
       }
-    }));
+    });
   }
   function normalizeCompoundObjectKey(keyPaths, key) {
     var normalizedKey = [];
-    keyPaths.forEach((function(keyPath) {
+    keyPaths.forEach(function(keyPath) {
       var keyValue = key;
-      keyPath.split(".").forEach((function(fieldName) {
+      keyPath.split(".").forEach(function(fieldName) {
         if (!keyValue.hasOwnProperty(fieldName)) {
           throw new Error(("The " + keyPath + " key path is not defined in the ") + "provided compound key");
         }
         keyValue = keyValue[fieldName];
-      }));
+      });
       normalizedKey.push(keyValue);
-    }));
+    });
     return normalizedKey;
   }
   return {

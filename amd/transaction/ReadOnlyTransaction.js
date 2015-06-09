@@ -14,7 +14,7 @@ define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"]
     abortListeners: Symbol("abortListeners"),
     errorListeners: Symbol("errorListeners")
   });
-  var ReadOnlyTransaction = (function() {
+  var ReadOnlyTransaction = function() {
     function ReadOnlyTransaction(transaction, transactionFactory) {
       var $__4 = this;
       this[FIELDS.transaction] = transaction;
@@ -23,28 +23,28 @@ define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"]
       this[FIELDS.completeListeners] = new Set();
       this[FIELDS.abortListeners] = new Set();
       this[FIELDS.errorListeners] = new Set();
-      this.completionPromise = new Promise((function(resolve, reject) {
+      this.completionPromise = new Promise(function(resolve, reject) {
         $__4.addCompleteListener(resolve);
-        $__4.addAbortListener((function() {
+        $__4.addAbortListener(function() {
           reject(new Error("The transaction has been aborted"));
-        }));
+        });
         $__4.addErrorListener(reject);
-      }));
-      transaction.oncomplete = (function() {
+      });
+      transaction.oncomplete = function() {
         executeEventListeners($__4[FIELDS.completeListeners]);
-      });
-      transaction.onabort = (function() {
+      };
+      transaction.onabort = function() {
         executeEventListeners($__4[FIELDS.abortListeners]);
-      });
-      transaction.onerror = (function(event) {
+      };
+      transaction.onerror = function(event) {
         executeEventListeners($__4[FIELDS.errorListeners], transaction.error);
         event.preventDefault();
-      });
-      this.addErrorListener((function(error) {
+      };
+      this.addErrorListener(function(error) {
         if ($__4[FIELDS.errorListeners].size < 2) {
           console.error("Encountered an uncaptured transaction-level error " + "while no error listeners were registered", error);
         }
-      }));
+      });
       if (this.constructor === ReadOnlyTransaction) {
         Object.freeze(this);
       }
@@ -67,28 +67,28 @@ define(["../object-store/ReadOnlyObjectStore", "../object-store/ReadOnlyCursor"]
         if (this[FIELDS.objectStores].has(objectStoreName)) {
           return this[FIELDS.objectStores].get(objectStoreName);
         }
-        var transactionFactory = (function() {
+        var transactionFactory = function() {
           return $__4[FIELDS.transactionFactory](objectStoreName);
-        });
+        };
         var idbObjectStore = this[FIELDS.transaction].objectStore(objectStoreName);
         var objectStore = new ReadOnlyObjectStore(idbObjectStore, ReadOnlyCursor, transactionFactory);
         this[FIELDS.objectStores].set(objectStoreName, objectStore);
         return objectStore;
       }
     }, {});
-  }());
+  }();
   var $__default = ReadOnlyTransaction;
   function executeEventListeners(listeners) {
     for (var parameters = [],
         $__6 = 1; $__6 < arguments.length; $__6++)
       parameters[$__6 - 1] = arguments[$__6];
-    listeners.forEach((function(listener) {
+    listeners.forEach(function(listener) {
       try {
         listener.apply(null, parameters);
       } catch (error) {
         console.error("An event listener threw an error", error);
       }
-    }));
+    });
   }
   return {
     get default() {

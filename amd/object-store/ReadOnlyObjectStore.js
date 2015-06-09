@@ -21,12 +21,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     transactionFactory: Symbol("transactionFactory"),
     cursorConstructor: Symbol("cursorConstructor")
   });
-  var ReadOnlyObjectStore = (function($__super) {
+  var ReadOnlyObjectStore = function($__super) {
     function ReadOnlyObjectStore(storage, cursorConstructor, transactionFactory) {
-      var storageFactory = (function() {
+      var storageFactory = function() {
         var transaction = transactionFactory();
         return transaction.getObjectStore(storage.name);
-      });
+      };
       $traceurRuntime.superConstructor(ReadOnlyObjectStore).call(this, storage, cursorConstructor, storageFactory);
       this.autoIncrement = storage.autoIncrement;
       this.indexNames = Object.freeze(Array.from(storage.indexNames));
@@ -81,30 +81,30 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         return runQuery(storage.createCursorFactory(keyRange, direction), storage.multiEntry, filter, comparator, offset, limit);
       }
     }, {}, $__super);
-  }(AbstractReadOnlyStorage));
+  }(AbstractReadOnlyStorage);
   var $__default = ReadOnlyObjectStore;
   function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator, offset, limit) {
     var records = [];
     var recordIndex = -1;
-    return cursorFactory((function(cursor) {
+    return cursorFactory(function(cursor) {
       if (!filter && offset && ((recordIndex + 1) < offset)) {
         recordIndex = offset - 1;
         cursor.advance(offset);
-        return ;
+        return;
       }
       var primaryKey = cursor.primaryKey;
       if (filter && !filter(cursor.record, primaryKey, cursor.key)) {
         cursor.continue();
-        return ;
+        return;
       }
       recordIndex++;
       if (recordIndex < offset) {
         cursor.continue();
-        return ;
+        return;
       }
       if (containsRepeatingRecords && isRecordPresent(records, primaryKey)) {
         cursor.continue();
-        return ;
+        return;
       }
       if (comparator) {
         insertSorted(records, cursor.record, primaryKey, comparator);
@@ -118,14 +118,14 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         });
       }
       if (!comparator && limit && (records.length >= limit)) {
-        return ;
+        return;
       }
       cursor.continue();
-    })).then((function() {
-      return records.map((function(recordAndKey) {
+    }).then(function() {
+      return records.map(function(recordAndKey) {
         return recordAndKey.record;
-      }));
-    }));
+      });
+    });
   }
   function insertSorted(records, record, primaryKey, comparator) {
     for (var i = 0; i < records.length; i++) {
@@ -135,7 +135,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
           record: record,
           primaryKey: primaryKey
         });
-        return ;
+        return;
       }
     }
     records.push({
@@ -284,9 +284,9 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       }
     }
     var sortedStorages = Array.from(storages.values());
-    sortedStorages.sort((function(storage1, storage2) {
+    sortedStorages.sort(function(storage1, storage2) {
       return storage2.score - storage1.score;
-    }));
+    });
     var chosenStorage = sortedStorages[0].storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
     var optimizeSorting = canOptimizeOrder && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
@@ -297,9 +297,9 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     };
   }
   function simplifyOrderingFieldPaths(order) {
-    return order.map((function(fieldPath) {
+    return order.map(function(fieldPath) {
       return fieldPath.replace(/^!/, "");
-    }));
+    });
   }
   function canOptimizeSorting(expectedSortingDirection, order) {
     var $__12 = true;
@@ -344,9 +344,9 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       if (order === CursorDirection.NEXT) {
         return keyPath;
       } else {
-        return keyPath.map((function(fieldPath) {
+        return keyPath.map(function(fieldPath) {
           return ("!" + fieldPath);
-        }));
+        });
       }
     }
     return order;

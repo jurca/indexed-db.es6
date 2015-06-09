@@ -1,6 +1,6 @@
 define([], function() {
   "use strict";
-  var KeyRange = (function() {
+  var KeyRange = function() {
     function KeyRange() {
       throw new Error("The KeyRange class is static, no instances can be " + "created");
     }
@@ -22,7 +22,7 @@ define([], function() {
         return IDBKeyRange.only(expectedValue);
       }
     });
-  }());
+  }();
   var $__default = KeyRange;
   return {
     get default() {

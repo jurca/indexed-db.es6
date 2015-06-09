@@ -13,9 +13,9 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
     suboperationPromise: Symbol("suboperationPromise"),
     flags: Symbol("flags")
   });
-  var Cursor = (function($__super) {
+  var Cursor = function($__super) {
     function Cursor(cursorRequest, iterationCalback, suboperationCallback) {
-      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, (function() {}));
+      $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, function() {});
       this[FIELDS.cursor] = cursorRequest.result;
       this[FIELDS.iterationCalback] = iterationCalback;
       this[FIELDS.suboperationCallback] = suboperationCallback;
@@ -29,9 +29,9 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
         }
         var request = this[FIELDS.cursor].update(record);
         var operationPromise = this[FIELDS.suboperationCallback](request);
-        this[FIELDS.suboperationPromise] = this[FIELDS.suboperationPromise].then((function() {
+        this[FIELDS.suboperationPromise] = this[FIELDS.suboperationPromise].then(function() {
           return operationPromise;
-        }));
+        });
         return operationPromise;
       },
       delete: function() {
@@ -40,9 +40,9 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
         }
         var request = this[FIELDS.cursor].delete();
         var operationPromise = this[FIELDS.suboperationCallback](request);
-        this[FIELDS.suboperationPromise] = this[FIELDS.suboperationPromise].then((function() {
+        this[FIELDS.suboperationPromise] = this[FIELDS.suboperationPromise].then(function() {
           return operationPromise;
-        }));
+        });
         return operationPromise;
       },
       advance: function() {
@@ -52,9 +52,9 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
           throw new Error("This cursor instance has already advanced to another " + "record");
         }
         this[FIELDS.flags].hasAdvanced = true;
-        this[FIELDS.suboperationPromise].then((function() {
+        this[FIELDS.suboperationPromise].then(function() {
           return $traceurRuntime.superGet($__4, Cursor.prototype, "advance").call($__4, recordCount);
-        }));
+        });
         this[FIELDS.iterationCalback]();
       },
       continue: function() {
@@ -64,13 +64,13 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
           throw new Error("This cursor instance has already advanced to another " + "record");
         }
         this[FIELDS.flags].hasAdvanced = true;
-        this[FIELDS.suboperationPromise].then((function() {
+        this[FIELDS.suboperationPromise].then(function() {
           return $traceurRuntime.superGet($__4, Cursor.prototype, "continue").call($__4, nextKey);
-        }));
+        });
         this[FIELDS.iterationCalback]();
       }
     }, {}, $__super);
-  }(ReadOnlyCursor));
+  }(ReadOnlyCursor);
   var $__default = Cursor;
   return {
     get default() {

@@ -9,13 +9,13 @@ define(["./ReadOnlyIndex", "./Cursor", "./CursorDirection"], function($__0,$__2,
   var ReadOnlyIndex = $__0.default;
   var Cursor = $__2.default;
   var CursorDirection = $__4.default;
-  var Index = (function($__super) {
+  var Index = function($__super) {
     function Index(storage, transactionFactory) {
-      var storageFactory = (function() {
+      var storageFactory = function() {
         var transaction = transactionFactory();
         var objectStore = transaction.getObjectStore(storage.objectStore.name);
         return objectStore.index(storage.name);
-      });
+      };
       $traceurRuntime.superConstructor(Index).call(this, storage, Cursor, storageFactory);
       Object.freeze(this);
     }
@@ -30,7 +30,7 @@ define(["./ReadOnlyIndex", "./Cursor", "./CursorDirection"], function($__0,$__2,
         return $traceurRuntime.superGet(this, Index.prototype, "createCursorFactory").call(this, keyRange, direction, unique);
       }
     }, {}, $__super);
-  }(ReadOnlyIndex));
+  }(ReadOnlyIndex);
   var $__default = Index;
   return {
     get default() {

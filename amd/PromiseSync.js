@@ -11,23 +11,23 @@ define([], function() {
     fulfillListeners: Symbol("fulfillListeners"),
     errorListeners: Symbol("errorListeners")
   });
-  var PromiseSync = (function() {
+  var PromiseSync = function() {
     function PromiseSync(callback) {
       var $__0 = this;
       this[FIELDS.state] = STATE.PENDING;
       this[FIELDS.value] = undefined;
       this[FIELDS.fulfillListeners] = [];
-      this[FIELDS.errorListeners] = [(function() {
+      this[FIELDS.errorListeners] = [function() {
         if ($__0[FIELDS.errorListeners] === 1) {
           console.error("Uncaught (in sync promise)", $__0[FIELDS.value]);
         }
-      })];
+      }];
       try {
-        callback((function(value) {
+        callback(function(value) {
           return resolve($__0, STATE.RESOLVED, value);
-        }), (function(error) {
+        }, function(error) {
           return resolve($__0, STATE.REJECTED, error);
-        }));
+        });
       } catch (error) {
         resolve(this, STATE.REJECTED, error);
       }
@@ -37,15 +37,15 @@ define([], function() {
         var onError = arguments[1];
         var $__0 = this;
         var thisPromise = this;
-        return new PromiseSync((function(resolve, reject) {
+        return new PromiseSync(function(resolve, reject) {
           switch ($__0[FIELDS.state]) {
             case STATE.PENDING:
-              $__0[FIELDS.fulfillListeners].push((function() {
+              $__0[FIELDS.fulfillListeners].push(function() {
                 return handleResolution(onFulfill);
-              }));
-              $__0[FIELDS.errorListeners].push((function() {
+              });
+              $__0[FIELDS.errorListeners].push(function() {
                 return handleResolution(onError);
-              }));
+              });
               break;
             case STATE.RESOLVED:
               handleResolution(onFulfill);
@@ -65,11 +65,11 @@ define([], function() {
             try {
               var newValue = callback(thisPromise[FIELDS.value]);
               if (newValue instanceof PromiseSync) {
-                newValue.then((function(resultingValue) {
+                newValue.then(function(resultingValue) {
                   return resolve(resultingValue);
-                }), (function(error) {
+                }, function(error) {
                   return reject(error);
-                }));
+                });
               } else {
                 resolve(newValue);
               }
@@ -77,16 +77,16 @@ define([], function() {
               reject(error);
             }
           }
-        }));
+        });
       },
       catch: function(onError) {
         return this.then(undefined, onError);
       },
       toPromise: function() {
         var $__0 = this;
-        return new Promise((function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
           $__0.then(resolve, reject);
-        }));
+        });
       }
     }, {
       resolve: function(value) {
@@ -94,31 +94,31 @@ define([], function() {
           return value;
         }
         if (value instanceof Promise) {
-          return new PromiseSync((function(resolve, reject) {
+          return new PromiseSync(function(resolve, reject) {
             value.then(resolve, reject);
-          }));
+          });
         }
         if (value instanceof IDBRequest) {
-          return new PromiseSync((function(resolve, reject) {
-            value.onsuccess = (function() {
+          return new PromiseSync(function(resolve, reject) {
+            value.onsuccess = function() {
               return resolve(value.result);
-            });
-            value.onerror = (function() {
+            };
+            value.onerror = function() {
               return reject(value.error);
-            });
-          }));
+            };
+          });
         }
-        return new PromiseSync((function(resolve) {
+        return new PromiseSync(function(resolve) {
           resolve(value);
-        }));
+        });
       },
       reject: function(error) {
-        return new PromiseSync((function() {
+        return new PromiseSync(function() {
           throw error;
-        }));
+        });
       },
       all: function(promises) {
-        return new PromiseSync((function(resolve, reject) {
+        return new PromiseSync(function(resolve, reject) {
           var state = [];
           var $__5 = true;
           var $__6 = false;
@@ -132,14 +132,14 @@ define([], function() {
                   result: undefined
                 };
                 state.push(promiseState);
-                promise.then((function(result) {
+                promise.then(function(result) {
                   promiseState.result = result;
                   promiseState.resolved = true;
                   checkState();
-                }));
-                promise.catch((function(error) {
+                });
+                promise.catch(function(error) {
                   reject(error);
-                }));
+                });
               }
             };
             for (var $__3 = void 0,
@@ -161,18 +161,18 @@ define([], function() {
             }
           }
           function checkState() {
-            if (state.every((function(promiseState) {
+            if (state.every(function(promiseState) {
               return promiseState.resolved;
-            }))) {
-              resolve(state.map((function(promiseState) {
+            })) {
+              resolve(state.map(function(promiseState) {
                 return promiseState.result;
-              })));
+              }));
             }
           }
-        }));
+        });
       },
       race: function(promises) {
-        return new PromiseSync((function(resolve, reject) {
+        return new PromiseSync(function(resolve, reject) {
           var $__5 = true;
           var $__6 = false;
           var $__7 = undefined;
@@ -198,14 +198,14 @@ define([], function() {
               }
             }
           }
-        }));
+        });
       }
     });
-  }());
+  }();
   var $__default = PromiseSync;
   function resolve(instance, newState, value) {
     if (instance[FIELDS.state] !== STATE.PENDING) {
-      return ;
+      return;
     }
     instance[FIELDS.state] = newState;
     instance[FIELDS.value] = value;

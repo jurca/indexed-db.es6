@@ -1,6 +1,6 @@
 define([], function() {
   "use strict";
-  var CursorDirection = (function() {
+  var CursorDirection = function() {
     function CursorDirection(value) {
       this.value = value;
       Object.freeze(this);
@@ -13,7 +13,7 @@ define([], function() {
         return PREVIOUS;
       }
     });
-  }());
+  }();
   var $__default = CursorDirection;
   var NEXT = new CursorDirection("NEXT");
   var PREVIOUS = new CursorDirection("PREVIOUS");

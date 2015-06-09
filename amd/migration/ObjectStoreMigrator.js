@@ -5,7 +5,7 @@ define([], function() {
     objectStore: Symbol("objectStore"),
     schema: Symbol("schema")
   });
-  var ObjectStoreMigrator = (function() {
+  var ObjectStoreMigrator = function() {
     function ObjectStoreMigrator(database, nativeObjectStore, schema) {
       this[FIELDS.database] = database;
       this[FIELDS.objectStore] = nativeObjectStore;
@@ -22,23 +22,23 @@ define([], function() {
           });
         }
         var indexNames = Array.from(objectStore.indexNames);
-        indexNames.forEach((function(indexName) {
+        indexNames.forEach(function(indexName) {
           if (shouldDeleteIndex(objectStore, schema, indexName)) {
             objectStore.deleteIndex(indexName);
           }
-        }));
+        });
         var schemaIndexes = schema.indexes || [];
-        schemaIndexes.forEach((function(indexSchema) {
+        schemaIndexes.forEach(function(indexSchema) {
           createIndex(objectStore, indexSchema);
-        }));
+        });
       }}, {});
-  }());
+  }();
   var $__default = ObjectStoreMigrator;
   function shouldDeleteIndex(objectStore, schema, indexName) {
     var schemaIndexes = schema.indexes || [];
-    var newIndexNames = schemaIndexes.map((function(indexSchema) {
+    var newIndexNames = schemaIndexes.map(function(indexSchema) {
       return indexSchema.name;
-    }));
+    });
     if (newIndexNames.indexOf(indexName) === -1) {
       return true;
     }
@@ -48,15 +48,15 @@ define([], function() {
       indexKeyPath = Array.from(indexKeyPath);
     }
     var serializedIndexKeyPath = JSON.stringify(indexKeyPath);
-    var indexSchema = schemaIndexes.filter((function(indexSchema) {
+    var indexSchema = schemaIndexes.filter(function(indexSchema) {
       return indexSchema.name === index.name;
-    }))[0];
+    })[0];
     return (index.unique !== indexSchema.unique) || (index.multiEntry !== indexSchema.multiEntry) || (serializedIndexKeyPath !== JSON.stringify(indexSchema.keyPaths));
   }
   function createIndex(objectStore, indexSchema) {
     var indexNames = Array.from(objectStore.indexNames);
     if (indexNames.indexOf(indexSchema.name) !== -1) {
-      return ;
+      return;
     }
     objectStore.createIndex(indexSchema.name, indexSchema.keyPath, {
       unique: indexSchema.unique,

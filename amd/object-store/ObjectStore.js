@@ -23,7 +23,7 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
     indexes: Symbol("indexes"),
     transactionFactory: Symbol("transactionFactory")
   });
-  var ObjectStore = (function($__super) {
+  var ObjectStore = function($__super) {
     function ObjectStore(storage, transactionFactory) {
       $traceurRuntime.superConstructor(ObjectStore).call(this, storage, Cursor, transactionFactory);
       this[FIELDS.objectStore] = storage;
@@ -49,16 +49,16 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
           var request = this[FIELDS.objectStore].delete(filter);
           return PromiseSync.resolve(request);
         }
-        return new PromiseSync((function(resolve, reject) {
+        return new PromiseSync(function(resolve, reject) {
           var progressPromise = PromiseSync.resolve(null);
-          $__12.forEach(filter, CursorDirection.NEXT, (function(record, primaryKey) {
-            progressPromise = progressPromise.then((function() {
+          $__12.forEach(filter, CursorDirection.NEXT, function(record, primaryKey) {
+            progressPromise = progressPromise.then(function() {
               return $__12.delete(primaryKey);
-            }), reject);
-          })).then((function() {
+            }, reject);
+          }).then(function() {
             return resolve(progressPromise);
-          }));
-        }));
+          });
+        });
       },
       clear: function() {
         var request = this[FIELDS.objectStore].clear();
@@ -82,7 +82,7 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         return $traceurRuntime.superGet(this, ObjectStore.prototype, "createCursorFactory").call(this, keyRange, direction);
       }
     }, {}, $__super);
-  }(ReadOnlyObjectStore));
+  }(ReadOnlyObjectStore);
   var $__default = ObjectStore;
   return {
     get default() {

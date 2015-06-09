@@ -16,7 +16,7 @@ define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
     pageSize: Symbol("pageSize"),
     hasNextPage: Symbol("hasNextPage")
   });
-  var RecordList = (function($__super) {
+  var RecordList = function($__super) {
     function RecordList(items, storageFactory, nextKey, firstPrimaryKey, cursorDirection, unique, filter, pageSize, hasNextPage) {
       $traceurRuntime.superConstructor(RecordList).call(this);
       if (items.length > pageSize) {
@@ -53,39 +53,39 @@ define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
         return fetchNextPage(storageFactory, keyRange, cursorDirection, unique, this[FIELDS.firstPrimaryKey], this[FIELDS.filter], pageSize);
       }
     }, {}, $__super);
-  }(Array));
+  }(Array);
   var $__default = RecordList;
   function fetchNextPage(storageFactory, keyRange, cursorDirection, unique, firstPrimaryKey, filter, pageSize) {
     var storage = storageFactory();
     var nextItems = [];
-    return new Promise((function(resolve, reject) {
+    return new Promise(function(resolve, reject) {
       var cursorFactory = storage.createCursorFactory(keyRange, cursorDirection, unique);
-      cursorFactory((function(cursor) {
+      cursorFactory(function(cursor) {
         if (!unique) {
           var shouldSkip = ((cursorDirection === CursorDirection.NEXT) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) > 0)) || ((cursorDirection === CursorDirection.PREVIOUS) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) < 0));
           if (shouldSkip) {
             cursor.continue();
-            return ;
+            return;
           }
         }
         if (!filter || filter(cursor.record, cursor.primaryKey, cursor.key)) {
           if (nextItems.length === pageSize) {
             finalize(true, cursor.key, cursor.primaryKey);
-            return ;
+            return;
           } else {
             nextItems.push(cursor.record);
           }
         }
         cursor.continue();
-      })).then((function() {
+      }).then(function() {
         return finalize(false, null, null);
-      })).catch((function(error) {
+      }).catch(function(error) {
         return reject(error);
-      }));
+      });
       function finalize(hasNextPage, nextKey, nextPrimaryKey) {
         resolve(new RecordList(nextItems, storageFactory, nextKey, nextPrimaryKey, cursorDirection, unique, filter, pageSize, hasNextPage));
       }
-    }));
+    });
   }
   return {
     get default() {

@@ -7,9 +7,9 @@ define(["./validation"], function($__0) {
       getDuplicitNames = $__1.getDuplicitNames;
   var SKIP_RECORD = Object.freeze({});
   var DELETE_RECORD = Object.freeze({});
-  var UpgradedDatabaseSchema = (function() {
+  var UpgradedDatabaseSchema = function() {
     function UpgradedDatabaseSchema(version, fetchBefore, objectStores) {
-      var after = arguments[3] !== (void 0) ? arguments[3] : (function() {});
+      var after = arguments[3] !== (void 0) ? arguments[3] : function() {};
       if (!isVersionValid(version)) {
         throw new TypeError("The version must be a positive integer, " + (version + " provided"));
       }
@@ -23,7 +23,7 @@ define(["./validation"], function($__0) {
       this.version = version;
       this.fetchBefore = fetchBefore || [];
       this.objectStores = objectStores;
-      this.after = after || ((function() {}));
+      this.after = after || (function() {});
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(UpgradedDatabaseSchema, {}, {
@@ -34,7 +34,7 @@ define(["./validation"], function($__0) {
         return DELETE_RECORD;
       }
     });
-  }());
+  }();
   var $__default = UpgradedDatabaseSchema;
   return {
     get default() {

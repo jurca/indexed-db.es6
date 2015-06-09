@@ -11,7 +11,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
     flags: Symbol("flags"),
     iterationCalback: Symbol("iterationCalback")
   });
-  var ReadOnlyCursor = (function() {
+  var ReadOnlyCursor = function() {
     function ReadOnlyCursor(cursorRequest, iterationCalback) {
       this[FIELDS.request] = cursorRequest;
       this[FIELDS.iterationCalback] = iterationCalback;
@@ -57,7 +57,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
         this[FIELDS.iterationCalback]();
       }
     }, {});
-  }());
+  }();
   var $__default = ReadOnlyCursor;
   return {
     get default() {

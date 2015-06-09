@@ -5,7 +5,7 @@ define(["./validation"], function($__0) {
   var $__1 = $__0,
       isVersionValid = $__1.isVersionValid,
       getDuplicitNames = $__1.getDuplicitNames;
-  var DatabaseSchema = (function() {
+  var DatabaseSchema = function() {
     function DatabaseSchema(version) {
       for (var objectStores = [],
           $__3 = 1; $__3 < arguments.length; $__3++)
@@ -22,7 +22,7 @@ define(["./validation"], function($__0) {
       Object.freeze(this);
     }
     return ($traceurRuntime.createClass)(DatabaseSchema, {}, {});
-  }());
+  }();
   var $__default = DatabaseSchema;
   return {
     get default() {

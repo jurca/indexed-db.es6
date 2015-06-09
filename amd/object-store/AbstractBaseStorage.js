@@ -11,7 +11,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
     storage: Symbol("storage"),
     cursorConstructor: Symbol("cursorConstructor")
   });
-  var AbstractBaseStorage = (function() {
+  var AbstractBaseStorage = function() {
     function AbstractBaseStorage(storage, cursorConstructor) {
       if (this.constructor === AbstractBaseStorage) {
         throw new Error("THe AbstractBaseStorage class is abstract and must " + "be overridden");
@@ -56,29 +56,29 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
           direction = direction.value;
         }
         var cursorDirection = direction.toLowerCase().substring(0, 4);
-        return (function(recordCallback) {
+        return function(recordCallback) {
           var request = $__4[FIELDS.storage].openCursor(keyRange, cursorDirection);
           return iterateCursor(request, cursorConstructor, recordCallback);
-        });
+        };
       }
     }, {});
-  }());
+  }();
   var $__default = AbstractBaseStorage;
   function iterateCursor(request, cursorConstructor, recordCallback) {
-    return new PromiseSync((function(resolve, reject) {
+    return new PromiseSync(function(resolve, reject) {
       var traversedRecords = 0;
       var canIterate = true;
-      request.onerror = (function() {
+      request.onerror = function() {
         return reject(request.error);
-      });
-      request.onsuccess = (function() {
+      };
+      request.onsuccess = function() {
         if (!canIterate) {
           console.warn("Cursor iteration was requested asynchronously, " + "ignoring the new cursor position");
-          return ;
+          return;
         }
         if (!request.result) {
           resolve(traversedRecords);
-          return ;
+          return;
         }
         traversedRecords++;
         var iterationRequested = handleCursorIteration(request, cursorConstructor, recordCallback, reject);
@@ -86,19 +86,19 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
           canIterate = false;
           resolve(traversedRecords);
         }
-      });
-    }));
+      };
+    });
   }
   function handleCursorIteration(request, cursorConstructor, recordCallback, reject) {
     var iterationRequested = false;
-    var cursor = new cursorConstructor(request, (function() {
+    var cursor = new cursorConstructor(request, function() {
       iterationRequested = true;
-    }), (function(subRequest) {
-      return PromiseSync.resolve(subRequest).catch((function(error) {
+    }, function(subRequest) {
+      return PromiseSync.resolve(subRequest).catch(function(error) {
         reject(error);
         throw error;
-      }));
-    }));
+      });
+    });
     try {
       recordCallback(cursor);
     } catch (error) {
@@ -109,16 +109,16 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
   }
   function normalizeCompoundObjectKey(keyPaths, key) {
     var normalizedKey = [];
-    keyPaths.forEach((function(keyPath) {
+    keyPaths.forEach(function(keyPath) {
       var keyValue = key;
-      keyPath.split(".").forEach((function(fieldName) {
+      keyPath.split(".").forEach(function(fieldName) {
         if (!keyValue.hasOwnProperty(fieldName)) {
           throw new Error(("The " + keyPath + " key path is not defined in the ") + "provided compound key");
         }
         keyValue = keyValue[fieldName];
-      }));
+      });
       normalizedKey.push(keyValue);
-    }));
+    });
     return normalizedKey;
   }
   return {
