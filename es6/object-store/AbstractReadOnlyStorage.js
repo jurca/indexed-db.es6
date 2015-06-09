@@ -83,7 +83,33 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *         there is a record matching the provided filter.
    */
   exists(filter) {
-    return this.count(filter).then(count => count > 0)
+    filter = normalizeFilter(filter, this.keyPath)
+    
+    let keyRange
+    if (filter instanceof Function) {
+      keyRange = undefined
+    } else {
+      keyRange = filter
+      filter = null
+    }
+
+    let cursorFactory = this.createCursorFactory(keyRange)
+    
+    return new PromiseSync((resolve, reject) => {
+      cursorFactory((cursor) => {
+        if (filter) {
+          if (filter(cursor.record, cursor.primaryKey, cursor.key)) {
+            resolve(true)
+            return
+          }
+          
+          cursor.continue()
+          return
+        }
+        
+        resolve(true)
+      }).then(() => resolve(false)).catch(reject)
+    })
   }
 
   /**

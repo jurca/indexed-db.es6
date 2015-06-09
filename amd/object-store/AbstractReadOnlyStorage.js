@@ -38,8 +38,29 @@ define(["../PromiseSync", "./AbstractBaseStorage", "./CursorDirection", "./KeyRa
     }
     return ($traceurRuntime.createClass)(AbstractReadOnlyStorage, {
       exists: function(filter) {
-        return this.count(filter).then((function(count) {
-          return count > 0;
+        filter = normalizeFilter(filter, this.keyPath);
+        var keyRange;
+        if (filter instanceof Function) {
+          keyRange = undefined;
+        } else {
+          keyRange = filter;
+          filter = null;
+        }
+        var cursorFactory = this.createCursorFactory(keyRange);
+        return new PromiseSync((function(resolve, reject) {
+          cursorFactory((function(cursor) {
+            if (filter) {
+              if (filter(cursor.record, cursor.primaryKey, cursor.key)) {
+                resolve(true);
+                return ;
+              }
+              cursor.continue();
+              return ;
+            }
+            resolve(true);
+          })).then((function() {
+            return resolve(false);
+          })).catch(reject);
         }));
       },
       count: function() {
