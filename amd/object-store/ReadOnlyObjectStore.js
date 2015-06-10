@@ -128,20 +128,40 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
     });
   }
   function insertSorted(records, record, primaryKey, comparator) {
-    for (var i = 0; i < records.length; i++) {
-      var comparison = comparator(records[i].record, record);
-      if (comparison > 0) {
-        records.splice(i, 0, {
-          record: record,
-          primaryKey: primaryKey
-        });
-        return;
-      }
-    }
-    records.push({
+    var index = findInsertIndex(records, record, comparator);
+    records.splice(index, 0, {
       record: record,
       primaryKey: primaryKey
     });
+  }
+  function findInsertIndex(records, record, comparator) {
+    if (!records.length) {
+      return 0;
+    }
+    if (records.length === 1) {
+      var comparison$__36 = comparator(records[0].record, record);
+      return (comparison$__36 > 0) ? 0 : 1;
+    }
+    var comparison = comparator(records[0].record, record);
+    if (comparison > 0) {
+      return 0;
+    }
+    var bottom = 1;
+    var top = records.length - 1;
+    while (bottom <= top) {
+      var pivotIndex = Math.floor((bottom + top) / 2);
+      var comparison$__37 = comparator(records[pivotIndex].record, record);
+      if (comparison$__37 > 0) {
+        var previousElement = records[pivotIndex - 1].record;
+        if (comparator(previousElement, record) <= 0) {
+          return pivotIndex;
+        }
+        top = pivotIndex - 1;
+      } else {
+        bottom = pivotIndex + 1;
+      }
+    }
+    return records.length;
   }
   function isRecordPresent(records, recordPrimaryKey) {
     var $__12 = true;
@@ -259,12 +279,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         for (var $__24 = void 0,
             $__23 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__26 = ($__24 = $__23.next()).done); $__26 = true) {
           var $__33 = $__24.value,
-              keyPath$__36 = ($__34 = $__33[$traceurRuntime.toProperty(Symbol.iterator)](), ($__35 = $__34.next()).done ? void 0 : $__35.value),
-              storageAndScore$__37 = ($__35 = $__34.next()).done ? void 0 : $__35.value;
+              keyPath$__38 = ($__34 = $__33[$traceurRuntime.toProperty(Symbol.iterator)](), ($__35 = $__34.next()).done ? void 0 : $__35.value),
+              storageAndScore$__39 = ($__35 = $__34.next()).done ? void 0 : $__35.value;
           {
-            var normalizedFilter = normalizeFilter(filter, keyPath$__36);
+            var normalizedFilter = normalizeFilter(filter, keyPath$__38);
             if (!(normalizedFilter instanceof Function)) {
-              storageAndScore$__37.score += 2;
+              storageAndScore$__39.score += 2;
             }
           }
         }

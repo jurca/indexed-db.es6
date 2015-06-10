@@ -165,11 +165,11 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    * 
    * Note that when the sorting cannot be optimized, the method keeps the
    * semi-constructed result in a sorted array of up to {@code limit} elements,
-   * inserts the current record using the insert sort algorithm and trimms the
-   * end of the array if its length exceeds the {@code limit}. This allows for
-   * {@code c O(n)} complexity, for {@code c} being the {@code limit}. This
-   * however effectively leads to {@code O(nˆ2)} complexity if {@code limit} is
-   * not specified or too large.
+   * inserts the current record using the insert sort algorithm optimized using
+   * the binary search algorithm and trimms the end of the array if its length
+   * exceeds the {@code limit}. This results in {@code O(n log c)} complexity,
+   * for {@code c} being the {@code limit} and {@code n} being the total number
+   * records.
    * 
    * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
    *        filter The filter, restricting the records returned by this method.
@@ -334,21 +334,62 @@ function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
  *        compatible with the {@codelink Array.prototype.sort} method.
  */
 function insertSorted(records, record, primaryKey, comparator) {
-  for (let i = 0; i < records.length; i++) {
-    let comparison = comparator(records[i].record, record)
-    if (comparison > 0) {
-      records.splice(i, 0, {
-        record,
-        primaryKey
-      })
-      return
-    }
-  }
-  
-  records.push({
+  let index = findInsertIndex(records, record, comparator)
+  records.splice(index, 0, {
     record,
     primaryKey
   })
+}
+
+/**
+ * Uses the binary search algorithm to find the index at which the specified
+ * record should be inserted into the specified array of records to keep the
+ * array sorted according to the provided comparator.
+ * 
+ * @param {{record: *, primaryKey: (number|string|Date|Array)}[]} records The
+ *        array of records into which the provided record should be inserted.
+ * @param {*} record The record to insert into the records array.
+ * @param {function(*, *): number} comparator Record comparator by which the
+ *        array is sorted. The comparator is a standard comparator function
+ *        compatible with the {@codelink Array.prototype.sort} method.
+ * @return {number} The index at which the record should be inserted to keep
+ *         the array of records sorted.
+ */
+function findInsertIndex(records, record, comparator) {
+  if (!records.length) {
+    return 0
+  }
+  
+  if (records.length === 1) {
+    let comparison = comparator(records[0].record, record)
+    return (comparison > 0) ? 0 : 1
+  }
+  
+  let comparison = comparator(records[0].record, record)
+  if (comparison > 0) {
+    return 0
+  }
+  
+  let bottom = 1
+  let top = records.length - 1
+  
+  while (bottom <= top) {
+    let pivotIndex = Math.floor((bottom + top) / 2)
+    
+    let comparison = comparator(records[pivotIndex].record, record)
+    if (comparison > 0) {
+      let previousElement = records[pivotIndex - 1].record
+      if (comparator(previousElement, record) <= 0) {
+        return pivotIndex
+      }
+      
+      top = pivotIndex - 1
+    } else {
+      bottom = pivotIndex + 1
+    }
+  }
+  
+  return records.length
 }
 
 /**
