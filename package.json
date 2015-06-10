@@ -1,6 +1,6 @@
 {
   "name": "indexed-db.es6",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
   "main": "es6/DBFactory.js",
   "scripts": {
