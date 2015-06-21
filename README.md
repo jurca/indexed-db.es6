@@ -37,13 +37,7 @@ indexed-db.es6. Since there is no official bower package for this, you can
 install traceur into your project by running either the following command:
 
 ```
-npm install --production
-```
-
-or the following command:
-
-```
-npm install traceur
+npm install --save traceur
 ```
 
 Aditionally, if you want to use indexed-db.es6 with
