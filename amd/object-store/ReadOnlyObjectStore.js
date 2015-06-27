@@ -78,12 +78,12 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
           keyRange = filter;
           filter = null;
         }
-        return runQuery(storage.createCursorFactory(keyRange, direction), storage.multiEntry, filter, comparator, offset, limit);
+        return runQuery(storage.createCursorFactory(keyRange, direction), filter, comparator, offset, limit);
       }
     }, {}, $__super);
   }(AbstractReadOnlyStorage);
   var $__default = ReadOnlyObjectStore;
-  function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator, offset, limit) {
+  function runQuery(cursorFactory, filter, comparator, offset, limit) {
     var records = [];
     var recordIndex = -1;
     return cursorFactory(function(cursor) {
@@ -99,10 +99,6 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       }
       recordIndex++;
       if (recordIndex < offset) {
-        cursor.continue();
-        return;
-      }
-      if (containsRepeatingRecords && isRecordPresent(records, primaryKey)) {
         cursor.continue();
         return;
       }
@@ -162,38 +158,6 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
       }
     }
     return records.length;
-  }
-  function isRecordPresent(records, recordPrimaryKey) {
-    var $__12 = true;
-    var $__13 = false;
-    var $__14 = undefined;
-    try {
-      for (var $__10 = void 0,
-          $__9 = (records)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__12 = ($__10 = $__9.next()).done); $__12 = true) {
-        var $__30 = $__10.value,
-            record = $__30.record,
-            primaryKey = $__30.primaryKey;
-        {
-          if (indexedDB.cmp(primaryKey, recordPrimaryKey) === 0) {
-            return true;
-          }
-        }
-      }
-    } catch ($__15) {
-      $__13 = true;
-      $__14 = $__15;
-    } finally {
-      try {
-        if (!$__12 && $__9.return != null) {
-          $__9.return();
-        }
-      } finally {
-        if ($__13) {
-          throw $__14;
-        }
-      }
-    }
-    return false;
   }
   function prepareQuery(thisStorage, filter, order) {
     var $__31,
