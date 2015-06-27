@@ -242,7 +242,6 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
     
     return runQuery(
       storage.createCursorFactory(keyRange, direction),
-      storage.multiEntry,
       filter,
       comparator,
       offset,
@@ -256,9 +255,6 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
  * 
  * @param {function(ReadyOnlyCursor): number} cursorFactory The cursor factory
  *        to use to create a cursor for executing the query.
- * @param {boolean} containsRepeatingRecords When {@code true}, a cursor
- *        created using the provided cursor factory may resolve to the same
- *        record repeatedly.
  * @param {?function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean}
  *        filter Optional custom filter callback.
  * @param {?function(*, *): number} comparator Optional record comparator to
@@ -271,8 +267,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
  *        should be imposed.
  * @return {PromiseSync<*[]>} A promise that resolves to the fetched records.
  */
-function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
-    offset, limit) {
+function runQuery(cursorFactory, filter, comparator, offset, limit) {
   let records = []
   let recordIndex = -1
   
@@ -291,11 +286,6 @@ function runQuery(cursorFactory, containsRepeatingRecords, filter, comparator,
     
     recordIndex++
     if (recordIndex < offset) {
-      cursor.continue()
-      return
-    }
-    
-    if (containsRepeatingRecords && isRecordPresent(records, primaryKey)) {
       cursor.continue()
       return
     }
@@ -390,27 +380,6 @@ function findInsertIndex(records, record, comparator) {
   }
   
   return records.length
-}
-
-/**
- * Tests whether the records of the specified primary key is already present in
- * the provided array of records and their primary keys.
- * 
- * @param {{record: *, primaryKey: (number|string|Date|Array)}} records The
- *        records and their primary keys.
- * @param {(number|string|Date|Array)} recordPrimaryKey The primary key of the
- *        record to test for presence among the provided records.
- * @return {@code true} if the record with the specified primary key is already
- *         present in the records array.
- */
-function isRecordPresent(records, recordPrimaryKey) {
-  for (let { record, primaryKey } of records) {
-    if (indexedDB.cmp(primaryKey, recordPrimaryKey) === 0) {
-      return true
-    }
-  }
-  
-  return false
 }
 
 /**
