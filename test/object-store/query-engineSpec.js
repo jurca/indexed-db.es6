@@ -1,4 +1,3 @@
-
 import DBFactory from "../../amd/DBFactory"
 import CursorDirection from "../../amd/object-store/CursorDirection"
 import KeyRange from "../../amd/object-store/KeyRange"
@@ -70,33 +69,6 @@ describe("ReadOnlyObjectStore", () => {
     let request = indexedDB.deleteDatabase(DB_NAME)
     request.onsuccess = () => done()
     request.onerror = () => fail(request.error)
-  })
-  
-  it("should report the correct auto increment flag value", () => {
-    expect(objectStore.autoIncrement).toBeTruthy()
-    
-    objectStore = transaction.getObjectStore(OBJECT_STORE_NAME2)
-    expect(objectStore.autoIncrement).toBeFalsy()
-  })
-  
-  it("should report the corrent index names", () => {
-    expect(objectStore.indexNames).toEqual(["someIndex"])
-    
-    objectStore = transaction.getObjectStore(OBJECT_STORE_NAME2)
-    expect(objectStore.indexNames).toEqual(["otherIndex", "someIndex"])
-  })
-  
-  it("should provide access to the indexes", () => {
-    objectStore.getIndex("someIndex")
-    
-    objectStore = transaction.getObjectStore(OBJECT_STORE_NAME2)
-    objectStore.getIndex("someIndex")
-    objectStore.getIndex("otherIndex")
-  })
-  
-  it("should return the same index when call repeatedly", () => {
-    let index = objectStore.getIndex("someIndex")
-    expect(objectStore.getIndex("someIndex")).toEqual(index)
   })
   
   describe("query", () => {
@@ -241,6 +213,141 @@ describe("ReadOnlyObjectStore", () => {
         done()
       }).catch((error) => {
         fail(error)
+        done()
+      })
+    })
+    
+    it("should reject negative offset", () => {
+      expect(() => {
+        objectStore.query(null, null, -1)
+      }).toThrow()
+    })
+    
+    it("should reject non-integer offset", () => {
+      expect(() => {
+        objectStore.query(null, null, 1.2)
+      }).toThrow()
+    })
+    
+    it("should reject negative or zero count limit", () => {
+      expect(() => {
+        objectStore.query(null, null, 0, -1)
+      }).toThrow()
+      
+      expect(() => {
+        objectStore.query(null, null, 0, 0)
+      }).toThrow()
+    })
+    
+    it("should reject non-integer count limit", () => {
+      expect(() => {
+        objectStore.query(null, null, 0, 1.2)
+      }).toThrow()
+    })
+    
+    it("should optimize by preferring object store to index", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query(null, "id").then((records) => {
+        expect(calledCount).toBe(1)
+        done()
+      })
+    })
+    
+    it("should optimize by using index to optimize filtering", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query({ age: 11 }, ["age", "!id"]).then((records) => {
+        expect(calledCount).toBe(0)
+        expect(records.length).toBe(1)
+        expect(records[0].age).toBe(11)
+        done()
+      })
+    })
+    
+    it("must not use multi-entry indexes to optimize queries", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query({ category: 2 }, ["age", "!id"]).then((records) => {
+        expect(calledCount).toBe(1)
+        expect(records.length).toBe(1)
+        done()
+      }).catch((error) => {
+        fail(error)
+        done()
+      })
+    })
+    
+    it("should optimize by using index to optimize sorting", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      objectStore.query(null, "age").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(records.length).toBe(4)
+        
+        objectStore.query(null, ["!age"]).then((records) => {
+          expect(calledCount).toBe(0)
+          expect(records.length).toBe(4)
+          done()
+        })
+      })
+    })
+    
+    it("should prefer optimizing sorting to optimizing filtering", (done) => {
+      objectStore = Object.create(objectStore)
+      
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+      
+      let index = objectStore.getIndex("index3")
+      let nativeIndexMethod = index.createCursorFactory
+      let calledIndexCount = 0
+      let calledOn = null
+      index.constructor.prototype.createCursorFactory =
+          function (range, direction) {
+        calledIndexCount++
+        calledOn = this
+        return nativeIndexMethod.call(index, range, direction)
+      }
+      
+      objectStore.query({ category: 2 }, "!age").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(calledIndexCount).toBe(1)
+        expect(calledOn.name).toBe("index3")
+        expect(records.length).toBe(1)
+        index.constructor.prototype.createCursorFactory = nativeIndexMethod
         done()
       })
     })

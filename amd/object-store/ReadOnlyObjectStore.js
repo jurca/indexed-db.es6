@@ -1,4 +1,4 @@
-define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./utils"], function($__0,$__2,$__4,$__6) {
+define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./query-engine"], function($__0,$__2,$__4,$__6) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -11,10 +11,7 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
   var AbstractReadOnlyStorage = $__0.default;
   var CursorDirection = $__2.default;
   var ReadOnlyIndex = $__4.default;
-  var $__7 = $__6,
-      normalizeFilter = $__7.normalizeFilter,
-      compileOrderingFieldPaths = $__7.compileOrderingFieldPaths;
-  var CURSOR_DIRECTIONS = Object.freeze([CursorDirection.NEXT, CursorDirection.PREVIOUS, "NEXT", "PREVIOUS", "PREV"]);
+  var executeQuery = $__6.default;
   var FIELDS = Object.freeze({
     objectStore: Symbol("objectStore"),
     indexes: Symbol("indexes"),
@@ -49,298 +46,20 @@ define(["./AbstractReadOnlyStorage", "./CursorDirection", "./ReadOnlyIndex", "./
         return index;
       },
       query: function() {
-        var $__30;
         var filter = arguments[0] !== (void 0) ? arguments[0] : null;
         var order = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         var offset = arguments[2] !== (void 0) ? arguments[2] : 0;
         var limit = arguments[3] !== (void 0) ? arguments[3] : null;
-        if ((offset < 0) || (Math.floor(offset) !== offset)) {
-          throw new Error("The offset must be a non-negative integer, " + (offset + " provided"));
-        }
-        if ((limit !== null) && ((limit <= 0) || (Math.floor(limit) !== limit))) {
-          throw new Error("The limit must be a positive integer or null, " + (limit + " provided"));
-        }
-        var direction;
-        var comparator = null;
-        var storage = this;
-        order = prepareOrderingSpecificationForQuery(order, this.keyPath);
-        if (order instanceof Function) {
-          direction = CursorDirection.NEXT;
-          comparator = order;
-        } else {
-          (($__30 = prepareQuery(this, filter, order), storage = $__30.storage, direction = $__30.direction, comparator = $__30.comparator, $__30));
-        }
-        filter = normalizeFilter(filter, storage.keyPath);
-        var keyRange;
-        if (filter instanceof Function) {
-          keyRange = undefined;
-        } else {
-          keyRange = filter;
-          filter = null;
-        }
-        return runQuery(storage.createCursorFactory(keyRange, direction), filter, comparator, offset, limit);
+        var records = [];
+        return executeQuery(this, filter, order, offset, limit, function(record) {
+          records.push(record);
+        }).then(function() {
+          return records;
+        });
       }
     }, {}, $__super);
   }(AbstractReadOnlyStorage);
   var $__default = ReadOnlyObjectStore;
-  function runQuery(cursorFactory, filter, comparator, offset, limit) {
-    var records = [];
-    var recordIndex = -1;
-    return cursorFactory(function(cursor) {
-      if (!filter && offset && ((recordIndex + 1) < offset)) {
-        recordIndex = offset - 1;
-        cursor.advance(offset);
-        return;
-      }
-      var primaryKey = cursor.primaryKey;
-      if (filter && !filter(cursor.record, primaryKey, cursor.key)) {
-        cursor.continue();
-        return;
-      }
-      recordIndex++;
-      if (recordIndex < offset) {
-        cursor.continue();
-        return;
-      }
-      if (comparator) {
-        insertSorted(records, cursor.record, primaryKey, comparator);
-        if (limit && (records.length > limit)) {
-          records.pop();
-        }
-      } else {
-        records.push({
-          record: cursor.record,
-          primaryKey: primaryKey
-        });
-      }
-      if (!comparator && limit && (records.length >= limit)) {
-        return;
-      }
-      cursor.continue();
-    }).then(function() {
-      return records.map(function(recordAndKey) {
-        return recordAndKey.record;
-      });
-    });
-  }
-  function insertSorted(records, record, primaryKey, comparator) {
-    var index = findInsertIndex(records, record, comparator);
-    records.splice(index, 0, {
-      record: record,
-      primaryKey: primaryKey
-    });
-  }
-  function findInsertIndex(records, record, comparator) {
-    if (!records.length) {
-      return 0;
-    }
-    if (records.length === 1) {
-      var comparison$__36 = comparator(records[0].record, record);
-      return (comparison$__36 > 0) ? 0 : 1;
-    }
-    var comparison = comparator(records[0].record, record);
-    if (comparison > 0) {
-      return 0;
-    }
-    var bottom = 1;
-    var top = records.length - 1;
-    while (bottom <= top) {
-      var pivotIndex = Math.floor((bottom + top) / 2);
-      var comparison$__37 = comparator(records[pivotIndex].record, record);
-      if (comparison$__37 > 0) {
-        var previousElement = records[pivotIndex - 1].record;
-        if (comparator(previousElement, record) <= 0) {
-          return pivotIndex;
-        }
-        top = pivotIndex - 1;
-      } else {
-        bottom = pivotIndex + 1;
-      }
-    }
-    return records.length;
-  }
-  function prepareQuery(thisStorage, filter, order) {
-    var $__31,
-        $__32,
-        $__34,
-        $__35;
-    order = normalizeKeyPath(order);
-    var expectedSortingDirection = order[0].charAt(0) === "!";
-    var canOptimizeOrder = canOptimizeSorting(expectedSortingDirection, order);
-    var storages = new Map();
-    storages.set(normalizeKeyPath(thisStorage.keyPath), {
-      storage: thisStorage,
-      score: 1
-    });
-    var $__12 = true;
-    var $__13 = false;
-    var $__14 = undefined;
-    try {
-      for (var $__10 = void 0,
-          $__9 = (thisStorage.indexNames)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__12 = ($__10 = $__9.next()).done); $__12 = true) {
-        var indexName = $__10.value;
-        {
-          var index = thisStorage.getIndex(indexName);
-          if (!index.multiEntry) {
-            storages.set(normalizeKeyPath(index.keyPath), {
-              storage: index,
-              score: 0
-            });
-          }
-        }
-      }
-    } catch ($__15) {
-      $__13 = true;
-      $__14 = $__15;
-    } finally {
-      try {
-        if (!$__12 && $__9.return != null) {
-          $__9.return();
-        }
-      } finally {
-        if ($__13) {
-          throw $__14;
-        }
-      }
-    }
-    var simplifiedOrderFieldPaths = simplifyOrderingFieldPaths(order);
-    if (canOptimizeOrder) {
-      var $__19 = true;
-      var $__20 = false;
-      var $__21 = undefined;
-      try {
-        for (var $__17 = void 0,
-            $__16 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__19 = ($__17 = $__16.next()).done); $__19 = true) {
-          var $__30 = $__17.value,
-              keyPath = ($__31 = $__30[$traceurRuntime.toProperty(Symbol.iterator)](), ($__32 = $__31.next()).done ? void 0 : $__32.value),
-              storageAndScore = ($__32 = $__31.next()).done ? void 0 : $__32.value;
-          {
-            if (indexedDB.cmp(keyPath, simplifiedOrderFieldPaths) === 0) {
-              storageAndScore.score += 4;
-            }
-          }
-        }
-      } catch ($__22) {
-        $__20 = true;
-        $__21 = $__22;
-      } finally {
-        try {
-          if (!$__19 && $__16.return != null) {
-            $__16.return();
-          }
-        } finally {
-          if ($__20) {
-            throw $__21;
-          }
-        }
-      }
-    }
-    if (!(filter instanceof Function)) {
-      var $__26 = true;
-      var $__27 = false;
-      var $__28 = undefined;
-      try {
-        for (var $__24 = void 0,
-            $__23 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__26 = ($__24 = $__23.next()).done); $__26 = true) {
-          var $__33 = $__24.value,
-              keyPath$__38 = ($__34 = $__33[$traceurRuntime.toProperty(Symbol.iterator)](), ($__35 = $__34.next()).done ? void 0 : $__35.value),
-              storageAndScore$__39 = ($__35 = $__34.next()).done ? void 0 : $__35.value;
-          {
-            var normalizedFilter = normalizeFilter(filter, keyPath$__38);
-            if (!(normalizedFilter instanceof Function)) {
-              storageAndScore$__39.score += 2;
-            }
-          }
-        }
-      } catch ($__29) {
-        $__27 = true;
-        $__28 = $__29;
-      } finally {
-        try {
-          if (!$__26 && $__23.return != null) {
-            $__23.return();
-          }
-        } finally {
-          if ($__27) {
-            throw $__28;
-          }
-        }
-      }
-    }
-    var sortedStorages = Array.from(storages.values());
-    sortedStorages.sort(function(storage1, storage2) {
-      return storage2.score - storage1.score;
-    });
-    var chosenStorage = sortedStorages[0].storage;
-    var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
-    var optimizeSorting = canOptimizeOrder && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
-    return {
-      storage: chosenStorage,
-      direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,
-      comparator: optimizeSorting ? null : compileOrderingFieldPaths(order)
-    };
-  }
-  function simplifyOrderingFieldPaths(order) {
-    return order.map(function(fieldPath) {
-      return fieldPath.replace(/^!/, "");
-    });
-  }
-  function canOptimizeSorting(expectedSortingDirection, order) {
-    var $__12 = true;
-    var $__13 = false;
-    var $__14 = undefined;
-    try {
-      for (var $__10 = void 0,
-          $__9 = (order)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__12 = ($__10 = $__9.next()).done); $__12 = true) {
-        var orderingFieldPath = $__10.value;
-        {
-          if ((orderingFieldPath.charAt(0) === "!") !== expectedSortingDirection) {
-            return false;
-          }
-        }
-      }
-    } catch ($__15) {
-      $__13 = true;
-      $__14 = $__15;
-    } finally {
-      try {
-        if (!$__12 && $__9.return != null) {
-          $__9.return();
-        }
-      } finally {
-        if ($__13) {
-          throw $__14;
-        }
-      }
-    }
-    return true;
-  }
-  function prepareOrderingSpecificationForQuery(order, keyPath) {
-    if (order === null) {
-      order = CursorDirection.NEXT;
-    }
-    var isCursorDirection = ((typeof order === "string") && (CURSOR_DIRECTIONS.indexOf(order.toUpperCase()) > -1)) || (CURSOR_DIRECTIONS.indexOf(order) > -1);
-    if (isCursorDirection && (typeof order === "string")) {
-      order = CursorDirection[order.toUpperCase()] || CursorDirection.PREVIOUS;
-    }
-    if (order instanceof CursorDirection) {
-      keyPath = normalizeKeyPath(keyPath);
-      if (order === CursorDirection.NEXT) {
-        return keyPath;
-      } else {
-        return keyPath.map(function(fieldPath) {
-          return ("!" + fieldPath);
-        });
-      }
-    }
-    return order;
-  }
-  function normalizeKeyPath(keyPath) {
-    if (typeof keyPath === "string") {
-      return [keyPath];
-    }
-    return keyPath;
-  }
   return {
     get default() {
       return $__default;
