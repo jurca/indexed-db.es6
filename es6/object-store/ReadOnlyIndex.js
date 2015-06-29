@@ -183,7 +183,7 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    * Creates a factory function for opening cursors on this storage with the
    * specified configuration for the duration of the current transaction.
    * 
-   * override
+   * @override
    * @param {?(undefined|number|string|Date|Array|IDBKeyRange)=} keyRange A key
    *        range to use to filter the records by matching the values of their
    *        primary keys against this key range.
@@ -194,12 +194,12 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    *        used in the strings does not matter.
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value.
-   * @return {function(ReadOnlyCursor): PromiseSync<number>} A cursor factory.
-   *         The factory accepts a callback to execute on every record the
-   *         cursor iterates over. The promise returned by the factory resolves
-   *         once the record callback does not invoke the {@code continue} nor
-   *         the {@code advance} method synchronously or the cursor reaches the
-   *         end of available records.
+   * @return {function(function(ReadOnlyCursor)): PromiseSync<number>} A cursor
+   *         factory. The factory accepts a callback to execute on every record
+   *         the cursor iterates over. The promise returned by the factory
+   *         resolves once the record callback does not invoke the
+   *         {@code continue} nor the {@code advance} method synchronously or
+   *         the cursor reaches the end of available records.
    */
   createCursorFactory(keyRange = undefined, direction = CursorDirection.NEXT,
       unique = false) {
@@ -230,12 +230,12 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
    *        used in the strings does not matter.
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value.
-   * @return {function(ReadOnlyCursor): PromiseSync<number>} A cursor factory.
-   *         The factory accepts a callback to execute on every record the
-   *         cursor iterates over. The promise returned by the factory resolves
-   *         once the record callback does not invoke the {@code continue} nor
-   *         the {@code advance} method synchronously or the cursor reaches the
-   *         end of available records.
+   * @return {function(function(ReadOnlyCursor)): PromiseSync<number>} A cursor
+   *         factory. The factory accepts a callback to execute on every record
+   *         the cursor iterates over. The promise returned by the factory
+   *         resolves once the record callback does not invoke the
+   *         {@code continue} nor the {@code advance} method synchronously or
+   *         the cursor reaches the end of available records.
    */
   createKeyCursorFactory(keyRange = undefined,
       direction = CursorDirection.NEXT, unique = false) {
@@ -263,6 +263,8 @@ export default class ReadOnlyIndex extends AbstractReadOnlyStorage {
  * @param {IDBRequest} request Indexed DB request that resolves to a cursor
  *        every time the cursor iterates to a record.
  * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)} cursorConstructor
+ *        Constructor of the cursor class to use to wrap the native IDBRequest
+ *        producing the native IndexedDB cursor.
  * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
  *        passing a high-level cursor instance pointing to the current record
  *        in each iteration of the cursor.

@@ -146,7 +146,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    *        If a function is provided, the first argument will be set to the
    *        record and the second argument will be set to the primary key of
    *        the record.
-   * @param {?(CursorDirection|string|string[]|function(*, *): number) order
+   * @param {?(CursorDirection|string|string[]|function(*, *): number)} order
    *        How the resulting records should be sorted. This can be one of the
    *        following:
    *        - a {@code CursorDirection} constant, either {@code NEXT} or

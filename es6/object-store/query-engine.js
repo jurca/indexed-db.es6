@@ -63,12 +63,11 @@ const CURSOR_DIRECTIONS = Object.freeze([
  * 
  * @param {ReadOnlyObjectStore} objectStore The object store on which the query
  *        should be executed
- * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=}
- *        filter The filter, restricting the records returned by this method.
- *        If a function is provided, the first argument will be set to the
- *        record and the second argument will be set to the primary key of the
- *        record.
- * @param {?(CursorDirection|string|string[]|function(*, *): number) order How
+ * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=} filter
+ *        The filter, restricting the records returned by this method. If a
+ *        function is provided, the first argument will be set to the record
+ *        and the second argument will be set to the primary key of the record.
+ * @param {?(CursorDirection|string|string[]|function(*, *): number)} order How
  *        the resulting records should be sorted. This can be one of the
  *        following:
  *        - a {@code CursorDirection} constant, either {@code NEXT} or
@@ -151,8 +150,8 @@ export default function executeQuery(objectStore, filter, order, offset, limit,
  * records have been populated if the comparator if a function so the records
  * are passed to the callback in the right order.
  * 
- * @param {function(ReadyOnlyCursor): number} cursorFactory The cursor factory
- *        to use to create a cursor for executing the query.
+ * @param {function(function(ReadyOnlyCursor)): number} cursorFactory The
+ *        cursor factory to use to create a cursor for executing the query.
  * @param {?function(*, (number|string|Date|Array)): boolean} filter Optional
  *        custom filter callback.
  * @param {?function(*, *): number} comparator Optional record comparator to
@@ -314,11 +313,10 @@ function findInsertIndex(records, record, comparator) {
  * to be executed directly on the object store.
  * 
  * @param {ReadOnlyObjectStore} thisStorage This object store.
- * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=}
- *        filter The filter, restricting the records returned by this method.
- *        If a function is provided, the first argument will be set to the
- *        record and the second argument will be set to the primary key of the
- *        record.
+ * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=} filter
+ *        The filter, restricting the records returned by this method. If a
+ *        function is provided, the first argument will be set to the record
+ *        and the second argument will be set to the primary key of the record.
  * @param {(string|string[])} order Field paths by which the records should be
  *        sorted. A field path may be prefixed by an exclamation mark
  *        ({@code "!"}) for descending order.
@@ -405,7 +403,11 @@ function simplifyOrderingFieldPaths(order) {
  * Determines whether the sorting of the query result can be done through an
  * index (provided such index exists) or the natural order of the records in
  * the object store.
- * 
+ *
+ * @param {boolean} expectedSortingDirection The sorting direction that is
+ *        expected from all sort-by fields so that the sorting can be
+ *        optimized. {@code true} represents descending order, {@code false}
+ *        represents ascending order.
  * @param {string[]} order Ordering field paths specifying how the records
  *        should be sorted.
  * @return {boolean} {@code true} if the sorting can be optimized, if an
@@ -426,7 +428,7 @@ function canOptimizeSorting(expectedSortingDirection, order) {
  * Preprocesses the raw ordering specification into form that can be used in
  * query optimization.
  * 
- * @param {?(CursorDirection|string|string[]|function(*, *): number) order How
+ * @param {?(CursorDirection|string|string[]|function(*, *): number)} order How
  *        the resulting records should be sorted. This can be one of the
  *        following:
  *        - a {@code CursorDirection} constant, either {@code NEXT} or

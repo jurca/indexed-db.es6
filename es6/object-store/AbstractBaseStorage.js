@@ -157,12 +157,12 @@ export default class AbstractBaseStorage {
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
    *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
    *        used in the strings does not matter.
-   * @return {function(ReadOnlyCursor): PromiseSync<number>} A cursor factory.
-   *         The factory accepts a callback to execute on every record the
-   *         cursor iterates over. The promise returned by the factory resolves
-   *         once the record callback does not invoke the {@code continue} nor
-   *         the {@code advance} method synchronously or the cursor reaches the
-   *         end of available records.
+   * @return {function(function(ReadOnlyCursor)): PromiseSync<number>} A cursor
+   *         factory. The factory accepts a callback to execute on every record
+   *         the cursor iterates over. The promise returned by the factory
+   *         resolves once the record callback does not invoke the
+   *         {@code continue} nor the {@code advance} method synchronously or
+   *         the cursor reaches the end of available records.
    */
   createCursorFactory(keyRange = undefined, direction = CursorDirection.NEXT) {
     if (keyRange === null) {
@@ -199,6 +199,8 @@ export default class AbstractBaseStorage {
  * @param {IDBRequest} request Indexed DB request that resolves to a cursor
  *        every time the cursor iterates to a record.
  * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)} cursorConstructor
+ *        Constructor of the cursor class to use to wrap the native IDBRequest
+ *        producing the native IndexedDB cursor.
  * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
  *        passing a high-level cursor instance pointing to the current record
  *        in each iteration of the cursor.

@@ -71,12 +71,12 @@ export default class Index extends ReadOnlyIndex {
    *        used in the strings does not matter.
    * @param {boolean=} unique When {@code true}, it cursor will skip over the
    *        records stored with the same index key value.
-   * @return {function(Cursor): PromiseSync<number>} A cursor factory.
-   *         The factory accepts a callback to execute on every record the
-   *         cursor iterates over. The promise returned by the factory resolves
-   *         once the record callback does not invoke the {@code continue} nor
-   *         the {@code advance} method synchronously or the cursor reaches the
-   *         end of available records.
+   * @return {function(function(Cursor)): PromiseSync<number>} A cursor
+   *         factory. The factory accepts a callback to execute on every record
+   *         the cursor iterates over. The promise returned by the factory
+   *         resolves once the record callback does not invoke the
+   *         {@code continue} nor the {@code advance} method synchronously or
+   *         the cursor reaches the end of available records.
    */
   createCursorFactory(keyRange = undefined, direction = CursorDirection.NEXT,
       unique = false) {
