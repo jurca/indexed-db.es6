@@ -4,7 +4,7 @@ define(["./validation"], function($__0) {
     $__0 = {default: $__0};
   var $__1 = $__0,
       isVersionValid = $__1.isVersionValid,
-      getDuplicitNames = $__1.getDuplicitNames;
+      getDuplicateNames = $__1.getDuplicateNames;
   var SKIP_RECORD = Object.freeze({});
   var DELETE_RECORD = Object.freeze({});
   var UpgradedDatabaseSchema = function() {
@@ -16,9 +16,9 @@ define(["./validation"], function($__0) {
       if (version < 2) {
         throw new Error("The upgraded database schema must have a version " + ("number greater than 1, " + version + " provided"));
       }
-      var duplicitNames = getDuplicitNames(objectStores);
-      if (duplicitNames.length) {
-        throw new Error("The following object stores are defined multiple " + ("times: " + duplicitNames.join(", ")));
+      var duplicateNames = getDuplicateNames(objectStores);
+      if (duplicateNames.length) {
+        throw new Error("The following object stores are defined multiple " + ("times: " + duplicateNames.join(", ")));
       }
       this.version = version;
       this.fetchBefore = fetchBefore || [];

@@ -40,9 +40,9 @@ export function keyRangeToFieldRangeObject(keyRange, keyPath) {
  * Normalizes the provided filter to an {@code undefined}, an
  * {@codelink IDBKeyRange} instance or a filter predicate function.
  *
- * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
- *        filter A filter to use, as provided by the client code.
- * @param {?(string|string[]) keyPath The key path of the storage. This
+ * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+ *        A filter to use, as provided by the client code.
+ * @param {?(string|string[])} keyPath The key path of the storage. This
  *        parameter is used to optimize field map filters that specify a the
  *        field constraints matching the field paths - such field map filters
  *        will be optimized to an IDBKeyRange.
@@ -229,12 +229,12 @@ function compileFieldGetter(fieldPath) {
  * paths in the object match the provided key paths exactly, and the filter
  * does not have a field set to an {@codelink IDBKeyRange} instance.
  *
- * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
- *        filter The filter to convert.
+ * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+ *        The filter to convert.
  * @param {(string|string[])} keyPaths The field paths representing the key in
  *        this storage.
  * @return {?IDBKeyRange} The filter represented as a single
- *         {@codelink IDBKeyRange} instance, or {@code null} if the conversion
+ *         {@linkcode IDBKeyRange} instance, or {@code null} if the conversion
  *         is not possible.
  */
 function convertFieldMapToKeyRange(filter, keyPaths) {
@@ -277,18 +277,20 @@ function convertFieldMapToKeyRange(filter, keyPaths) {
  * Generates an array containing all field paths in the provided object.
  *
  * The method also tests whether any of the leaf field values is an
- * {@codelink IDBKeyRange} instance, in such case the method returns
+ * {@linkcode IDBKeyRange} instance, in such case the method returns
  * {@code null}.
  *
  * The method is used to determine whether the provided object can be turned
- * into and {@codelink IDBKeyRange} instance for a compound record key, and if
+ * into and {@linkcode IDBKeyRange} instance for a compound record key, and if
  * so, retrieve all field paths in the object so that its structure can be
  * validated against the field paths of the storage.
  *
  * @param {Object} object The object from which the field paths are to be
  *        extracted.
+ * @param {boolean=} stopOnKeyRange When {@code true}, the method returns
+ *        {@code null} if it encounters a key range.
  * @return {?string[]} All field paths in the provided objects, unless the
- *         object contains a field set to an {@codelink IDBKeyRange} instance.
+ *         object contains a field set to an {@linkcode IDBKeyRange} instance.
  */
 function getFieldPaths(object, stopOnKeyRange = true) {
   let fieldPaths = []

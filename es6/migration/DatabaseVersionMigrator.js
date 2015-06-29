@@ -23,7 +23,7 @@ export default class DatabaseVersionMigrator {
    * @param {IDBTransaction} transaction The {@code versionchange} transaction.
    * @param {(ObjectStoreSchema[]|Object[])} objectStores Descriptors of object
    *        stores representing the schema the database should have after the
-   *        migration. Use either {@codelink ObjectStoreSchema} instances or
+   *        migration. Use either {@linkcode ObjectStoreSchema} instances or
    *        plain object with compatible structure.
    */
   constructor(database, transaction, objectStores) {
@@ -56,15 +56,13 @@ export default class DatabaseVersionMigrator {
    * Upgrades the database schema and executes the provided callback within the
    * transaction provided in the constructor.
    * 
-   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?PromiseSync<undefined>}
-   *        onComplete Callback to execute when the schema has been
-   *        successfully migrated. If the callback performs database
-   *        operations, it must execute the first operation synchronously, the
-   *        subsequent operations may be executed from the operation promise
-   *        callbacks.
-   * @param {Object<string, {key: (number|string|Date|Array), record: *}[]>}
-   *        callbackData The data to pass as the second argument of the
-   *        callback.
+   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?PromiseSync<undefined>} onComplete
+   *        Callback to execute when the schema has been successfully migrated.
+   *        If the callback performs database operations, it must execute the
+   *        first operation synchronously, the subsequent operations may be
+   *        executed from the operation promise callbacks.
+   * @param {Object<string, {key: (number|string|Date|Array), record: *}[]>} callbackData
+   *        The data to pass as the second argument of the callback.
    * @return {PromiseSync<undefined>} A promise that resolves when the database
    *         schema has been upgraded and the promise returned by the callback
    *         resolves.
@@ -93,7 +91,7 @@ export default class DatabaseVersionMigrator {
  *        migrated.
  * @param {IDBTransaction} nativeTransaction The native {@code versionchange}
  *        transaction.
- * @param ((DatabaseSchema|UpgradedDatabaseSchema)) descriptors Schema
+ * @param {((DatabaseSchema|UpgradedDatabaseSchema))[]} descriptors Schema
  *        descriptor of the version to which the database is to be upgraded.
  */
 function upgradeSchema(nativeDatabase, nativeTransaction, descriptors) {

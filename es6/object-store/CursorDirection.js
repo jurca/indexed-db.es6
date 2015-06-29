@@ -27,7 +27,7 @@ export default class CursorDirection {
    * Causes the cursor to be opened at the start of the source. When iterated,
    * the cursor will yield records in monotonically increasing order of keys.
    *
-   * @return {CursorDirection} Enum constant for iterating a cursor throught
+   * @return {CursorDirection} Enum constant for iterating a cursor through
    *         the records in the ascending order of keys.
    */
   static get NEXT() {
@@ -38,7 +38,7 @@ export default class CursorDirection {
    * Causes the cursor to be opened at the end of the source. When iterated,
    * the cursor will yield records in monotonically decreasing order of keys.
    *
-   * @return {CursorDirection} Enum constant for iterating a cursor throught
+   * @return {CursorDirection} Enum constant for iterating a cursor through
    *         the records in the descending order of keys.
    */
   static get PREVIOUS() {
@@ -47,14 +47,14 @@ export default class CursorDirection {
 }
 
 /**
- * The enum constant available as {@codelink CursorDirection.NEXT}.
+ * The enum constant available as {@linkcode CursorDirection.NEXT}.
  * 
  * @type {CursorDirection}
  */
 export const NEXT = new CursorDirection("NEXT")
 
 /**
- * The enum constant available as {@codelink CursorDirection.PREVIOUS}.
+ * The enum constant available as {@linkcode CursorDirection.PREVIOUS}.
  * 
  * @type {CursorDirection}
  */

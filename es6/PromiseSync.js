@@ -19,7 +19,7 @@ const FIELDS = Object.freeze({
 })
 
 /**
- * The {@codelink PromiseSync} is a synchronous alternative to the Promise/A+
+ * The {@linkcode PromiseSync} is a synchronous alternative to the Promise/A+
  * API, meaning that all callbacks are executed synchronously.
  * 
  * The synchronous promise is used for in-transaction operations to ensure the
@@ -30,13 +30,13 @@ const FIELDS = Object.freeze({
  *   asynchronously, so the transaction will be marked as inactive before the
  *   {@code then} callback of an Promise/A+-wrapped request would be executed.
  * - Firefox (37, and probably later versions too) does not allow the
- *   Promise/A+ callbacks to request new opersions on the transaction even if
+ *   Promise/A+ callbacks to request new operations on the transaction even if
  *   the transaction is still alive (it throws an error claiming the
  *   transaction is inactive).
  * 
  * Since safe wrapping of IndexedDB requests is the main use of the
- * {@codelink PromiseSync} promises, the {@codelink PromiseSync.resolve()}
- * method can handle {@codelink IDBRequest} instances as an argument.
+ * {@linkcode PromiseSync} promises, the {@linkcode PromiseSync.resolve()}
+ * method can handle {@linkcode IDBRequest} instances as an argument.
  */
 export default class PromiseSync {
   /**
@@ -99,7 +99,7 @@ export default class PromiseSync {
    * If this promise resolves, the success callback will be triggered. The
    * value returned by the success callback will be the value of the promise
    * returned by this method. However, if the value returned by the callback is
-   * a {@codelink PromiseSync} instance, the promise returned by this method
+   * a {@linkcode PromiseSync} instance, the promise returned by this method
    * will resolve to the result of the promise returned by the callback.
    * Finally, if the callback throws an error, the promise returned by this
    * method will be rejected by the error thrown by the callback.
@@ -190,16 +190,16 @@ export default class PromiseSync {
   /**
    * Creates a new promise that resolves to the provided value.
    * 
-   * If the value is a {@codelink Promise} or a {@codelink PromiseSync}
+   * If the value is a {@linkcode Promise} or a {@linkcode PromiseSync}
    * instance, the returned promise will be resolved when the provided promise
    * is resolved, and rejected if the provided promise is rejected.
    * 
-   * If the value is a {@codelink IDBRequest} instance, the returned promise
+   * If the value is a {@linkcode IDBRequest} instance, the returned promise
    * will resolve when the request's {@code onsuccess} method is triggered, and
    * rejects when the request's {@code onerror} method is triggered. 
    * 
    * Note that the method returns the provided value if the value is a
-   * {@codelink PromiseSync} instance.
+   * {@linkcode PromiseSync} instance.
    * 
    * Also, if an already completed Indexed DB request is provided, the returned
    * promise will never resolve. The method replaces any value previously set

@@ -3,26 +3,26 @@ define([], function() {
   function isVersionValid(version) {
     return (parseInt(("" + version), 10) === version) && (version >= 1);
   }
-  function getDuplicitNames(schemas) {
+  function getDuplicateNames(schemas) {
     var nameOccurrences = new Map();
     schemas.forEach(function(schema) {
       var count = (nameOccurrences.get(schema.name) || 0) + 1;
       nameOccurrences.set(schema.name, count);
     });
-    var duplicitNames = [];
+    var duplicateNames = [];
     schemas.forEach(function(count, schemaName) {
       if (count > 1) {
-        duplicitNames.push(schemaName);
+        duplicateNames.push(schemaName);
       }
     });
-    return duplicitNames;
+    return duplicateNames;
   }
   return {
     get isVersionValid() {
       return isVersionValid;
     },
-    get getDuplicitNames() {
-      return getDuplicitNames;
+    get getDuplicateNames() {
+      return getDuplicateNames;
     },
     __esModule: true
   };

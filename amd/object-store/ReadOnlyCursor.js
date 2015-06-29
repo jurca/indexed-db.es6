@@ -9,12 +9,12 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
   var FIELDS = Object.freeze({
     request: Symbol("request"),
     flags: Symbol("flags"),
-    iterationCalback: Symbol("iterationCalback")
+    iterationCallback: Symbol("iterationCallback")
   });
   var ReadOnlyCursor = function() {
-    function ReadOnlyCursor(cursorRequest, iterationCalback) {
+    function ReadOnlyCursor(cursorRequest, iterationCallback) {
       this[FIELDS.request] = cursorRequest;
-      this[FIELDS.iterationCalback] = iterationCalback;
+      this[FIELDS.iterationCallback] = iterationCallback;
       this[FIELDS.flags] = {hasAdvanced: false};
       var cursor = cursorRequest.result;
       var direction;
@@ -44,7 +44,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
         var request = this[FIELDS.request];
         request.result.advance(recordCount);
         this[FIELDS.flags].hasAdvanced = true;
-        this[FIELDS.iterationCalback]();
+        this[FIELDS.iterationCallback]();
       },
       continue: function() {
         var nextKey = arguments[0];
@@ -54,7 +54,7 @@ define(["../PromiseSync", "./CursorDirection"], function($__0,$__2) {
         var request = this[FIELDS.request];
         request.result.continue(nextKey);
         this[FIELDS.flags].hasAdvanced = true;
-        this[FIELDS.iterationCalback]();
+        this[FIELDS.iterationCallback]();
       }
     }, {});
   }();

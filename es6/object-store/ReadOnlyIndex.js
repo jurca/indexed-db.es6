@@ -314,7 +314,7 @@ function iterateCursor(request, cursorConstructor, recordCallback) {
  *        Constructor of the high-level cursor implementation to use.
  * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
  *        passing a high-level cursor instance pointing to the current record.
- * @param {function(Error)) reject Callback to call if any sub-operation
+ * @param {function(Error)} reject Callback to call if any sub-operation
  *        triggered by the callback results in an error.
  * @return {boolean} {@code true} if the cursor should iterate to the next
  *         record.

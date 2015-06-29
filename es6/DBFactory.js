@@ -5,7 +5,7 @@ import DatabaseMigrator from "./migration/DatabaseMigrator"
 
 /**
  * Registered listeners to be executed when a database schema migration is
- * started. The listeners will be executed with the folowing arguments:
+ * started. The listeners will be executed with the following arguments:
  * 
  * - database name
  * - the version number from which the schema is being migrated
@@ -20,7 +20,7 @@ const migrationListeners = new Set()
  * Provider of connections to the database, manager of database versioning and
  * utility for deleting databases.
  *
- * The DB Provider provides a high-level {@codelink Promise}-enabled API
+ * The DB Provider provides a high-level {@linkcode Promise}-enabled API
  * wrapper of IndexedDB, so there are a few limitations to consider:
  *
  * A record can be any value that can be converted to JSON or structure-cloned.
@@ -33,15 +33,15 @@ const migrationListeners = new Set()
  * browsers do not implement support for this, so creating or using such an
  * object store or index will probably result in an error.
  *
- * Record keys can be {@code number}s (except for {@codelink NaN}),
- * {@code string}s, {@codelink Date} instances (unless the internal value is a
- * {@codelink NaN}) or {@codelink Array} objects. An {@codelink Array} is only
+ * Record keys can be {@code number}s (except for {@linkcode NaN}),
+ * {@code string}s, {@linkcode Date} instances (unless the internal value is a
+ * {@linkcode NaN}) or {@linkcode Array} objects. An {@linkcode Array} is only
  * a valid key if every item in the array is defined and is a valid key (i.e.
- * sparse arrays can not be valid keys) and if the {@codelink Array} doesn't
+ * sparse arrays can not be valid keys) and if the {@linkcode Array} doesn't
  * directly or indirectly contain itself. For more details, see
  * http://www.w3.org/TR/IndexedDB/#dfn-valid-key
  *
- * While {@codelink Array}s containing {@codelink Array}s are considered to be
+ * While {@linkcode Array}s containing {@linkcode Array}s are considered to be
  * valid keys, some browsers do not process such keys properly when getting a
  * value from an object store, so such an operation may result in
  * {@code undefined} value even if the record exists.
@@ -57,13 +57,13 @@ export default class DBFactory {
    * then), the method will upgrade the database.
    *
    * The database upgrade consists of processing the schema descriptors for all
-   * versions greater than the curent version in the ascending order.
+   * versions greater than the current version in the ascending order.
    *
    * The database version is always a positive integer. The version numbers
    * specified by the descriptors do not have to start at {@code 1} and may
    * contain gaps of any size.
    * 
-   * Note that this method handles opening the connection slightly differenty
+   * Note that this method handles opening the connection slightly differently
    * when the database version is to be upgraded and the request is blocked:
    * 
    * This method will reject the returned promise immediately if the attempt is
@@ -79,16 +79,16 @@ export default class DBFactory {
    * returned promise.
    *
    * @param {string} databaseName The name of the database.
-   * @param {...(DatabaseSchema|UpgradedDatabaseSchema|Object)}
-   *        schemaDescriptors The descriptors of the database schema across all
-   *        its versions. The descriptor of the lowest version must be a
-   *        {@codelink DatabaseSchema} instance, all other must be
-   *        {@codelink UpgradedDatabaseSchema} instances.
+   * @param {...(DatabaseSchema|UpgradedDatabaseSchema|Object)} schemaDescriptors
+   *        The descriptors of the database schema across all its versions. The
+   *        descriptor of the lowest version must be a
+   *        {@linkcode DatabaseSchema} instance, all other must be
+   *        {@linkcode UpgradedDatabaseSchema} instances.
    *        Alternatively, plain object that follow the structure of the
-   *        {@codelink DatabaseSchema} and {@codelink UpgradedDatabaseSchema}
+   *        {@linkcode DatabaseSchema} and {@linkcode UpgradedDatabaseSchema}
    *        instances may be used instead, if preferred. Plain objects must not
-   *        be mixed with the {@codelink DatabaseSchema} and
-   *        {@codelink UpgradedDatabaseSchema} instances.
+   *        be mixed with the {@linkcode DatabaseSchema} and
+   *        {@linkcode UpgradedDatabaseSchema} instances.
    *        The order of the descriptors does not matter. At least one schema
    *        descriptor must be provided.
    * @return {Promise<Database>} A promise that resolves to the database
@@ -113,8 +113,8 @@ export default class DBFactory {
    * Attempts to delete the specified database.
    *
    * The method will trigger the database deletion handlers on all open
-   * database conections. The attempt will fail if any of the handlers will not
-   * close the database connection, thus blocking the deletion request.
+   * database connections. The attempt will fail if any of the handlers will
+   * not close the database connection, thus blocking the deletion request.
    *
    * The method will resolve to the version number of the deleted database on
    * success, or {@code null} if the database did not exist.
@@ -122,7 +122,7 @@ export default class DBFactory {
    * Deleting a non-existing database is always successful.
    *
    * In case the request fails, the returned promise will reject with the error
-   * that that occured.
+   * that that occurred.
    *
    * @param {string} databaseName The name of the database to delete.
    * @return {Promise<?number>} The promise that resolves to the version number
@@ -139,7 +139,7 @@ export default class DBFactory {
   
   /**
    * Registers the specified listener to be executed whenever a database schema
-   * migration is started. The listeners will be executed with the folowing
+   * migration is started. The listeners will be executed with the following
    * arguments:
    * 
    * - database name
@@ -176,9 +176,9 @@ export default class DBFactory {
  * 
  * @param {string} databaseName The name of the Indexed DB database to connect
  *        to.
- * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
- *        sortedSchemaDescriptors The database schema descriptors, sorted in
- *        ascending order by the schema version number.
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]} sortedSchemaDescriptors
+ *        The database schema descriptors, sorted in ascending order by the
+ *        schema version number.
  * @return {Promise<Database>} A promise that resolves to the database
  *         connection.
  */
@@ -250,9 +250,9 @@ function openConnection(databaseName, sortedSchemaDescriptors) {
  *        blocked.
  * @param {boolean} upgradeTriggered Flag signalling whether the database schema
  *        upgrade process was triggered.
- * @param {function(Error)} reject The connection promise rejector.
+ * @param {function(Error)} reject The connection promise rejection callback.
  * @param {function(Error)} migrationPromiseRejector The schema migration
- *        promise rejector.
+ *        promise rejection callback.
  */
 function handleConnectionError(event, error, wasBlocked, upgradeTriggered,
     reject, migrationPromiseRejector) {
@@ -277,13 +277,13 @@ function handleConnectionError(event, error, wasBlocked, upgradeTriggered,
  * @param {IDBDatabase} database The native Indexed DB database to upgrade.
  * @param {IDBTransaction} transaction The native {@code versionchange}
  *        transaction to use to manipulate the data.
- * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]}
- *        sortedSchemaDescriptors The database schema descriptors, sorted in
- *        ascending order by the schema version number.
+ * @param {(DatabaseSchema|UpgradedDatabaseSchema|Object)[]} sortedSchemaDescriptors
+ *        The database schema descriptors, sorted in ascending order by the
+ *        schema version number.
  * @param {function()} migrationPromiseResolver Schema migration promise
  *        resolver.
  * @param {function(Error)} migrationPromiseRejector Schema migration promise
- *        rejector.
+ *        rejection callback.
  * @return {PromiseSync<undefined>} A promise resolved when the schema has been
  *         upgraded.
  */
@@ -315,10 +315,12 @@ function upgradeDatabaseSchema(databaseName, event, migrationPromise,
  * the provided arguments.
  * 
  * @param {string} databaseName The name of the database being migrated.
- * @param {number} the version number from which the schema is being migrated.
- * @param {number} the version number to which the schema is being migrated.
- * @param {Promise<undefined>} a promise that resolves when the migration is
- *        finished.
+ * @param {number} oldVersion The version number from which the schema is being
+ *        migrated.
+ * @param {number} newVersion The version number to which the schema is being
+ *        migrated.
+ * @param {Promise<undefined>} completionPromise A promise that resolves when
+ *        the migration is finished.
  */
 function executeMigrationListeners(databaseName, oldVersion, newVersion,
     completionPromise) {

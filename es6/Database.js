@@ -234,13 +234,13 @@ export default class Database {
    * The method returns a promise resolved when the transaction completes.
    * 
    * @param {string|string[]} objectStoreNames The name(s) of the object stores
-   *        to pass to the {@codelink transactionOperations} callback, or an
+   *        to pass to the {@linkcode transactionOperations} callback, or an
    *        array containing a single item - the array of object store names.
    *        It is possible to use a string if only a single object store is
    *        needed.
-   * @param {function(...ObjectStore, function()): PromiseSync<*>}
-   *        transactionOperations The callback containing the operations on the
-   *        object stores in the transaction.
+   * @param {function(...ObjectStore, function()): PromiseSync<*>} transactionOperations
+   *        The callback containing the operations on the object stores in the
+   *        transaction.
    *        The callback will receive the requested object stores as arguments,
    *        followed by a callback for aborting the transaction.
    *        The callback should return a synchronous promise (a return value of
@@ -249,7 +249,7 @@ export default class Database {
    *        the result value of the promise returned by this function.
    * @return {Promise<*>} A promise that resolves when the transaction is
    *         completed. The promise will resolve to the value to which resolved
-   *         the promise returned by the {@codelink transactionOperations}
+   *         the promise returned by the {@linkcode transactionOperations}
    *         callback.
    */
   runTransaction(objectStoreNames, transactionOperations) {
@@ -273,13 +273,13 @@ export default class Database {
    * The method returns a promise resolved when the transaction completes.
    * 
    * @param {string|string[]} objectStoreNames The name(s) of the object stores
-   *        to pass to the {@codelink transactionOperations} callback, or an
+   *        to pass to the {@linkcode transactionOperations} callback, or an
    *        array containing a single item - the array of object store names.
    *        It is possible to use a string if only a single object store is
    *        needed.
-   * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>}
-   *        transactionOperations The callback containing the operations on the
-   *        object stores in the transaction.
+   * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>} transactionOperations
+   *        The callback containing the operations on the object stores in the
+   *        transaction.
    *        The callback will receive the requested object stores as arguments,
    *        followed by a callback for aborting the transaction.
    *        The callback should return a synchronous promise (a return value of
@@ -288,7 +288,7 @@ export default class Database {
    *        the result value of the promise returned by this function.
    * @return {Promise<*>} A promise that resolves when the transaction is
    *         completed. The promise will resolve to the value to which resolved
-   *         the promise returned by the {@codelink transactionOperations}
+   *         the promise returned by the {@linkcode transactionOperations}
    *         callback.
    */
   runReadOnlyTransaction(objectStoreNames, transactionOperations) {
@@ -337,11 +337,11 @@ export default class Database {
  * @param {ReadOnlyTransaction} transaction The transaction from which the
  *        object stores will be retrieved. The returned promise will resolve
  *        when this transaction is completed.
- * @param {string[]} The names of the object stores to pass to the
- *        {@codelink transactionOperations} callback.
- * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>}
- *        transactionOperations The callback containing the operations on the
- *        object stores in the transaction.
+ * @param {string[]} objectStoreNames The names of the object stores to pass to the
+ *        {@linkcode transactionOperations} callback.
+ * @param {function(...ReadOnlyObjectStore, function()): PromiseSync<*>} transactionOperations
+ *        The callback containing the operations on the object stores in the
+ *        transaction.
  *        The callback will receive the requested object stores as arguments,
  *        followed by a callback for aborting the transaction.
  *        The callback should return a synchronous promise (a return value of
@@ -350,7 +350,7 @@ export default class Database {
  *        value of the promise returned by this function.
  * @return {Promise<*>} A promise that resolves when the transaction is
  *         completed. The promise will resolve to the value to which resolved
- *         the promise returned by the {@codelink transactionOperations}
+ *         the promise returned by the {@linkcode transactionOperations}
  *         callback.
  */
 function runTransaction(transaction, objectStoreNames, transactionOperations) {

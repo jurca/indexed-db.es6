@@ -230,7 +230,7 @@ function runQuery(cursorFactory, filter, comparator, offset, limit, callback) {
  *        record.
  * @param {function(*, *): number} comparator Record comparator by which the
  *        array is sorted. The comparator is a standard comparator function
- *        compatible with the {@codelink Array.prototype.sort} method.
+ *        compatible with the {@linkcode Array.prototype.sort} method.
  */
 function insertSorted(records, record, primaryKey, comparator) {
   let index = findInsertIndex(records, record, comparator)
@@ -250,7 +250,7 @@ function insertSorted(records, record, primaryKey, comparator) {
  * @param {*} record The record to insert into the records array.
  * @param {function(*, *): number} comparator Record comparator by which the
  *        array is sorted. The comparator is a standard comparator function
- *        compatible with the {@codelink Array.prototype.sort} method.
+ *        compatible with the {@linkcode Array.prototype.sort} method.
  * @return {number} The index at which the record should be inserted to keep
  *         the array of records sorted.
  */
@@ -299,9 +299,9 @@ function findInsertIndex(records, record, comparator) {
  * be run directly on this object store or on one of its indexes for maximum
  * performance.
  * 
- * If the method cannot optimize sorting and filtering, it preferrs optimizing
+ * If the method cannot optimize sorting and filtering, it prefers optimizing
  * sorting to optimizing filtering, as optimizing sorting allows the query
- * executor to skip the requested amoung of records and the records following
+ * executor to skip the requested amount of records and the records following
  * the last record that fills the required amount of records.
  * 
  * If the sorting cannot be optimized, the method attempts to optimize
@@ -425,7 +425,7 @@ function canOptimizeSorting(expectedSortingDirection, order) {
 }
 
 /**
- * Preprocesses the raw ordering specification into form that can be used in
+ * Preprocess the raw ordering specification into form that can be used in
  * query optimization.
  * 
  * @param {?(CursorDirection|string|string[]|function(*, *): number)} order How
@@ -449,7 +449,7 @@ function canOptimizeSorting(expectedSortingDirection, order) {
  *        - an array of field paths, as described above. The records will be
  *          sorted by the values of the specified fields lexicographically.
  *        - a comparator function compatible with the
- *          {@codelink Array.prototype.sort} method.
+ *          {@linkcode Array.prototype.sort} method.
  * @param {(string|string[])} keyPath The key path of this object store.
  * @return {(string[]|function(*, *): number)} Prepared ordering specification
  *         ready to be used in query optimization.

@@ -1,10 +1,10 @@
 
-import {isVersionValid, getDuplicitNames} from "./validation"
+import {isVersionValid, getDuplicateNames} from "./validation"
 
 /**
  * Descriptor of database schema used to describe the schema ONLY FOR the
- * INITIAL version of the database. Use the {@codelink UpgradedDatabaseSchema}
- * and {@codelink DatabaseSchemaDiff} classes to specify the schema of upgraded
+ * INITIAL version of the database. Use the {@linkcode UpgradedDatabaseSchema}
+ * and {@linkcode DatabaseSchemaDiff} classes to specify the schema of upgraded
  * database versions.
  */
 export default class DatabaseSchema {
@@ -22,10 +22,10 @@ export default class DatabaseSchema {
           `${version} provided`)
     }
 
-    let duplicitNames = getDuplicitNames(objectStores)
-    if (duplicitNames.length) {
+    let duplicateNames = getDuplicateNames(objectStores)
+    if (duplicateNames.length) {
       throw new Error("The following object stores are defined multiple " +
-          `times: ${duplicitNames.join(", ")}`)
+          `times: ${duplicateNames.join(", ")}`)
     }
 
     /**

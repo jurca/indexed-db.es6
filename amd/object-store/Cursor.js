@@ -8,16 +8,16 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
   var ReadOnlyCursor = $__2.default;
   var FIELDS = Object.freeze({
     cursor: Symbol("cursor"),
-    iterationCalback: Symbol("iterationCalback"),
+    iterationCallback: Symbol("iterationCallback"),
     suboperationCallback: Symbol("suboperationCallback"),
     suboperationPromise: Symbol("suboperationPromise"),
     flags: Symbol("flags")
   });
   var Cursor = function($__super) {
-    function Cursor(cursorRequest, iterationCalback, suboperationCallback) {
+    function Cursor(cursorRequest, iterationCallback, suboperationCallback) {
       $traceurRuntime.superConstructor(Cursor).call(this, cursorRequest, function() {});
       this[FIELDS.cursor] = cursorRequest.result;
-      this[FIELDS.iterationCalback] = iterationCalback;
+      this[FIELDS.iterationCallback] = iterationCallback;
       this[FIELDS.suboperationCallback] = suboperationCallback;
       this[FIELDS.suboperationPromise] = PromiseSync.resolve();
       this[FIELDS.flags] = {hasAdvanced: false};
@@ -55,7 +55,7 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
         this[FIELDS.suboperationPromise].then(function() {
           return $traceurRuntime.superGet($__4, Cursor.prototype, "advance").call($__4, recordCount);
         });
-        this[FIELDS.iterationCalback]();
+        this[FIELDS.iterationCallback]();
       },
       continue: function() {
         var nextKey = arguments[0];
@@ -67,7 +67,7 @@ define(["../PromiseSync", "./ReadOnlyCursor"], function($__0,$__2) {
         this[FIELDS.suboperationPromise].then(function() {
           return $traceurRuntime.superGet($__4, Cursor.prototype, "continue").call($__4, nextKey);
         });
-        this[FIELDS.iterationCalback]();
+        this[FIELDS.iterationCallback]();
       }
     }, {}, $__super);
   }(ReadOnlyCursor);

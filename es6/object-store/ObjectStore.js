@@ -59,7 +59,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * Creates a new record in this object store.
    *
    * The changes will be permanent only after the current read-write
-   * transaction successfuly completes.
+   * transaction successfully completes.
    *
    * @param {*} record The record to create in this object store.
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
@@ -76,7 +76,7 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * Updates the provided record in this object store.
    *
    * The changes will be permanent only after the current read-write
-   * transaction successfuly completes.
+   * transaction successfully completes.
    *
    * @param {*} record The record to save into the object store.
    * @param {(undefined|number|string|Date|Array)=} key The primary key of the
@@ -93,12 +93,12 @@ export default class ObjectStore extends ReadOnlyObjectStore {
   /**
    * Deletes all records matching the provided filter.
    * 
-   * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
-   *        filter A filter specifying which records should be deleted.
-   *        If a function is provided, the first argument will be set to the
-   *        record, the second argument will be set to the primary key of the
-   *        record, and the third argument will be set to the key referencing
-   *        the record (the primary key if traversing an object store).
+   * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+   *        A filter specifying which records should be deleted. If a function
+   *        is provided, the first argument will be set to the record, the
+   *        second argument will be set to the primary key of the record, and
+   *        the third argument will be set to the key referencing the record
+   *        (the primary key if traversing an object store).
    * @return {PromiseSync<undefined>} A promise that resolves when all matching
    *         records have been deleted.
    */
@@ -125,8 +125,8 @@ export default class ObjectStore extends ReadOnlyObjectStore {
   /**
    * Deletes all records in this object store.
    *
-   * @return {PromiseSync<undefined>} A promise that resolves when all records have
-   *         been deleted.
+   * @return {PromiseSync<undefined>} A promise that resolves when all records
+   *         have been deleted.
    */
   clear() {
     let request = this[FIELDS.objectStore].clear()
@@ -196,12 +196,12 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    *        {@code CursorDirection.*} constants, or strings {@code "NEXT"} and
    *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
    *        used in the strings does not matter.
-   * @return {function(Cursor): PromiseSync<number>} A cursor factory.
-   *         The factory accepts a callback to execute on every record the
-   *         cursor iterates over. The promise returned by the factory resolves
-   *         once the record callback does not invoke the {@code continue} nor
-   *         the {@code advance} method synchronously or the cursor reaches the
-   *         end of available records.
+   * @return {function(function(Cursor)): PromiseSync<number>} A cursor
+   *         factory. The factory accepts a callback to execute on every record
+   *         the cursor iterates over. The promise returned by the factory
+   *         resolves once the record callback does not invoke the
+   *         {@code continue} nor the {@code advance} method synchronously or
+   *         the cursor reaches the end of available records.
    */
   createCursorFactory(keyRange = undefined, direction = CursorDirection.NEXT) {
     return super.createCursorFactory(keyRange, direction)

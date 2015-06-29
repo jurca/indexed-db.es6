@@ -1,16 +1,16 @@
 
 /**
- * An alternative to using the {@codelink IDBKeyRange} native class directly or
+ * An alternative to using the {@linkcode IDBKeyRange} native class directly or
  * a viable option if the documentation is needed at hand.
  *
- * The {@codelink KeyRange} class is used to construct {@codelink IDBKeyRange}
- * instances. The {@codelink IDBKeyRange} instances are used to represent the
+ * The {@linkcode KeyRange} class is used to construct {@linkcode IDBKeyRange}
+ * instances. The {@linkcode IDBKeyRange} instances are used to represent the
  * ranges of values used to filter the records when traversing an object store
  * or an index.
  */
 export default class KeyRange {
   /**
-   * Throws an error, because the {@codelink KeyRange} class is static.
+   * Throws an error, because the {@linkcode KeyRange} class is static.
    */
   constructor() {
     throw new Error("The KeyRange class is static, no instances can be " +

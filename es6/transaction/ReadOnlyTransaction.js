@@ -121,7 +121,7 @@ export default class ReadOnlyTransaction {
    * 
    * This method provides a more low-level access to the transaction lifecycle
    * which can be useful in certain situations, however, it is recommended to
-   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * use the {@linkcode completionPromise} instead as it makes promise chaining
    * easier.
    *
    * @param {function()} listener The listener to register.
@@ -132,14 +132,14 @@ export default class ReadOnlyTransaction {
 
   /**
    * Registers the provided listener to be executed when the transaction is
-   * aborted by calling the {@codelink abort()} method, or due to an error.
+   * aborted by calling the {@linkcode abort()} method, or due to an error.
    *
    * The order in which the event listeners will be executed is undefined and
    * should not be relied upon.
    * 
    * This method provides a more low-level access to the transaction lifecycle
    * which can be useful in certain situations, however, it is recommended to
-   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * use the {@linkcode completionPromise} instead as it makes promise chaining
    * easier.
    *
    * @param {function()} listener The listener to register.
@@ -159,7 +159,7 @@ export default class ReadOnlyTransaction {
    * 
    * This method provides a more low-level access to the transaction lifecycle
    * which can be useful in certain situations, however, it is recommended to
-   * use the {@codelink completionPromise} instead as it makes promise chaining
+   * use the {@linkcode completionPromise} instead as it makes promise chaining
    * easier.
    *
    * @param {function(Error)} listener The listener to register.

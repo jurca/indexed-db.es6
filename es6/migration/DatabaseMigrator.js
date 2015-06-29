@@ -26,9 +26,8 @@ export default class DatabaseMigrator {
    * @param {IDBDatabase} database The native Indexed DB database to upgrade.
    * @param {IDBTransaction} transaction The native {@code versionchange}
    *        transaction to use to manipulate the data.
-   * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])}
-   *        schemaDescriptors Descriptors of the database schema for all known
-   *        database versions.
+   * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])} schemaDescriptors
+   *        Descriptors of the database schema for all known database versions.
    * @param {number} currentVersion The current version of the database, as a
    *        positive integer, or set to {@code 0} if the database is being
    *        created.
@@ -68,9 +67,9 @@ export default class DatabaseMigrator {
      * Descriptors of the database schemas across the versions of the database,
      * sorting by the database version in ascending order.
      *
-     * The first element is always a {@codelink DatabaseSchema} instance, the
+     * The first element is always a {@linkcode DatabaseSchema} instance, the
      * rest of the elements are instances of the
-     * {@codelink UpgradedDatabaseSchema} classes.
+     * {@linkcode UpgradedDatabaseSchema} classes.
      *
      * @type {(DatabaseSchema|UpgradedDatabaseSchema)[]}
      */
@@ -110,7 +109,10 @@ export default class DatabaseMigrator {
  * Processes the schema descriptors to upgrade the database schema to the
  * greatest version specified.
  * 
- * @param {string} databaseName The name of the Indexed DB database to migrate.
+ * @param {IDBDatabase} nativeDatabase The native Indexed DB database being
+ *        migrated to a higher version.
+ * @param {IDBTransaction} nativeTransaction The native Indexed DB
+ *        {@code versionchange} transaction to use to manipulate the data.
  * @param {(DatabaseSchema|UpgradedDatabaseSchema)[]} schemaDescriptors Schema
  *        descriptors of the database schemas for various versions, sorted in
  *        ascending order by the version number.
@@ -186,10 +188,10 @@ function migrateDatabaseVersion(nativeDatabase, nativeTransaction,
  * Normalizes the provided array of object store fetch descriptors to process
  * before upgrading the database schema.
  * 
- * @param {(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (*|UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD)=})[]}
- *        objectStores The names of object stores that should have their
- *        records fetch or (possibley partially filled) object store fetch
- *        descriptors, mixed in an array.
+ * @param {(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (*|UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD)=})[]} objectStores
+ *        The names of object stores that should have their records fetch or
+ *        (possibly partially filled) object store fetch descriptors, mixed in
+ *        an array.
  * @return {{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (*|UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD)}[]}
  *         Normalized object store fetch descriptors.
  */
@@ -214,9 +216,9 @@ function normalizeFetchBeforeObjectStores(objectStores) {
 /**
  * Validates the types of the provided schema descriptors.
  * 
- * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])}
- *        schemaDescriptors The database schemas for database versions to
- *        validate, sorted by version number in the ascending order.
+ * @param {((DatabaseSchema|UpgradedDatabaseSchema)[]|Object[])} schemaDescriptors
+ *        The database schemas for database versions to validate, sorted by
+ *        version number in the ascending order.
  * @throws {TypeError} Thrown if the schema descriptors are of invalid type.
  */
 function checkSchemaDescriptorTypes(schemaDescriptors) {

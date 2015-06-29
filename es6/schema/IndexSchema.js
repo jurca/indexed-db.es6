@@ -7,13 +7,13 @@ export default class IndexSchema {
    * Initializes the object store index schema descriptor.
    *
    * @param {string} indexName The name of the index.
-   * @param {(string|string[])} keyPaths The field path or paths specified the
+   * @param {(string|string[])} keyPath The field path or paths specified the
    *        fields that will be used for index keys.
    * @param {boolean} unique When {@code true}, the index will enfore that
    *        records have unique values set to the fields specified by the
    *        provided key paths.
    * @param {boolean} multiEntry When {@code true} and a key field (a field
-   *        specified a key path) resolves to an {@codelink Array}, the index
+   *        specified a key path) resolves to an {@linkcode Array}, the index
    *        will create an index entry for each element of the array.
    */
   constructor(indexName, keyPath, unique = false, multiEntry = false) {

@@ -1,8 +1,8 @@
 
-import {isVersionValid, getDuplicitNames} from "./validation"
+import {isVersionValid, getDuplicateNames} from "./validation"
 
 /**
- * Record preprocessors (used in the {@codelink fetchBefore}) return this token
+ * Record preprocessors (used in the {@linkcode fetchBefore}) return this token
  * to exclude the current record from the record array passed to the
  * after-migration callback.
  * 
@@ -11,7 +11,7 @@ import {isVersionValid, getDuplicitNames} from "./validation"
 const SKIP_RECORD = Object.freeze({})
 
 /**
- * Record preprocessors (used in the {@codelink fetchBefore}) return this token
+ * Record preprocessors (used in the {@linkcode fetchBefore}) return this token
  * to mark the record for deletion.
  * 
  * @type {Object}
@@ -25,7 +25,7 @@ const DELETE_RECORD = Object.freeze({})
  */
 export default class UpgradedDatabaseSchema {
   /**
-   * Record preprocessors (used in the {@codelink fetchBefore}) return this
+   * Record preprocessors (used in the {@linkcode fetchBefore}) return this
    * token to exclude the current record from the record array passed to the
    * after-migration callback.
    * 
@@ -40,7 +40,7 @@ export default class UpgradedDatabaseSchema {
   }
   
   /**
-   * Record preprocessors (used in the {@codelink fetchBefore}) return this
+   * Record preprocessors (used in the {@linkcode fetchBefore}) return this
    * token to mark the record for deletion.
    * 
    * The token is immutable.
@@ -57,15 +57,13 @@ export default class UpgradedDatabaseSchema {
    *
    * @param {number} version The version of the upgraded database schema. Must
    *        be a positive integer greater than 1.
-   * @param {?(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD|*)=})[]}
-   *        fetchBefore Object stores from which the records should be fetched
-   *        before the schema will be migrated, with optional record
-   *        preprocessing callbacks.
+   * @param {?(string|{objectStore: string, preprocessor: function(*, (number|string|Date|Array)): (UpgradedDatabaseSchema.SKIP_RECORD|UpgradedDatabaseSchema.DELETE_RECORD|*)=})[]} fetchBefore
+   *        Object stores from which the records should be fetched before the
+   *        schema will be migrated, with optional record preprocess callbacks.
    * @param {ObjectStoreSchema[]} objectStores The schemas of the object stores
    *        in the upgraded database.
-   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
-   *        after The callback te exectue after the database schema is
-   *        upgraded.
+   * @param {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>} after
+   *        The callback te execute after the database schema is upgraded.
    */
   constructor(version, fetchBefore, objectStores, after = () => {}) {
     if (!isVersionValid(version)) {
@@ -77,10 +75,10 @@ export default class UpgradedDatabaseSchema {
           `number greater than 1, ${version} provided`)
     }
 
-    let duplicitNames = getDuplicitNames(objectStores)
-    if (duplicitNames.length) {
+    let duplicateNames = getDuplicateNames(objectStores)
+    if (duplicateNames.length) {
       throw new Error("The following object stores are defined multiple " +
-          `times: ${duplicitNames.join(", ")}`)
+          `times: ${duplicateNames.join(", ")}`)
     }
 
     /**
@@ -104,9 +102,9 @@ export default class UpgradedDatabaseSchema {
      *   modifications)
      * 
      * The callback may return either the preprocessed record, or
-     * {@codelink UpgradedDatabaseSchema.SKIP_RECORD} to indicate that the
-     * record should be ommited from the records passed to the after-migration
-     * callback, or {@codelink UpgradedDatabaseSchema.DELETE_RECORD} to both
+     * {@linkcode UpgradedDatabaseSchema.SKIP_RECORD} to indicate that the
+     * record should be omitted from the records passed to the after-migration
+     * callback, or {@linkcode UpgradedDatabaseSchema.DELETE_RECORD} to both
      * omit the record from the records passed to the after-migration callback
      * and delete the record.
      *
@@ -132,12 +130,12 @@ export default class UpgradedDatabaseSchema {
      * {@code autoIncrement} flag is not supported, such changes must be made
      * using the following steps:
      * 1. fetch all records from the old data store using
-     *    {@codelink beforeBefore}
-     * 2. ommit the old data store in this array of object store schemas to
+     *    {@linkcode beforeBefore}
+     * 2. omit the old data store in this array of object store schemas to
      *    destroy it
      * 3. create a new data store with the required properties by specifying it
      * 4. insert the extracted records into the new data store using the
-     *    {@codelink after} callback.
+     *    {@linkcode after} callback.
      *
      * These definitions are applied after executing the {@codelink before}
      * callback.
@@ -148,13 +146,13 @@ export default class UpgradedDatabaseSchema {
 
     /**
      * Callback to execute after the database schema has been upgraded to the
-     * schema specified by the {@codelink objectStores}.
+     * schema specified by the {@linkcode objectStores}.
      *
      * The callback will receive a read-write transaction to the new database
-     * and a map of object store names specifed in the {@codelink fetchBefore}
+     * and a map of object store names specified in the {@linkcode fetchBefore}
      * to the preprocessed records fetched from the object stores.
      * 
-     * If the callback returns a {@codelink Promise}, the database will wait
+     * If the callback returns a {@linkcode Promise}, the database will wait
      * for its completion before finishing the migration process. Due to how
      * the transactions are processed by Indexed DB, the promise MUST resolve
      * when it the last requested database operation is resolved and not after.

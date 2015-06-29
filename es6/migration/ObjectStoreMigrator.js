@@ -85,7 +85,7 @@ export default class ObjectStoreMigrator {
  * @param {IDBObjectStore} objectStore The native Indexed DB object store.
  * @param {ObjectStoreSchema} schema The schema of the object store.
  * @param {string} indexName The name of the index being tested whether it
- *        shold be deleted.
+ *        should be deleted.
  * @return {@code true} if the index should be deleted.
  */
 function shouldDeleteIndex(objectStore, schema, indexName) {
@@ -117,6 +117,7 @@ function shouldDeleteIndex(objectStore, schema, indexName) {
  * index schema.
  *
  * @param {IDBObjectStore} objectStore The native Indexed DB object store.
+ * @param {IndexSchema} indexSchema The schema of the index to create.
  */
 function createIndex(objectStore, indexSchema) {
   let indexNames = Array.from(objectStore.indexNames)

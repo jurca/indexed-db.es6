@@ -18,19 +18,19 @@ export function isVersionValid(version) {
  * @return {string[]} The names of schemas that have multiple occurrences in
  *         the provided array.
  */
-export function getDuplicitNames(schemas) {
+export function getDuplicateNames(schemas) {
   let nameOccurrences = new Map()
   schemas.forEach((schema) => {
     let count = (nameOccurrences.get(schema.name) || 0) + 1
     nameOccurrences.set(schema.name, count)
   })
 
-  let duplicitNames = []
+  let duplicateNames = []
   schemas.forEach((count, schemaName) => {
     if (count > 1) {
-      duplicitNames.push(schemaName)
+      duplicateNames.push(schemaName)
     }
   })
 
-  return duplicitNames
+  return duplicateNames
 }

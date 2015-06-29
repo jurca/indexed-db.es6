@@ -8,7 +8,7 @@ import CursorDirection from "./CursorDirection"
 const FIELDS = Object.freeze({
   request: Symbol("request"),
   flags: Symbol("flags"),
-  iterationCalback: Symbol("iterationCalback")
+  iterationCallback: Symbol("iterationCallback")
 })
 
 /**
@@ -22,11 +22,11 @@ export default class ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
-   * @param {function()} iterationCalback The callback to call when either the
+   * @param {function()} iterationCallback The callback to call when either the
    *        {@code advance} or the {@code continue} method is called. Repeated
    *        calls of this function must not have any effect.
    */
-  constructor(cursorRequest, iterationCalback) {
+  constructor(cursorRequest, iterationCallback) {
     /**
      * The IndexedDB native request used to retrieve the native cursor. The
      * request is resolved, and will be used to retrieve the subsequent
@@ -43,7 +43,7 @@ export default class ReadOnlyCursor {
      * 
      * @type {function()}
      */
-    this[FIELDS.iterationCalback] = iterationCalback
+    this[FIELDS.iterationCallback] = iterationCallback
 
     /**
      * Cursor state flags.
@@ -96,7 +96,7 @@ export default class ReadOnlyCursor {
 
     /**
      * The primary key of the record this cursor points to. The field value is
-     * always the same as the {@codelink key} field if the cursor is traversing
+     * always the same as the {@linkcode key} field if the cursor is traversing
      * an object store.
      *
      * @type {(number|string|Date|Array)}
@@ -127,7 +127,7 @@ export default class ReadOnlyCursor {
    * record.
    *
    * Repeated calls to this method on the same instance, or calling this method
-   * after the {@codelink continue} method has been called, throw an error.
+   * after the {@linkcode continue} method has been called, throw an error.
    *
    * @param {number=} recordCount The number or records the cursor should
    *        advance, {@code 1} points to the immediate next record in the
@@ -144,7 +144,7 @@ export default class ReadOnlyCursor {
     let request = this[FIELDS.request]
     request.result.advance(recordCount)
     this[FIELDS.flags].hasAdvanced = true
-    this[FIELDS.iterationCalback]()
+    this[FIELDS.iterationCallback]()
   }
 
   /**
@@ -157,7 +157,7 @@ export default class ReadOnlyCursor {
    * record.
    *
    * Repeated calls to this method on the same instance, or calling this method
-   * after the {@codelink advance} method has been called, throw an error.
+   * after the {@linkcode advance} method has been called, throw an error.
    *
    * @param {(undefined|number|string|Date|Array)=} nextKey The next key to
    *        which the cursor should iterate. When set to {@code undefined}, the
@@ -175,6 +175,6 @@ export default class ReadOnlyCursor {
     let request = this[FIELDS.request]
     request.result.continue(nextKey)
     this[FIELDS.flags].hasAdvanced = true
-    this[FIELDS.iterationCalback]()
+    this[FIELDS.iterationCallback]()
   }
 }

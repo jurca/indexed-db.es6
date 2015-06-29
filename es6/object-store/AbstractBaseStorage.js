@@ -36,9 +36,9 @@ export default class AbstractBaseStorage {
    *
    * @param {(IDBObjectStore|IDBIndex)} storage The native Indexed DB object
    *        store or index.
-   * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)}
-   *        cursorConstructor Constructor of the cursor to use when traversing
-   *        the storage records.
+   * @param {function(new: ReadOnlyCursor, IDBRequest, function(), function(IDBRequest): PromiseSync)} cursorConstructor
+   *        Constructor of the cursor to use when traversing the storage
+   *        records.
    */
   constructor(storage, cursorConstructor) {
     if (this.constructor === AbstractBaseStorage) {
@@ -52,7 +52,7 @@ export default class AbstractBaseStorage {
     }
     
     /**
-     * The keypath of this object store or index, specified as a sequence of
+     * The key path of this object store or index, specified as a sequence of
      * field names joined by dots (if the object store uses in-line keys), or
      * an array of field names if the object store uses a compound key, or
      * {@code null} if this is an object store that uses out-of-line keys.
@@ -88,7 +88,7 @@ export default class AbstractBaseStorage {
   /**
    * Retrieves a single record identified by the specified key value.
    *
-   * If the key is an {@codelink IDBKeyRange} instance, or the key value
+   * If the key is an {@linkcode IDBKeyRange} instance, or the key value
    * matches multiple records, the method retrieves the first record matching
    * the key / key range.
    *
@@ -251,7 +251,7 @@ function iterateCursor(request, cursorConstructor, recordCallback) {
  *        Constructor of the high-level cursor implementation to use.
  * @param {function(ReadOnlyCursor)} recordCallback The callback to execute,
  *        passing a high-level cursor instance pointing to the current record.
- * @param {function(Error)) reject Callback to call if any sub-operation
+ * @param {function(Error)} reject Callback to call if any sub-operation
  *        triggered by the callback results in an error.
  * @return {boolean} {@code true} if the cursor should iterate to the next
  *         record.

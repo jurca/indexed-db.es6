@@ -1,6 +1,6 @@
 
 import IndexSchema from "./IndexSchema"
-import {getDuplicitNames} from "./validation"
+import {getDuplicateNames} from "./validation"
 
 /**
  * Database object store schema descriptor.
@@ -17,10 +17,10 @@ export default class ObjectStoreSchema {
    * @param {...IndexSchema} indexes The indexes to be defined on this object store.
    */
   constructor(storeName, keyPath = "", autoIncrement = false, ...indexes) {
-    let duplicitNames = getDuplicitNames(indexes)
-    if (duplicitNames.length) {
+    let duplicateNames = getDuplicateNames(indexes)
+    if (duplicateNames.length) {
       throw new Error("The following indexes are defined multiple times:" +
-          duplicitNames.join(", "))
+          duplicateNames.join(", "))
     }
 
     /**

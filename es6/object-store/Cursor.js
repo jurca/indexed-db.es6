@@ -7,7 +7,7 @@ import ReadOnlyCursor from "./ReadOnlyCursor"
  */
 const FIELDS = Object.freeze({
   cursor: Symbol("cursor"),
-  iterationCalback: Symbol("iterationCalback"),
+  iterationCallback: Symbol("iterationCallback"),
   suboperationCallback: Symbol("suboperationCallback"),
   suboperationPromise: Symbol("suboperationPromise"),
   flags: Symbol("flags")
@@ -23,7 +23,7 @@ export default class Cursor extends ReadOnlyCursor {
    *
    * @param {IDBRequest} cursorRequest The IndexedDB native request used to
    *        retrieve the native cursor. The request must already be resolved.
-   * @param {function()} iterationCalback The Callback to call when either the
+   * @param {function()} iterationCallback The Callback to call when either the
    *        {@code advance} or the {@code continue} method is called. Repeated
    *        calls of this function must not have any effect.
    * @param {function(IDBRequest): PromiseSync} suboperationCallback The
@@ -31,7 +31,7 @@ export default class Cursor extends ReadOnlyCursor {
    *        deletion) is requested. The callback returns a synchronous promise
    *        resolved when the provided Indexed DB request is completed.
    */
-  constructor(cursorRequest, iterationCalback, suboperationCallback) {
+  constructor(cursorRequest, iterationCallback, suboperationCallback) {
     super(cursorRequest, () => {})
 
     /**
@@ -47,7 +47,7 @@ export default class Cursor extends ReadOnlyCursor {
      * 
      * @type {function()}
      */
-    this[FIELDS.iterationCalback] = iterationCalback
+    this[FIELDS.iterationCallback] = iterationCallback
     
     /**
      * The callback to execute when a sub-operation (record modification or
@@ -89,7 +89,7 @@ export default class Cursor extends ReadOnlyCursor {
    * is created.
    * 
    * Calling this method will delay the effect of the {@code advance} and the
-   * {@code continue} methods until the operaion has been successfully queued.
+   * {@code continue} methods until the operation has been successfully queued.
    *
    * @param {*} record The new record to set at the current position.
    * @return {Promise<(number|string|Date|Array)>} A promise that resolves to
@@ -114,7 +114,7 @@ export default class Cursor extends ReadOnlyCursor {
    * Deletes the record at the current position of this cursor.
    * 
    * Calling this method will delay the effect of the {@code advance} and the
-   * {@code continue} methods until the operaion has been successfully queued.
+   * {@code continue} methods until the operation has been successfully queued.
    *
    * @return {Promise<undefined>} A promise that resolves when the record is
    *         deleted.
@@ -141,7 +141,7 @@ export default class Cursor extends ReadOnlyCursor {
    * record.
    *
    * Repeated calls to this method on the same instance, or calling this method
-   * after the {@codelink continue} method has been called, throw an error.
+   * after the {@linkcode continue} method has been called, throw an error.
    *
    * @override
    * @param {number=} recordCount The number or records the cursor should
@@ -160,7 +160,7 @@ export default class Cursor extends ReadOnlyCursor {
     
     this[FIELDS.suboperationPromise].then(() => super.advance(recordCount))
     
-    this[FIELDS.iterationCalback]()
+    this[FIELDS.iterationCallback]()
   }
   
   /**
@@ -173,7 +173,7 @@ export default class Cursor extends ReadOnlyCursor {
    * record.
    *
    * Repeated calls to this method on the same instance, or calling this method
-   * after the {@codelink advance} method has been called, throw an error.
+   * after the {@linkcode advance} method has been called, throw an error.
    *
    * @param {(undefined|number|string|Date|Array)=} nextKey The next key to
    *        which the cursor should iterate. When set to {@code undefined}, the
@@ -192,6 +192,6 @@ export default class Cursor extends ReadOnlyCursor {
     
     this[FIELDS.suboperationPromise].then(() => super.continue(nextKey))
     
-    this[FIELDS.iterationCalback]()
+    this[FIELDS.iterationCallback]()
   }
 }

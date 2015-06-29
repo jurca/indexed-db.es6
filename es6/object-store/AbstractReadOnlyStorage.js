@@ -33,9 +33,9 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        store or index.
    * @param {function(new: ReadyOnlyCursor)} cursorConstructor Constructor of
    *        the cursor to use when traversing the storage records.
-   * @param {function(): AbstractReadOnlyStorage} A function that creates a new
-   *        read-only transaction and returns a new storage accessor for this
-   *        storage each time it is invoked.
+   * @param {function(): AbstractReadOnlyStorage} storageFactory A function
+   *        that creates a new read-only transaction and returns a new storage
+   *        accessor for this storage each time it is invoked.
    */
   constructor(storage, cursorConstructor, storageFactory) {
     super(storage, cursorConstructor)
@@ -73,8 +73,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * Tests whether a record matching the specified filter exists in this
    * storage.
    * 
-   * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
-   *        filter The filter restricting on which records the callback will be
+   * @param {(number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+   *        The filter restricting on which records the callback will be
    *        executed. The first argument will be set to the record, the second
    *        argument will be set to the primary key of the record, and the
    *        third argument will be set to the key referencing the record (the
@@ -115,8 +115,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
   /**
    * Calculates the number of records matching the specified filter.
    *
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
-   *        filter The filter restricting on which records the callback will be
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=} filter
+   *        The filter restricting on which records the callback will be
    *        executed. The first argument will be set to the record, the second
    *        argument will be set to the primary key of the record, and the
    *        third argument will be set to the key referencing the record (the
@@ -139,8 +139,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * Executes the provided callback on the records in this storage that match
    * the specified filter.
    *
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
-   *        filter The filter restricting on which records the callback will be
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+   *        The filter restricting on which records the callback will be
    *        executed. If a function is provided, the first argument will be set
    *        to the record, the second argument will be set to the primary key
    *        of the record, and the third argument will be set to the key
@@ -152,12 +152,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    *        {@code "PREVIOUS"} (or {@code "PREV"} for short). The letter case
    *        used in the strings does not matter. Defaults to
    *        {@code CursorDirection.NEXT}.
-   * @param {function(*, (number|string|Date|Array), (number|string|Date|Array))}
-   *        callback The callback to execute on the records matching the
-   *        filter. The first argument will be set to the record, the second
-   *        argument will be set to the primary key of the record, and the
-   *        third argument will be set to the key referencing the record (the
-   *        primary key if traversing an object store).
+   * @param {function(*, (number|string|Date|Array), (number|string|Date|Array))} callback
+   *        The callback to execute on the records matching the filter. The
+   *        first argument will be set to the record, the second argument will
+   *        be set to the primary key of the record, and the third argument
+   *        will be set to the key referencing the record (the primary key if
+   *        traversing an object store).
    * @return {PromiseSync<number>} A promise that resolves to the number of
    *         records satisfying the filter.
    */
@@ -188,12 +188,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * Retrieves all records from this object store that match the specified
    * filter. The records will be listed in the specified order.
    *
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
-   *        filter The filter, restricting the records returned by this method.
-   *        If a function is provided, the first argument will be set to the
-   *        record, the second argument will be set to the primary key of the
-   *        record, and the third argument will be set to the key referencing
-   *        the record (the primary key if traversing an object store).
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=} filter
+   *        The filter, restricting the records returned by this method. If a
+   *        function is provided, the first argument will be set to the record,
+   *        the second argument will be set to the primary key of the record,
+   *        and the third argument will be set to the key referencing the
+   *        record (the primary key if traversing an object store).
    * @param {CursorDirection} direction The direction in which the records are
    *        to be listed. Use either the {@code CursorDirection.*} constants,
    *        or strings {@code "NEXT"} and {@code "PREVIOUS"} (or {@code "PREV"}
@@ -216,20 +216,20 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
   /**
    * Lists the records in this storage in pages of specified size.
    *
-   * The records will be returned in a {@codelink RecordStore}, which is an
+   * The records will be returned in a {@linkcode RecordStore}, which is an
    * augmented array that can be used to fetch the next page of this listing of
    * records.
    *
-   * The {@codelink RecordStore} is not dependent on the current transaction,
+   * The {@linkcode RecordStore} is not dependent on the current transaction,
    * and therefore the next pages can be fetched even after an arbitrary delay
    * after the current transaction has ended.
    *
    * Fetching the next pages of records will not be affected by read-write
    * operations. Note that new records with primary key of previous value
-   * (depending on the used cursor direction) to the last internaly traversed
+   * (depending on the used cursor direction) to the last internally traversed
    * record will not be included in the next pages, as the record list always
    * fetches the next page by fetching the records since the primary key of the
-   * last internaly traversed record.
+   * last internally traversed record.
    *
    * Deleting all records after the last fetched record and fetching the next
    * page will result in fetching an empty page of records, that will be marked
@@ -239,12 +239,12 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
    * to look ahead for one record matching the filter after the last returned
    * record to determine whether additional pages of records are available.
    *
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=}
-   *        filter The filter, restricting the records returned by this method.
-   *        If a function is provided, the first argument will be set to the
-   *        record, the second argument will be set to the primary key of the
-   *        record, and the third argument will be set to the key referencing
-   *        the record (the primary key if traversing an object store).
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)=} filter
+   *        The filter, restricting the records returned by this method. If a
+   *        function is provided, the first argument will be set to the record,
+   *        the second argument will be set to the primary key of the record,
+   *        and the third argument will be set to the key referencing the
+   *        record (the primary key if traversing an object store).
    * @param {(CursorDirection|string)} direction The direction in which the
    *        records are to be listed. Use either the {@code CursorDirection.*}
    *        constants, or strings {@code "NEXT"} and {@code "PREVIOUS"} (or
@@ -298,9 +298,8 @@ export default class AbstractReadOnlyStorage extends AbstractBaseStorage {
  *        be used to fetch the first page of records.
  * @param {(undefined|IDBKeyRange)} keyRange The key range to use for the first
  *        page or records.
- * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
- *        filter The filter function restricting the records that will be
- *        listed.
+ * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+ *        The filter function restricting the records that will be listed.
  *        If a function is provided, the first argument will be set to the
  *        record, the second argument will be set to the primary key of the
  *        record, and the third argument will be set to the key referencing the

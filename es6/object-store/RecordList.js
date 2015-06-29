@@ -39,9 +39,8 @@ export default class RecordList extends Array {
    *        records of the storage are traversed.
    * @param {boolean} unique Set to {@code true} if the key used by the storage
    *        to organize records has a unique value for each record.
-   * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
-   *        filter The filter function restricting the records that will be
-   *        listed.
+   * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+   *        The filter function restricting the records that will be listed.
    * @param {number} pageSize The number of records per page specified as a
    *        positive integer.
    * @param {boolean} hasNextPage Set to {@code true} if more records were
@@ -171,9 +170,8 @@ export default class RecordList extends Array {
  *        to organize records has a unique value for each record.
  * @param {(number|string|Date|Array)} firstPrimaryKey The primary key of the
  *        first record to include to the result.
- * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
- *        filter The filter function restricting the records that will be
- *        listed.
+ * @param {(undefined|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} filter
+ *        The filter function restricting the records that will be listed.
  *        If a function is provided, the first argument will be set to the
  *        record, the second argument will be set to the primary key of the
  *        record, and the third argument will be set to the key referencing the

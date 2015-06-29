@@ -141,11 +141,11 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    * callback on the provided records only after it traverses all records
    * matching the filter.
    * 
-   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=}
-   *        filter The filter, restricting the records returned by this method.
-   *        If a function is provided, the first argument will be set to the
-   *        record and the second argument will be set to the primary key of
-   *        the record.
+   * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=} filter
+   *        The filter, restricting the records returned by this method. If a
+   *        function is provided, the first argument will be set to the record
+   *        and the second argument will be set to the primary key of the
+   *        record.
    * @param {?(CursorDirection|string|string[]|function(*, *): number)} order
    *        How the resulting records should be sorted. This can be one of the
    *        following:
@@ -167,7 +167,7 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    *        - an array of field paths, as described above. The records will be
    *          sorted by the values of the specified fields lexicographically.
    *        - a comparator function compatible with the
-   *          {@codelink Array.prototype.sort} method.
+   *          {@linkcode Array.prototype.sort} method.
    * @param {number} offset The index of the first record to include in the
    *        result. The records are numbered from {@code 0}, the offset must be
    *        a non-negative integer.
