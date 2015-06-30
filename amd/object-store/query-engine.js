@@ -148,7 +148,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
         $__30;
     order = normalizeKeyPath(order);
     var expectedSortingDirection = order[0].charAt(0) === "!";
-    var canOptimizeOrder = canOptimizeSorting(expectedSortingDirection, order);
+    var canSortingBeOptimized;
+    canSortingBeOptimized = canOptimizeSorting(expectedSortingDirection, order);
     var storages = new Map();
     storages.set(normalizeKeyPath(thisStorage.keyPath), {
       storage: thisStorage,
@@ -186,7 +187,7 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       }
     }
     var simplifiedOrderFieldPaths = simplifyOrderingFieldPaths(order);
-    if (canOptimizeOrder) {
+    if (canSortingBeOptimized) {
       var $__14 = true;
       var $__15 = false;
       var $__16 = undefined;
@@ -255,7 +256,7 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     });
     var chosenStorage = sortedStorages[0].storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
-    var optimizeSorting = canOptimizeOrder && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
+    var optimizeSorting = canSortingBeOptimized && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
     return {
       storage: chosenStorage,
       direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,

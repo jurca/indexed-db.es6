@@ -329,7 +329,8 @@ function prepareQuery(thisStorage, filter, order) {
   order = normalizeKeyPath(order)
   
   let expectedSortingDirection = order[0].charAt(0) === "!"
-  let canOptimizeOrder = canOptimizeSorting(expectedSortingDirection, order)
+  let canSortingBeOptimized
+  canSortingBeOptimized = canOptimizeSorting(expectedSortingDirection, order)
   
   let storages = new Map()
   storages.set(normalizeKeyPath(thisStorage.keyPath), {
@@ -349,7 +350,7 @@ function prepareQuery(thisStorage, filter, order) {
   
   let simplifiedOrderFieldPaths = simplifyOrderingFieldPaths(order)
   
-  if (canOptimizeOrder) {
+  if (canSortingBeOptimized) {
     for (let [keyPath, storageAndScore] of storages) {
       if (indexedDB.cmp(keyPath, simplifiedOrderFieldPaths) === 0) {
         storageAndScore.score += 4 // optimizing the sorting is more important
@@ -373,7 +374,7 @@ function prepareQuery(thisStorage, filter, order) {
   
   let chosenStorage = sortedStorages[0].storage
   let chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath)
-  let optimizeSorting = canOptimizeOrder &&
+  let optimizeSorting = canSortingBeOptimized &&
       (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0)
   
   return {
