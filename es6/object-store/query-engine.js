@@ -170,7 +170,7 @@ export default function executeQuery(objectStore, filter, order, offset, limit,
 function runQuery(cursorFactory, filter, comparator, offset, limit, callback) {
   let records = []
   let recordIndex = -1
-  
+
   return cursorFactory((cursor) => {
     if (!filter && offset && ((recordIndex + 1) < offset)) {
       recordIndex = offset - 1
@@ -352,7 +352,8 @@ function prepareQuery(thisStorage, filter, order) {
   
   if (canSortingBeOptimized) {
     for (let [keyPath, storageAndScore] of storages) {
-      if (indexedDB.cmp(keyPath, simplifiedOrderFieldPaths) === 0) {
+      let keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length)
+      if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
         storageAndScore.score += 4 // optimizing the sorting is more important
       }
     }
@@ -374,9 +375,13 @@ function prepareQuery(thisStorage, filter, order) {
   
   let chosenStorage = sortedStorages[0].storage
   let chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath)
+  let storageKeyPathSlice = chosenStorageKeyPath.slice(
+    0,
+    simplifiedOrderFieldPaths.length
+  )
   let optimizeSorting = canSortingBeOptimized &&
-      (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0)
-  
+      (indexedDB.cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0)
+
   return {
     storage: chosenStorage,
     direction: optimizeSorting ? (

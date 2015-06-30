@@ -28,7 +28,9 @@ describe("ReadOnlyObjectStore", () => {
           new IndexSchema("otherIndex", ["keyField", "otherKey"])
         ),
         new ObjectStoreSchema(OBJECT_STORE_NAME3, "id", true,
-          new IndexSchema("index1", "id"),
+          new IndexSchema("index1", "id"), // will never be used, because the
+                                           // id is not set when creating the
+                                           // record
           new IndexSchema("index2", "category", false, true),
           new IndexSchema("index3", "age")
         )

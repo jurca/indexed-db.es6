@@ -198,7 +198,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
               keyPath = ($__26 = $__25[$traceurRuntime.toProperty(Symbol.iterator)](), ($__27 = $__26.next()).done ? void 0 : $__27.value),
               storageAndScore = ($__27 = $__26.next()).done ? void 0 : $__27.value;
           {
-            if (indexedDB.cmp(keyPath, simplifiedOrderFieldPaths) === 0) {
+            var keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length);
+            if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
               storageAndScore.score += 4;
             }
           }
@@ -256,7 +257,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     });
     var chosenStorage = sortedStorages[0].storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
-    var optimizeSorting = canSortingBeOptimized && (indexedDB.cmp(chosenStorageKeyPath, simplifiedOrderFieldPaths) === 0);
+    var storageKeyPathSlice = chosenStorageKeyPath.slice(0, simplifiedOrderFieldPaths.length);
+    var optimizeSorting = canSortingBeOptimized && (indexedDB.cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0);
     return {
       storage: chosenStorage,
       direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,

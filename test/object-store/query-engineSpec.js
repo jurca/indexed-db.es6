@@ -27,9 +27,12 @@ describe("ReadOnlyObjectStore", () => {
           new IndexSchema("otherIndex", ["keyField", "otherKey"])
         ),
         new ObjectStoreSchema(OBJECT_STORE_NAME3, "id", true,
-          new IndexSchema("index1", "id"),
+          new IndexSchema("index1", "id"), // will never be used, because the
+                                           // id is not set when creating the
+                                           // record
           new IndexSchema("index2", "category", false, true),
-          new IndexSchema("index3", "age")
+          new IndexSchema("index3", "age"),
+          new IndexSchema("index4", ["foo", "age"])
         )
       )
     ).then((databaseInstance) => {
@@ -81,28 +84,32 @@ describe("ReadOnlyObjectStore", () => {
         age: 10,
         bio: {
           cat: 1
-        }
+        },
+        foo: 5
       })
       objectStore.add({
         category: 2,
         age: 8,
         bio: {
           cat: 2
-        }
+        },
+        foo: 3
       })
       objectStore.add({
         category: [2, 3],
         age: 11,
         bio: {
           cat: 2
-        }
+        },
+        foo: 8
       })
       objectStore.add({
         category: 4,
         age: 12,
         bio: {
           cat: 4
-        }
+        },
+        foo: 8
       })
     })
     
@@ -347,6 +354,38 @@ describe("ReadOnlyObjectStore", () => {
         expect(calledIndexCount).toBe(1)
         expect(calledOn.name).toBe("index3")
         expect(records.length).toBe(1)
+        index.constructor.prototype.createCursorFactory = nativeIndexMethod
+        done()
+      })
+    })
+
+    it("should use index for optimizing sorting if key path prefix matches",
+        (done) => {
+      objectStore = Object.create(objectStore)
+
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+
+      let index = objectStore.getIndex("index4")
+      let nativeIndexMethod = index.createCursorFactory
+      let calledIndexCount = 0
+      let calledOn = null
+      index.constructor.prototype.createCursorFactory =
+          function (range, direction) {
+        calledIndexCount++
+        calledOn = this
+        return nativeIndexMethod.call(index, range, direction)
+      }
+
+      objectStore.query(null, "foo").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(calledIndexCount).toBe(1)
+        expect(calledOn.name).toBe("index4")
+        expect(recordsToIds(records)).toEqual([2, 1, 3, 4])
         index.constructor.prototype.createCursorFactory = nativeIndexMethod
         done()
       })
