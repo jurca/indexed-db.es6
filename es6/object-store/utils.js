@@ -264,6 +264,13 @@ function convertFieldMapToKeyRange(filter, keyPaths) {
     return null
   }
 
+  let containsKeyRanges = keyPaths.some((keyPath) => {
+    return getFieldValue(filter, keyPath) instanceof IDBKeyRange
+  })
+  if (containsKeyRanges) {
+    return null
+  }
+
   if (keyPaths.length === 1) {
     return IDBKeyRange.only(getFieldValue(filter, keyPaths[0]))
   }
