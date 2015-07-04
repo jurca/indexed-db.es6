@@ -1,6 +1,7 @@
 
 import CursorDirection from "./CursorDirection"
-import {normalizeFilter, compileOrderingFieldPaths} from "./utils"
+import {normalizeFilter, compileOrderingFieldPaths, partiallyOptimizeFilter}
+    from "./utils"
 
 /**
  * Allowed cursor direction values.
@@ -110,27 +111,25 @@ export default function executeQuery(objectStore, filter, order, offset, limit,
     throw new Error("The limit must be a positive integer or null, " +
         `${limit} provided`)
   }
-  
+
+  let keyRange = undefined
   let direction
   let comparator = null
   let storage = objectStore
-  
+
   order = prepareOrderingSpecificationForQuery(order, objectStore.keyPath)
   if (order instanceof Function) {
     direction = CursorDirection.NEXT
     comparator = order
+
+    filter = normalizeFilter(filter, storage.keyPath)
+    if (!(filter instanceof Function)) {
+      keyRange = filter
+      filter = null
+    }
   } else {
-    ({ storage, direction, comparator } = prepareQuery(storage, filter, order))
-  }
-  
-  filter = normalizeFilter(filter, storage.keyPath)
-  
-  let keyRange
-  if (filter instanceof Function) {
-    keyRange = undefined
-  } else {
-    keyRange = filter
-    filter = null
+    let preparedQuery = prepareQuery(storage, filter, order)
+    ;({ storage, direction, comparator, keyRange, filter } = preparedQuery)
   }
   
   return runQuery(
@@ -320,10 +319,13 @@ function findInsertIndex(records, record, comparator) {
  * @param {(string|string[])} order Field paths by which the records should be
  *        sorted. A field path may be prefixed by an exclamation mark
  *        ({@code "!"}) for descending order.
- * @return {{storage: AbstractReadOnlyStorage, direction: CursorDirection, comparator: ?function(*, *): number}}
+ * @return {{storage: AbstractReadOnlyStorage, direction: CursorDirection, comparator: ?function(*, *): number, keyRange: (undefined|IDBKeyRange), filter: (undefined|function(*, (number|string|Date|Array)): boolean)}}
  *         The storage on which the query should be executed, the direction in
  *         which the cursor should be opened and the record comparator to use
  *         to additionally sort the fetched records matching the filter.
+ *         Finally, the returned object has the {@code keyRange} and
+ *         {@code filter} fields set to the key range and custom filter to use
+ *         with the storage to run the query.
  */
 function prepareQuery(thisStorage, filter, order) {
   order = normalizeKeyPath(order)
@@ -358,11 +360,32 @@ function prepareQuery(thisStorage, filter, order) {
       }
     }
   }
-  
-  if (!(filter instanceof Function)) {
+
+  if (filter instanceof Function) {
+    for (let [keyPath, storageAndScore] of storages) {
+      storageAndScore.filter = filter
+    }
+  } else {
     for (let [keyPath, storageAndScore] of storages) {
       let normalizedFilter = normalizeFilter(filter, keyPath)
-      if (!(normalizedFilter instanceof Function)) {
+      if (normalizedFilter instanceof Function) {
+        let isOptimizableFilter =
+            (filter instanceof Object) &&
+            !(filter instanceof Date) &&
+            !(filter instanceof Array) &&
+            !(filter instanceof IDBKeyRange)
+        if (isOptimizableFilter) {
+          let partialOptimization = partiallyOptimizeFilter(filter, keyPath)
+          storageAndScore.keyRange = partialOptimization.keyRange
+          storageAndScore.filter = partialOptimization.filter
+          if (partialOptimization.score) {
+            storageAndScore.score += 1 + partialOptimization.score
+          }
+        } else {
+          storageAndScore.filter = normalizedFilter
+        }
+      } else {
+        storageAndScore.keyRange = normalizedFilter
         storageAndScore.score += 2
       }
     }
@@ -372,8 +395,9 @@ function prepareQuery(thisStorage, filter, order) {
   sortedStorages.sort((storage1, storage2) => {
     return storage2.score - storage1.score
   })
-  
-  let chosenStorage = sortedStorages[0].storage
+
+  let chosenStorageDetails = sortedStorages[0]
+  let chosenStorage = chosenStorageDetails.storage
   let chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath)
   let storageKeyPathSlice = chosenStorageKeyPath.slice(
     0,
@@ -387,7 +411,9 @@ function prepareQuery(thisStorage, filter, order) {
     direction: optimizeSorting ? (
       CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]
     ) : CursorDirection.NEXT,
-    comparator: optimizeSorting ? null : compileOrderingFieldPaths(order)
+    comparator: optimizeSorting ? null : compileOrderingFieldPaths(order),
+    keyRange: chosenStorageDetails.keyRange,
+    filter: chosenStorageDetails.filter
   }
 }
 

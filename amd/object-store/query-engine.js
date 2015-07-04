@@ -7,16 +7,18 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
   var CursorDirection = $__0.default;
   var $__3 = $__2,
       normalizeFilter = $__3.normalizeFilter,
-      compileOrderingFieldPaths = $__3.compileOrderingFieldPaths;
+      compileOrderingFieldPaths = $__3.compileOrderingFieldPaths,
+      partiallyOptimizeFilter = $__3.partiallyOptimizeFilter;
   var CURSOR_DIRECTIONS = Object.freeze([CursorDirection.NEXT, CursorDirection.PREVIOUS, "NEXT", "PREVIOUS", "PREV"]);
   function executeQuery(objectStore, filter, order, offset, limit, callback) {
-    var $__25;
+    var $__32;
     if ((offset < 0) || (Math.floor(offset) !== offset)) {
       throw new Error("The offset must be a non-negative integer, " + (offset + " provided"));
     }
     if ((limit !== null) && ((limit <= 0) || (Math.floor(limit) !== limit))) {
       throw new Error("The limit must be a positive integer or null, " + (limit + " provided"));
     }
+    var keyRange = undefined;
     var direction;
     var comparator = null;
     var storage = objectStore;
@@ -24,16 +26,15 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     if (order instanceof Function) {
       direction = CursorDirection.NEXT;
       comparator = order;
+      filter = normalizeFilter(filter, storage.keyPath);
+      if (!(filter instanceof Function)) {
+        keyRange = filter;
+        filter = null;
+      }
     } else {
-      (($__25 = prepareQuery(storage, filter, order), storage = $__25.storage, direction = $__25.direction, comparator = $__25.comparator, $__25));
-    }
-    filter = normalizeFilter(filter, storage.keyPath);
-    var keyRange;
-    if (filter instanceof Function) {
-      keyRange = undefined;
-    } else {
-      keyRange = filter;
-      filter = null;
+      var preparedQuery = prepareQuery(storage, filter, order);
+      ;
+      (($__32 = preparedQuery, storage = $__32.storage, direction = $__32.direction, comparator = $__32.comparator, keyRange = $__32.keyRange, filter = $__32.filter, $__32));
     }
     return runQuery(storage.createCursorFactory(keyRange, direction), filter, comparator, offset, limit, callback);
   }
@@ -82,9 +83,9 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       try {
         for (var $__5 = void 0,
             $__4 = (records)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-          var $__25 = $__5.value,
-              record = $__25.record,
-              primaryKey = $__25.primaryKey;
+          var $__32 = $__5.value,
+              record = $__32.record,
+              primaryKey = $__32.primaryKey;
           {
             callback(record, primaryKey);
           }
@@ -117,8 +118,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       return 0;
     }
     if (records.length === 1) {
-      var comparison$__31 = comparator(records[0].record, record);
-      return (comparison$__31 > 0) ? 0 : 1;
+      var comparison$__41 = comparator(records[0].record, record);
+      return (comparison$__41 > 0) ? 0 : 1;
     }
     var comparison = comparator(records[0].record, record);
     if (comparison > 0) {
@@ -128,8 +129,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     var top = records.length - 1;
     while (bottom <= top) {
       var pivotIndex = Math.floor((bottom + top) / 2);
-      var comparison$__32 = comparator(records[pivotIndex].record, record);
-      if (comparison$__32 > 0) {
+      var comparison$__42 = comparator(records[pivotIndex].record, record);
+      if (comparison$__42 > 0) {
         var previousElement = records[pivotIndex - 1].record;
         if (comparator(previousElement, record) <= 0) {
           return pivotIndex;
@@ -142,10 +143,12 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     return records.length;
   }
   function prepareQuery(thisStorage, filter, order) {
-    var $__26,
-        $__27,
-        $__29,
-        $__30;
+    var $__33,
+        $__34,
+        $__36,
+        $__37,
+        $__39,
+        $__40;
     order = normalizeKeyPath(order);
     var expectedSortingDirection = order[0].charAt(0) === "!";
     var canSortingBeOptimized;
@@ -194,9 +197,9 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       try {
         for (var $__12 = void 0,
             $__11 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__14 = ($__12 = $__11.next()).done); $__14 = true) {
-          var $__25 = $__12.value,
-              keyPath = ($__26 = $__25[$traceurRuntime.toProperty(Symbol.iterator)](), ($__27 = $__26.next()).done ? void 0 : $__27.value),
-              storageAndScore = ($__27 = $__26.next()).done ? void 0 : $__27.value;
+          var $__32 = $__12.value,
+              keyPath = ($__33 = $__32[$traceurRuntime.toProperty(Symbol.iterator)](), ($__34 = $__33.next()).done ? void 0 : $__34.value),
+              storageAndScore = ($__34 = $__33.next()).done ? void 0 : $__34.value;
           {
             var keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length);
             if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
@@ -219,21 +222,18 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
         }
       }
     }
-    if (!(filter instanceof Function)) {
+    if (filter instanceof Function) {
       var $__21 = true;
       var $__22 = false;
       var $__23 = undefined;
       try {
         for (var $__19 = void 0,
             $__18 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__21 = ($__19 = $__18.next()).done); $__21 = true) {
-          var $__28 = $__19.value,
-              keyPath$__33 = ($__29 = $__28[$traceurRuntime.toProperty(Symbol.iterator)](), ($__30 = $__29.next()).done ? void 0 : $__30.value),
-              storageAndScore$__34 = ($__30 = $__29.next()).done ? void 0 : $__30.value;
+          var $__35 = $__19.value,
+              keyPath$__43 = ($__36 = $__35[$traceurRuntime.toProperty(Symbol.iterator)](), ($__37 = $__36.next()).done ? void 0 : $__37.value),
+              storageAndScore$__44 = ($__37 = $__36.next()).done ? void 0 : $__37.value;
           {
-            var normalizedFilter = normalizeFilter(filter, keyPath$__33);
-            if (!(normalizedFilter instanceof Function)) {
-              storageAndScore$__34.score += 2;
-            }
+            storageAndScore$__44.filter = filter;
           }
         }
       } catch ($__24) {
@@ -250,19 +250,66 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
           }
         }
       }
+    } else {
+      var $__28 = true;
+      var $__29 = false;
+      var $__30 = undefined;
+      try {
+        for (var $__26 = void 0,
+            $__25 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__28 = ($__26 = $__25.next()).done); $__28 = true) {
+          var $__38 = $__26.value,
+              keyPath$__45 = ($__39 = $__38[$traceurRuntime.toProperty(Symbol.iterator)](), ($__40 = $__39.next()).done ? void 0 : $__40.value),
+              storageAndScore$__46 = ($__40 = $__39.next()).done ? void 0 : $__40.value;
+          {
+            var normalizedFilter = normalizeFilter(filter, keyPath$__45);
+            if (normalizedFilter instanceof Function) {
+              var isOptimizableFilter = (filter instanceof Object) && !(filter instanceof Date) && !(filter instanceof Array) && !(filter instanceof IDBKeyRange);
+              if (isOptimizableFilter) {
+                var partialOptimization = partiallyOptimizeFilter(filter, keyPath$__45);
+                storageAndScore$__46.keyRange = partialOptimization.keyRange;
+                storageAndScore$__46.filter = partialOptimization.filter;
+                if (partialOptimization.score) {
+                  storageAndScore$__46.score += 1 + partialOptimization.score;
+                }
+              } else {
+                storageAndScore$__46.filter = normalizedFilter;
+              }
+            } else {
+              storageAndScore$__46.keyRange = normalizedFilter;
+              storageAndScore$__46.score += 2;
+            }
+          }
+        }
+      } catch ($__31) {
+        $__29 = true;
+        $__30 = $__31;
+      } finally {
+        try {
+          if (!$__28 && $__25.return != null) {
+            $__25.return();
+          }
+        } finally {
+          if ($__29) {
+            throw $__30;
+          }
+        }
+      }
     }
     var sortedStorages = Array.from(storages.values());
     sortedStorages.sort(function(storage1, storage2) {
       return storage2.score - storage1.score;
     });
-    var chosenStorage = sortedStorages[0].storage;
+    var chosenStorageDetails = sortedStorages[0];
+    var chosenStorage = chosenStorageDetails.storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
     var storageKeyPathSlice = chosenStorageKeyPath.slice(0, simplifiedOrderFieldPaths.length);
     var optimizeSorting = canSortingBeOptimized && (indexedDB.cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0);
     return {
       storage: chosenStorage,
       direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,
-      comparator: optimizeSorting ? null : compileOrderingFieldPaths(order)
+      comparator: optimizeSorting ? null : compileOrderingFieldPaths(order),
+      keyRange: chosenStorageDetails.keyRange,
+      filter: chosenStorageDetails.filter
     };
   }
   function simplifyOrderingFieldPaths(order) {

@@ -46,7 +46,8 @@ export function keyRangeToFieldRangeObject(keyRange, keyPath) {
  *        parameter is used to optimize field map filters that specify a the
  *        field constraints matching the field paths - such field map filters
  *        will be optimized to an IDBKeyRange.
- * @return {(undefined|IDBKeyRange|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)} Normalized filter.
+ * @return {(undefined|IDBKeyRange|function(*, (number|string|Date|Array), (number|string|Date|Array)): boolean)}
+ *         Normalized filter.
  */
 export function normalizeFilter(filter, keyPath) {
   if (keyPath) {
@@ -74,6 +75,85 @@ export function normalizeFilter(filter, keyPath) {
   }
 
   return filter
+}
+
+/**
+ * Attempts to convert the part of the filter object that matches the specified
+ * storage key path to a key range, while compiling the remaining fields to a
+ * filter predicate function.
+ *
+ * The method returns information on the ratio of storage key path fields
+ * converted to the key range to the total number of field paths in the filter.
+ *
+ * @param {Object<string, (number|string|Date|Array|IDBKeyRange)>} filter A map
+ *        of field names to expected values or key ranges representing the
+ *        expected values for those fields.
+ * @param {string[]} keyPath The key path of the storage for which the filter
+ *        is to be optimized.
+ * @return {{keyRange: IDBKeyRange, filter: ?function(*, (number|string|Date|Array)): boolean, score: number}}
+ *         The IndexedDB key range to use with the native API, additional
+ *         filtering predicate, and optimization score as a floating point
+ *         number within the range [0, 1]. The score is set to 1 if all filter
+ *         fields were converted to the key range, and the score is set to 0 if
+ *         none of the filter fields could have been converted to the key
+ *         range.
+ */
+export function partiallyOptimizeFilter(filter, keyPath) {
+  let fieldPaths = getFieldPaths(filter, false)
+
+  let canOptimize = keyPath.every(path => fieldPaths.indexOf(path) > -1)
+  if (!canOptimize) {
+    return {
+      keyRange: undefined,
+      filter: compileFieldRangeFilter(filter),
+      score: 0
+    }
+  }
+
+  if (keyPath.length === fieldPaths.length) {
+    let keyRange = convertFieldMapToKeyRange(filter, keyPath)
+    if (!keyRange) { // at least one of the values is a IDBKeyRange instance
+      return {
+        keyRange: undefined,
+        filter: compileFieldRangeFilter(filter),
+        score: 0
+      }
+    }
+
+    return {
+      keyRange,
+      filter: null,
+      score: 1
+    }
+  }
+
+  let keyPathContainsKeyRange = keyPath.some((fieldPath) => {
+    return getFieldValue(filter, fieldPath) instanceof IDBKeyRange
+  })
+  if (keyPathContainsKeyRange) {
+    return {
+      keyRange: undefined,
+      filter: compileFieldRangeFilter(filter),
+      score: 0
+    }
+  }
+
+  let fieldsToOptimize = {}
+  let fieldsToCompile = {}
+  fieldPaths.forEach((fieldPath) => {
+    let value = getFieldValue(filter, fieldPath)
+    if (keyPath.indexOf(fieldPath) > -1) {
+      setFieldValue(fieldsToOptimize, fieldPath, value)
+    } else {
+      setFieldValue(fieldsToCompile, fieldPath, value)
+    }
+  })
+
+  return {
+    keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
+    filter: compileFieldRangeFilter(fieldsToCompile),
+    score: keyPath.length / fieldPaths.length
+  }
 }
 
 /**

@@ -40,6 +40,59 @@ define(["./KeyRange"], function($__0) {
     }
     return filter;
   }
+  function partiallyOptimizeFilter(filter, keyPath) {
+    var fieldPaths = getFieldPaths(filter, false);
+    var canOptimize = keyPath.every(function(path) {
+      return fieldPaths.indexOf(path) > -1;
+    });
+    if (!canOptimize) {
+      return {
+        keyRange: undefined,
+        filter: compileFieldRangeFilter(filter),
+        score: 0
+      };
+    }
+    if (keyPath.length === fieldPaths.length) {
+      var keyRange = convertFieldMapToKeyRange(filter, keyPath);
+      if (!keyRange) {
+        return {
+          keyRange: undefined,
+          filter: compileFieldRangeFilter(filter),
+          score: 0
+        };
+      }
+      return {
+        keyRange: keyRange,
+        filter: null,
+        score: 1
+      };
+    }
+    var keyPathContainsKeyRange = keyPath.some(function(fieldPath) {
+      return getFieldValue(filter, fieldPath) instanceof IDBKeyRange;
+    });
+    if (keyPathContainsKeyRange) {
+      return {
+        keyRange: undefined,
+        filter: compileFieldRangeFilter(filter),
+        score: 0
+      };
+    }
+    var fieldsToOptimize = {};
+    var fieldsToCompile = {};
+    fieldPaths.forEach(function(fieldPath) {
+      var value = getFieldValue(filter, fieldPath);
+      if (keyPath.indexOf(fieldPath) > -1) {
+        setFieldValue(fieldsToOptimize, fieldPath, value);
+      } else {
+        setFieldValue(fieldsToCompile, fieldPath, value);
+      }
+    });
+    return {
+      keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
+      filter: compileFieldRangeFilter(fieldsToCompile),
+      score: keyPath.length / fieldPaths.length
+    };
+  }
   function compileFieldRangeFilter(filter) {
     var fieldPaths = getFieldPaths(filter, false);
     var fieldFilters = fieldPaths.map(function(fieldPath) {
@@ -264,6 +317,9 @@ define(["./KeyRange"], function($__0) {
     },
     get normalizeFilter() {
       return normalizeFilter;
+    },
+    get partiallyOptimizeFilter() {
+      return partiallyOptimizeFilter;
     },
     get compileFieldRangeFilter() {
       return compileFieldRangeFilter;
