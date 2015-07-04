@@ -191,12 +191,6 @@ define(["./KeyRange"], function($__0) {
     if (!isKeyFilter) {
       return null;
     }
-    var containsKeyRanges = keyPaths.some(function(keyPath) {
-      return getFieldValue(filter, keyPath) instanceof IDBKeyRange;
-    });
-    if (containsKeyRanges) {
-      return null;
-    }
     if (keyPaths.length === 1) {
       return IDBKeyRange.only(getFieldValue(filter, keyPaths[0]));
     }
