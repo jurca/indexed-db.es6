@@ -111,20 +111,7 @@ export function partiallyOptimizeFilter(filter, keyPath) {
   }
 
   if (keyPath.length === fieldPaths.length) {
-    let keyRange = convertFieldMapToKeyRange(filter, keyPath)
-    if (!keyRange) { // at least one of the values is a IDBKeyRange instance
-      return {
-        keyRange: undefined,
-        filter: compileFieldRangeFilter(filter),
-        score: 0
-      }
-    }
-
-    return {
-      keyRange,
-      filter: null,
-      score: 1
-    }
+   return partiallyOptimizeKeyPathMatchingFilter(filter, keyPath)
   }
 
   let keyPathContainsKeyRange = keyPath.some((fieldPath) => {
@@ -138,11 +125,77 @@ export function partiallyOptimizeFilter(filter, keyPath) {
     }
   }
 
+  let {fieldsToOptimize, fieldsToCompile} = splitFilteringObject(
+    filter,
+    fieldPaths,
+    keyPath
+  )
+
+  return {
+    keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
+    filter: compileFieldRangeFilter(fieldsToCompile),
+    score: keyPath.length / fieldPaths.length
+  }
+}
+
+/**
+ * A sub-routine of the {@linkcode partiallyOptimizeFilter} used to generate
+ * optimization result if the storage key path matches the field paths in the
+ * filter object.
+ *
+ * @param @param {Object<string, (number|string|Date|Array|IDBKeyRange)>} filter A map
+ *        of field names to expected values or key ranges representing the
+ *        expected values for those fields.
+ * @param {string[]} keyPath The key path of the storage for which the filter
+ *        is to be optimized.
+ * @returns {{keyRange: IDBKeyRange, filter: ?function(*, (number|string|Date|Array)): boolean, score: number}}
+ *         The IndexedDB key range to use with the native API, additional
+ *         filtering predicate, and optimization score as a floating point
+ *         number within the range [0, 1]. The score is set to 1 if all filter
+ *         fields were converted to the key range, and the score is set to 0 if
+ *         none of the filter fields could have been converted to the key
+ *         range.
+ */
+function partiallyOptimizeKeyPathMatchingFilter(filter, keyPath) {
+  let keyRange = convertFieldMapToKeyRange(filter, keyPath)
+  if (!keyRange) { // at least one of the values is a IDBKeyRange instance
+    return {
+      keyRange: undefined,
+      filter: compileFieldRangeFilter(filter),
+      score: 0
+    }
+  }
+
+  return {
+    keyRange,
+    filter: null,
+    score: 1
+  }
+}
+
+/**
+ * Splits the provided filter object to two objects according the the provided
+ * storage key path. This is used to separate a complex filter object into an
+ * object optimizable into a key range and a simpler object that will be
+ * compiled into a filter predicate function.
+ *
+ * @param {Object<string, *>} filter Filtering object to split.
+ * @param {string[]} filterFieldPaths All field paths in the filtering object.
+ * @param {string[]} storageKeyPath The key path(s) of the storage for which
+ *        the filtering object is being split.
+ * @returns {{fieldsToOptimize: Object<string, *>, fieldsToCompile: Object<string, *>}}
+ *          The {@code fieldsToOptimize} filter object will contain only the
+ *          field paths specified in the {@code storageKeyPath}, while the
+ *          {@code fieldsToCompile} will contain the remaining field paths of
+ *          the source filter object.
+ */
+function splitFilteringObject(filter, filterFieldPaths, storageKeyPath) {
   let fieldsToOptimize = {}
   let fieldsToCompile = {}
-  fieldPaths.forEach((fieldPath) => {
+
+  filterFieldPaths.forEach((fieldPath) => {
     let value = getFieldValue(filter, fieldPath)
-    if (keyPath.indexOf(fieldPath) > -1) {
+    if (storageKeyPath.indexOf(fieldPath) > -1) {
       setFieldValue(fieldsToOptimize, fieldPath, value)
     } else {
       setFieldValue(fieldsToCompile, fieldPath, value)
@@ -150,9 +203,8 @@ export function partiallyOptimizeFilter(filter, keyPath) {
   })
 
   return {
-    keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
-    filter: compileFieldRangeFilter(fieldsToCompile),
-    score: keyPath.length / fieldPaths.length
+    fieldsToOptimize,
+    fieldsToCompile
   }
 }
 

@@ -53,19 +53,7 @@ define(["./KeyRange"], function($__0) {
       };
     }
     if (keyPath.length === fieldPaths.length) {
-      var keyRange = convertFieldMapToKeyRange(filter, keyPath);
-      if (!keyRange) {
-        return {
-          keyRange: undefined,
-          filter: compileFieldRangeFilter(filter),
-          score: 0
-        };
-      }
-      return {
-        keyRange: keyRange,
-        filter: null,
-        score: 1
-      };
+      return partiallyOptimizeKeyPathMatchingFilter(filter, keyPath);
     }
     var keyPathContainsKeyRange = keyPath.some(function(fieldPath) {
       return getFieldValue(filter, fieldPath) instanceof IDBKeyRange;
@@ -77,20 +65,44 @@ define(["./KeyRange"], function($__0) {
         score: 0
       };
     }
+    var $__9 = splitFilteringObject(filter, fieldPaths, keyPath),
+        fieldsToOptimize = $__9.fieldsToOptimize,
+        fieldsToCompile = $__9.fieldsToCompile;
+    return {
+      keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
+      filter: compileFieldRangeFilter(fieldsToCompile),
+      score: keyPath.length / fieldPaths.length
+    };
+  }
+  function partiallyOptimizeKeyPathMatchingFilter(filter, keyPath) {
+    var keyRange = convertFieldMapToKeyRange(filter, keyPath);
+    if (!keyRange) {
+      return {
+        keyRange: undefined,
+        filter: compileFieldRangeFilter(filter),
+        score: 0
+      };
+    }
+    return {
+      keyRange: keyRange,
+      filter: null,
+      score: 1
+    };
+  }
+  function splitFilteringObject(filter, filterFieldPaths, storageKeyPath) {
     var fieldsToOptimize = {};
     var fieldsToCompile = {};
-    fieldPaths.forEach(function(fieldPath) {
+    filterFieldPaths.forEach(function(fieldPath) {
       var value = getFieldValue(filter, fieldPath);
-      if (keyPath.indexOf(fieldPath) > -1) {
+      if (storageKeyPath.indexOf(fieldPath) > -1) {
         setFieldValue(fieldsToOptimize, fieldPath, value);
       } else {
         setFieldValue(fieldsToCompile, fieldPath, value);
       }
     });
     return {
-      keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
-      filter: compileFieldRangeFilter(fieldsToCompile),
-      score: keyPath.length / fieldPaths.length
+      fieldsToOptimize: fieldsToOptimize,
+      fieldsToCompile: fieldsToCompile
     };
   }
   function compileFieldRangeFilter(filter) {
@@ -118,8 +130,8 @@ define(["./KeyRange"], function($__0) {
         if (fieldRange.upper !== undefined) {
           var upperComparison;
           upperComparison = indexedDB.cmp(fieldRange.upper, fieldValue);
-          var failedTest$__9 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
-          if (failedTest$__9) {
+          var failedTest$__10 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
+          if (failedTest$__10) {
             return false;
           }
         }
