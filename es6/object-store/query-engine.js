@@ -353,43 +353,10 @@ function prepareQuery(thisStorage, filter, order) {
   let simplifiedOrderFieldPaths = simplifyOrderingFieldPaths(order)
   
   if (canSortingBeOptimized) {
-    for (let [keyPath, storageAndScore] of storages) {
-      let keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length)
-      if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
-        storageAndScore.score += 4 // optimizing the sorting is more important
-      }
-    }
+    prepareSortingOptimization(storages, simplifiedOrderFieldPaths)
   }
 
-  if (filter instanceof Function) {
-    for (let [keyPath, storageAndScore] of storages) {
-      storageAndScore.filter = filter
-    }
-  } else {
-    for (let [keyPath, storageAndScore] of storages) {
-      let normalizedFilter = normalizeFilter(filter, keyPath)
-      if (normalizedFilter instanceof Function) {
-        let isOptimizableFilter =
-            (filter instanceof Object) &&
-            !(filter instanceof Date) &&
-            !(filter instanceof Array) &&
-            !(filter instanceof IDBKeyRange)
-        if (isOptimizableFilter) {
-          let partialOptimization = partiallyOptimizeFilter(filter, keyPath)
-          storageAndScore.keyRange = partialOptimization.keyRange
-          storageAndScore.filter = partialOptimization.filter
-          if (partialOptimization.score) {
-            storageAndScore.score += 1 + partialOptimization.score
-          }
-        } else {
-          storageAndScore.filter = normalizedFilter
-        }
-      } else {
-        storageAndScore.keyRange = normalizedFilter
-        storageAndScore.score += 2
-      }
-    }
-  }
+  prepareFilteringOptimization(storages, filter)
   
   return chooseStorageForQuery(
     storages,
@@ -398,6 +365,74 @@ function prepareQuery(thisStorage, filter, order) {
     canSortingBeOptimized,
     expectedSortingDirection
   )
+}
+
+/**
+ * Calculates the best possible sorting optimization for the provided storages,
+ * updating the provided map with sorting optimization scores for each storage.
+ *
+ * @param {Map<string[], {storage: AbstractReadOnlyStorage, score: number, keyRange: (undefined|IDBKeyRange), filter: ?function(*, (number|string|Date|Array)): boolean}>} storages
+ *        Map of storage key paths to storages and information related to how
+ *        the query would be executed on each of them, including the
+ *        performance optimization score (the higher is better).
+ * @param {string[]} simplifiedOrderFieldPaths Ordering field paths with the
+ *        exclamation mark prefix stripped from them.
+ */
+function prepareSortingOptimization(storages, simplifiedOrderFieldPaths) {
+  for (let [keyPath, storageAndScore] of storages) {
+    let keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length)
+    if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
+      storageAndScore.score += 4 // optimizing the sorting is more important
+    }
+  }
+}
+
+/**
+ * Calculates the best possible filtering optimizations for the provided
+ * storages, updating the provided map with optimized filtering info and
+ * optimization score for each storage.
+ *
+ * @param {Map<string[], {storage: AbstractReadOnlyStorage, score: number, keyRange: (undefined|IDBKeyRange), filter: ?function(*, (number|string|Date|Array)): boolean}>} storages
+ *        Map of storage key paths to storages and information related to how
+ *        the query would be executed on each of them, including the
+ *        performance optimization score (the higher is better).
+ * @param {?(undefined|number|string|Date|Array|IDBKeyRange|Object<string, (number|string|Date|Array|IDBKeyRange)>|function(*, (number|string|Date|Array)): boolean)=} filter
+ *        The filter, restricting the records returned by this method. If a
+ *        function is provided, the first argument will be set to the record
+ *        and the second argument will be set to the primary key of the record.
+ */
+function prepareFilteringOptimization(storages, filter) {
+  if (filter instanceof Function) {
+    for (let [keyPath, storageAndScore] of storages) {
+      storageAndScore.filter = filter
+    }
+
+    return
+  }
+
+  for (let [keyPath, storageAndScore] of storages) {
+    let normalizedFilter = normalizeFilter(filter, keyPath)
+    if (normalizedFilter instanceof Function) {
+      let isOptimizableFilter =
+          (filter instanceof Object) &&
+          !(filter instanceof Date) &&
+          !(filter instanceof Array) &&
+          !(filter instanceof IDBKeyRange)
+      if (isOptimizableFilter) {
+        let partialOptimization = partiallyOptimizeFilter(filter, keyPath)
+        storageAndScore.keyRange = partialOptimization.keyRange
+        storageAndScore.filter = partialOptimization.filter
+        if (partialOptimization.score) {
+          storageAndScore.score += 1 + partialOptimization.score
+        }
+      } else {
+        storageAndScore.filter = normalizedFilter
+      }
+    } else {
+      storageAndScore.keyRange = normalizedFilter
+      storageAndScore.score += 2
+    }
+  }
 }
 
 /**
