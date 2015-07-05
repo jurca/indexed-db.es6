@@ -20,13 +20,11 @@ const CURSOR_DIRECTIONS = Object.freeze([
  * following situations that may impact the performance heavily:
  * 
  * - using a function as filter
- * - using an object-map of fields to values or key ranges that cannot be
- *   transformed to a single key range. This happens when the method chooses to
- *   use an existing index instead of running the query directly on the object
- *   store (see below why this can happen), and the fields in the filter object
- *   do not match the key path of the index; or if the method uses the object
- *   store internally and the fields in the filter object do not match the key
- *   path of the object store.
+ * - using an object-map of fields to values or key ranges as filter that
+ *   cannot be transformed to a single key range even partially. This happens
+ *   when the storage (object store or index) chosen by this method has a key
+ *   path that contains a field path not present in the filter object, or a
+ *   field path that resolves to a key range within the filter object.
  * - using a comparator function to specify the expected order of records.
  * - using field paths that do not have the same direction to specify the
  *   expected order of records.
@@ -44,12 +42,12 @@ const CURSOR_DIRECTIONS = Object.freeze([
  * the object store's indexes.
  * 
  * If both the filtering and sorting cannot be optimized, the method attempts
- * to optimize either the sorting or filtering (preffering optimizing the
- * sorting over filtering), and preferrably using this object store instead
+ * to optimize either the sorting or filtering (preferring optimizing the
+ * sorting over filtering), and preferably using this object store instead
  * of its indexes.
  * 
- * The method executes the query on this object store if neither the
- * filtering nor sorting can be optimized.
+ * The method executes the query on this object store if neither the filtering
+ * nor sorting can be optimized.
  * 
  * Note that if the sorting cannot be optimized, the method can execute the
  * callback on the provided records only after it traverses all records

@@ -120,13 +120,11 @@ export default class ReadOnlyObjectStore extends AbstractReadOnlyStorage {
    * following situations that may impact the performance heavily:
    * 
    * - using a function as filter
-   * - using an object-map of fields to values or key ranges that cannot be
-   *   transformed to a single key range. This happens when the method chooses
-   *   to use an existing index instead of running the query directly on the
-   *   object store (see below why this can happen), and the fields in the
-   *   filter object do not match the key path of the index; or if the method
-   *   uses the object store internally and the fields in the filter object do
-   *   not match the key path of the object store.
+   * - using an object-map of fields to values or key ranges as filter that
+   *   cannot be transformed to a single key range even partially. This happens
+   *   when the storage (object store or index) chosen by this method has a key
+   *   path that contains a field path not present in the filter object, or a
+   *   field path that resolves to a key range within the filter object.
    * - using a comparator function to specify the expected order of records.
    * - using field paths that do not have the same direction to specify the
    *   expected order of records.
