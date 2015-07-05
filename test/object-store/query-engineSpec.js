@@ -426,6 +426,41 @@ describe("ReadOnlyObjectStore", () => {
         done()
       })
     })
+
+    it("should use index for partially-optimizable filtering that uses key " +
+        "range outside of key path fields", (done) => {
+      objectStore = Object.create(objectStore)
+
+      let nativeMethod = objectStore.createCursorFactory
+      let calledCount = 0
+      objectStore.createCursorFactory = (range, direction) => {
+        calledCount++
+        return nativeMethod.call(objectStore, range, direction)
+      }
+
+      let index = objectStore.getIndex("index3")
+      let nativeIndexMethod = index.createCursorFactory
+      let calledIndexCount = 0
+      let calledOn = null
+      index.constructor.prototype.createCursorFactory =
+      function (range, direction) {
+        calledIndexCount++
+        calledOn = this
+        return nativeIndexMethod.call(index, range, direction)
+      }
+
+      objectStore.query({
+        age: 11,
+        bio: { cat: KeyRange.bound(1, 4) }
+      }, "unindexed").then((records) => {
+        expect(calledCount).toBe(0)
+        expect(calledIndexCount).toBe(1)
+        expect(calledOn.name).toBe("index3")
+        expect(recordsToIds(records)).toEqual([3])
+        index.constructor.prototype.createCursorFactory = nativeIndexMethod
+        done()
+      })
+    })
     
     function recordsToIds(records) {
       return records.map(record => record.id)
