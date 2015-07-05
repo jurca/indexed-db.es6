@@ -391,6 +391,43 @@ function prepareQuery(thisStorage, filter, order) {
     }
   }
   
+  return chooseStorageForQuery(
+    storages,
+    order,
+    simplifiedOrderFieldPaths,
+    canSortingBeOptimized,
+    expectedSortingDirection
+  )
+}
+
+/**
+ * Selects the storage on which the execute a query that should lead to the
+ * best possible performance. The method returns all the data necessary to
+ * execute the query.
+ *
+ * @param {Map<string[], {storage: AbstractReadOnlyStorage, score: number, keyRange: (undefined|IDBKeyRange), filter: ?function(*, (number|string|Date|Array)): boolean}>} storages
+ *        Map of storage key paths to storages and information related to how
+ *        the query would be executed on each of them, including the
+ *        performance optimization score (the higher is better).
+ * @param {string[]} order Field paths by which the records should be sorted. A
+ *        field path may be prefixed by an exclamation mark ({@code "!"}) for
+ *        descending order.
+ * @param {string[]} simplifiedOrderFieldPaths Ordering field paths with the
+ *        exclamation mark prefix stripped from them.
+ * @param {boolean} canSortingBeOptimized Set to {@code true} if sorting
+ *        optimization is possible.
+ * @param {boolean} expectedSortingDirection Set to {@code true} for descending
+ *        order, set to {@code false} for ascending order.
+ * @return {{storage: AbstractReadOnlyStorage, direction: CursorDirection, comparator: ?function(*, *): number, keyRange: (undefined|IDBKeyRange), filter: (undefined|function(*, (number|string|Date|Array)): boolean)}}
+ *         The storage on which the query should be executed, the direction in
+ *         which the cursor should be opened and the record comparator to use
+ *         to additionally sort the fetched records matching the filter.
+ *         Finally, the returned object has the {@code keyRange} and
+ *         {@code filter} fields set to the key range and custom filter to use
+ *         with the storage to run the query.
+ */
+function chooseStorageForQuery(storages, order, simplifiedOrderFieldPaths,
+    canSortingBeOptimized, expectedSortingDirection) {
   let sortedStorages = Array.from(storages.values())
   sortedStorages.sort((storage1, storage2) => {
     return storage2.score - storage1.score
@@ -409,7 +446,7 @@ function prepareQuery(thisStorage, filter, order) {
   return {
     storage: chosenStorage,
     direction: optimizeSorting ? (
-      CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]
+    CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]
     ) : CursorDirection.NEXT,
     comparator: optimizeSorting ? null : compileOrderingFieldPaths(order),
     keyRange: chosenStorageDetails.keyRange,

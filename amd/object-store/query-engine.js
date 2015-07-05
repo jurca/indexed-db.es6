@@ -295,6 +295,9 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
         }
       }
     }
+    return chooseStorageForQuery(storages, order, simplifiedOrderFieldPaths, canSortingBeOptimized, expectedSortingDirection);
+  }
+  function chooseStorageForQuery(storages, order, simplifiedOrderFieldPaths, canSortingBeOptimized, expectedSortingDirection) {
     var sortedStorages = Array.from(storages.values());
     sortedStorages.sort(function(storage1, storage2) {
       return storage2.score - storage1.score;
