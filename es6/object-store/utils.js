@@ -143,7 +143,7 @@ export function partiallyOptimizeFilter(filter, keyPath) {
  * optimization result if the storage key path matches the field paths in the
  * filter object.
  *
- * @param @param {Object<string, (number|string|Date|Array|IDBKeyRange)>} filter A map
+ * @param {Object<string, (number|string|Date|Array|IDBKeyRange)>} filter A map
  *        of field names to expected values or key ranges representing the
  *        expected values for those fields.
  * @param {string[]} keyPath The key path of the storage for which the filter
