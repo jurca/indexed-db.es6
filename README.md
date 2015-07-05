@@ -1,6 +1,7 @@
-![build status](https://travis-ci.org/jurca/indexed-db.es6.svg?branch=master)
-
 # indexed-db.es6
+
+[![Build Status](https://travis-ci.org/jurca/indexed-db.es6.svg?branch=master)](https://travis-ci.org/jurca/indexed-db.es6)
+[![Bower](http://img.shields.io/bower/v/indexed-db.es6.svg)](http://bower.io/search/?q=indexed-db.es6)
 
 The indexed-db.es6 is ES6-style wrapper of the native
 [IndexedDB](http://www.w3.org/TR/IndexedDB/) HTML5
