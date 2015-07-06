@@ -57,7 +57,7 @@ const CURSOR_DIRECTIONS = Object.freeze([
  * In such case, the method keeps the semi-constructed result in a sorted array
  * of up to {@code offset + limit} elements, inserts the current record using
  * the insert sort algorithm optimized using the binary search algorithm and
- * trimms the end of the array if its length exceeds the {@code offset + limit}
+ * trims the end of the array if its length exceeds the {@code offset + limit}
  * limit. This results in {@code O(n log c)} complexity, for {@code c} being
  * the {@code offset + limit} and {@code n} being the total number records.
  * 
