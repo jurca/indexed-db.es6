@@ -1,5 +1,6 @@
 
 import Database from "./Database"
+import NativeDBAccessor from "./NativeDBAccessor"
 import PromiseSync from "./PromiseSync"
 import DatabaseMigrator from "./migration/DatabaseMigrator"
 
@@ -130,7 +131,7 @@ export default class DBFactory {
    *         exist.
    */
   static deleteDatabase(databaseName) {
-    let request = indexedDB.deleteDatabase(databaseName)
+    let request = NativeDBAccessor.indexedDB.deleteDatabase(databaseName)
     return new Promise((resolve, reject) => {
       request.onsuccess = (event) => resolve(event.oldVersion)
       request.onerror = (event) => reject(event)
@@ -168,6 +169,25 @@ export default class DBFactory {
   static removeMigrationListener(listener) {
     migrationListeners.delete(listener)
   }
+
+  /**
+   * Sets the IndexedDB implementation to use by indexed-db.es6.
+   *
+   * @param {IDBFactory} indexedDBImplementation The new IndexedDB
+   *        implementation to use.
+   */
+  static set nativeIndexedDB(indexedDBImplementation) {
+    NativeDBAccessor.indexedDB = indexedDBImplementation
+  }
+
+  /**
+   * Returns the current IndexedDB implementation used by indexed-db.es6.
+   *
+   * @return {IDBFactory} The native IndexedDB implementation to use.
+   */
+  static get nativeIndexedDB() {
+    return NativeDBAccessor.indexedDB
+  }
 }
 
 /**
@@ -184,7 +204,7 @@ export default class DBFactory {
  */
 function openConnection(databaseName, sortedSchemaDescriptors) {
   let version = sortedSchemaDescriptors.slice().pop().version
-  let request = indexedDB.open(databaseName, version)
+  let request = NativeDBAccessor.indexedDB.open(databaseName, version)
   
   return new Promise((resolve, reject) => {
     let wasBlocked = false

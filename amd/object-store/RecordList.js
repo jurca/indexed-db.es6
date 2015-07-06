@@ -1,11 +1,14 @@
-define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
+define(["../NativeDBAccessor", "./KeyRange", "./CursorDirection"], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
-  var KeyRange = $__0.default;
-  var CursorDirection = $__2.default;
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
+  var idbProvider = $__0.idbProvider;
+  var KeyRange = $__2.default;
+  var CursorDirection = $__4.default;
   var FIELDS = Object.freeze({
     storageFactory: Symbol("storageFactory"),
     nextKey: Symbol("nextKey"),
@@ -59,10 +62,11 @@ define(["./KeyRange", "./CursorDirection"], function($__0,$__2) {
     var storage = storageFactory();
     var nextItems = [];
     return new Promise(function(resolve, reject) {
+      var idb = idbProvider();
       var cursorFactory = storage.createCursorFactory(keyRange, cursorDirection, unique);
       cursorFactory(function(cursor) {
         if (!unique) {
-          var shouldSkip = ((cursorDirection === CursorDirection.NEXT) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) > 0)) || ((cursorDirection === CursorDirection.PREVIOUS) && (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) < 0));
+          var shouldSkip = ((cursorDirection === CursorDirection.NEXT) && (idb.cmp(firstPrimaryKey, cursor.primaryKey) > 0)) || ((cursorDirection === CursorDirection.PREVIOUS) && (idb.cmp(firstPrimaryKey, cursor.primaryKey) < 0));
           if (shouldSkip) {
             cursor.continue();
             return;

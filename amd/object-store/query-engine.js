@@ -1,17 +1,20 @@
-define(["./CursorDirection", "./utils"], function($__0,$__2) {
+define(["../NativeDBAccessor", "./CursorDirection", "./utils"], function($__0,$__2,$__4) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
   if (!$__2 || !$__2.__esModule)
     $__2 = {default: $__2};
-  var CursorDirection = $__0.default;
-  var $__3 = $__2,
-      normalizeFilter = $__3.normalizeFilter,
-      compileOrderingFieldPaths = $__3.compileOrderingFieldPaths,
-      partiallyOptimizeFilter = $__3.partiallyOptimizeFilter;
+  if (!$__4 || !$__4.__esModule)
+    $__4 = {default: $__4};
+  var idbProvider = $__0.idbProvider;
+  var CursorDirection = $__2.default;
+  var $__5 = $__4,
+      normalizeFilter = $__5.normalizeFilter,
+      compileOrderingFieldPaths = $__5.compileOrderingFieldPaths,
+      partiallyOptimizeFilter = $__5.partiallyOptimizeFilter;
   var CURSOR_DIRECTIONS = Object.freeze([CursorDirection.NEXT, CursorDirection.PREVIOUS, "NEXT", "PREVIOUS", "PREV"]);
   function executeQuery(objectStore, filter, order, offset, limit, callback) {
-    var $__18;
+    var $__20;
     if ((offset < 0) || (Math.floor(offset) !== offset)) {
       throw new Error("The offset must be a non-negative integer, " + (offset + " provided"));
     }
@@ -34,7 +37,7 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     } else {
       var preparedQuery = prepareQuery(storage, filter, order);
       ;
-      (($__18 = preparedQuery, storage = $__18.storage, direction = $__18.direction, comparator = $__18.comparator, keyRange = $__18.keyRange, filter = $__18.filter, $__18));
+      (($__20 = preparedQuery, storage = $__20.storage, direction = $__20.direction, comparator = $__20.comparator, keyRange = $__20.keyRange, filter = $__20.filter, $__20));
     }
     return runQuery(storage.createCursorFactory(keyRange, direction), filter, comparator, offset, limit, callback);
   }
@@ -77,30 +80,30 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
         return;
       }
       records = records.slice(offset);
-      var $__7 = true;
-      var $__8 = false;
-      var $__9 = undefined;
+      var $__9 = true;
+      var $__10 = false;
+      var $__11 = undefined;
       try {
-        for (var $__5 = void 0,
-            $__4 = (records)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-          var $__18 = $__5.value,
-              record = $__18.record,
-              primaryKey = $__18.primaryKey;
+        for (var $__7 = void 0,
+            $__6 = (records)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__9 = ($__7 = $__6.next()).done); $__9 = true) {
+          var $__20 = $__7.value,
+              record = $__20.record,
+              primaryKey = $__20.primaryKey;
           {
             callback(record, primaryKey);
           }
         }
-      } catch ($__10) {
-        $__8 = true;
-        $__9 = $__10;
+      } catch ($__12) {
+        $__10 = true;
+        $__11 = $__12;
       } finally {
         try {
-          if (!$__7 && $__4.return != null) {
-            $__4.return();
+          if (!$__9 && $__6.return != null) {
+            $__6.return();
           }
         } finally {
-          if ($__8) {
-            throw $__9;
+          if ($__10) {
+            throw $__11;
           }
         }
       }
@@ -118,8 +121,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       return 0;
     }
     if (records.length === 1) {
-      var comparison$__24 = comparator(records[0].record, record);
-      return (comparison$__24 > 0) ? 0 : 1;
+      var comparison$__26 = comparator(records[0].record, record);
+      return (comparison$__26 > 0) ? 0 : 1;
     }
     var comparison = comparator(records[0].record, record);
     if (comparison > 0) {
@@ -129,8 +132,8 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     var top = records.length - 1;
     while (bottom <= top) {
       var pivotIndex = Math.floor((bottom + top) / 2);
-      var comparison$__25 = comparator(records[pivotIndex].record, record);
-      if (comparison$__25 > 0) {
+      var comparison$__27 = comparator(records[pivotIndex].record, record);
+      if (comparison$__27 > 0) {
         var previousElement = records[pivotIndex - 1].record;
         if (comparator(previousElement, record) <= 0) {
           return pivotIndex;
@@ -152,13 +155,13 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
       storage: thisStorage,
       score: 1
     });
-    var $__7 = true;
-    var $__8 = false;
-    var $__9 = undefined;
+    var $__9 = true;
+    var $__10 = false;
+    var $__11 = undefined;
     try {
-      for (var $__5 = void 0,
-          $__4 = (thisStorage.indexNames)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-        var indexName = $__5.value;
+      for (var $__7 = void 0,
+          $__6 = (thisStorage.indexNames)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__9 = ($__7 = $__6.next()).done); $__9 = true) {
+        var indexName = $__7.value;
         {
           var index = thisStorage.getIndex(indexName);
           if (!index.multiEntry) {
@@ -169,17 +172,17 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
           }
         }
       }
-    } catch ($__10) {
-      $__8 = true;
-      $__9 = $__10;
+    } catch ($__12) {
+      $__10 = true;
+      $__11 = $__12;
     } finally {
       try {
-        if (!$__7 && $__4.return != null) {
-          $__4.return();
+        if (!$__9 && $__6.return != null) {
+          $__6.return();
         }
       } finally {
-        if ($__8) {
-          throw $__9;
+        if ($__10) {
+          throw $__11;
         }
       }
     }
@@ -191,114 +194,115 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     return chooseStorageForQuery(storages, order, simplifiedOrderFieldPaths, canSortingBeOptimized, expectedSortingDirection);
   }
   function prepareSortingOptimization(storages, simplifiedOrderFieldPaths) {
-    var $__19,
-        $__20;
-    var $__7 = true;
-    var $__8 = false;
-    var $__9 = undefined;
+    var $__21,
+        $__22;
+    var idb = idbProvider();
+    var $__9 = true;
+    var $__10 = false;
+    var $__11 = undefined;
     try {
-      for (var $__5 = void 0,
-          $__4 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-        var $__18 = $__5.value,
-            keyPath = ($__19 = $__18[$traceurRuntime.toProperty(Symbol.iterator)](), ($__20 = $__19.next()).done ? void 0 : $__20.value),
-            storageAndScore = ($__20 = $__19.next()).done ? void 0 : $__20.value;
+      for (var $__7 = void 0,
+          $__6 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__9 = ($__7 = $__6.next()).done); $__9 = true) {
+        var $__20 = $__7.value,
+            keyPath = ($__21 = $__20[$traceurRuntime.toProperty(Symbol.iterator)](), ($__22 = $__21.next()).done ? void 0 : $__22.value),
+            storageAndScore = ($__22 = $__21.next()).done ? void 0 : $__22.value;
         {
           var keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length);
-          if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
+          if (idb.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
             storageAndScore.score += 4;
           }
         }
       }
-    } catch ($__10) {
-      $__8 = true;
-      $__9 = $__10;
+    } catch ($__12) {
+      $__10 = true;
+      $__11 = $__12;
     } finally {
       try {
-        if (!$__7 && $__4.return != null) {
-          $__4.return();
+        if (!$__9 && $__6.return != null) {
+          $__6.return();
         }
       } finally {
-        if ($__8) {
-          throw $__9;
+        if ($__10) {
+          throw $__11;
         }
       }
     }
   }
   function prepareFilteringOptimization(storages, filter) {
-    var $__19,
-        $__20,
+    var $__21,
         $__22,
-        $__23;
+        $__24,
+        $__25;
     if (filter instanceof Function) {
-      var $__7 = true;
-      var $__8 = false;
-      var $__9 = undefined;
+      var $__9 = true;
+      var $__10 = false;
+      var $__11 = undefined;
       try {
-        for (var $__5 = void 0,
-            $__4 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-          var $__18 = $__5.value,
-              keyPath = ($__19 = $__18[$traceurRuntime.toProperty(Symbol.iterator)](), ($__20 = $__19.next()).done ? void 0 : $__20.value),
-              storageAndScore = ($__20 = $__19.next()).done ? void 0 : $__20.value;
+        for (var $__7 = void 0,
+            $__6 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__9 = ($__7 = $__6.next()).done); $__9 = true) {
+          var $__20 = $__7.value,
+              keyPath = ($__21 = $__20[$traceurRuntime.toProperty(Symbol.iterator)](), ($__22 = $__21.next()).done ? void 0 : $__22.value),
+              storageAndScore = ($__22 = $__21.next()).done ? void 0 : $__22.value;
           {
             storageAndScore.filter = filter;
           }
         }
-      } catch ($__10) {
-        $__8 = true;
-        $__9 = $__10;
+      } catch ($__12) {
+        $__10 = true;
+        $__11 = $__12;
       } finally {
         try {
-          if (!$__7 && $__4.return != null) {
-            $__4.return();
+          if (!$__9 && $__6.return != null) {
+            $__6.return();
           }
         } finally {
-          if ($__8) {
-            throw $__9;
+          if ($__10) {
+            throw $__11;
           }
         }
       }
       return;
     }
-    var $__14 = true;
-    var $__15 = false;
-    var $__16 = undefined;
+    var $__16 = true;
+    var $__17 = false;
+    var $__18 = undefined;
     try {
-      for (var $__12 = void 0,
-          $__11 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__14 = ($__12 = $__11.next()).done); $__14 = true) {
-        var $__21 = $__12.value,
-            keyPath$__26 = ($__22 = $__21[$traceurRuntime.toProperty(Symbol.iterator)](), ($__23 = $__22.next()).done ? void 0 : $__23.value),
-            storageAndScore$__27 = ($__23 = $__22.next()).done ? void 0 : $__23.value;
+      for (var $__14 = void 0,
+          $__13 = (storages)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__16 = ($__14 = $__13.next()).done); $__16 = true) {
+        var $__23 = $__14.value,
+            keyPath$__28 = ($__24 = $__23[$traceurRuntime.toProperty(Symbol.iterator)](), ($__25 = $__24.next()).done ? void 0 : $__25.value),
+            storageAndScore$__29 = ($__25 = $__24.next()).done ? void 0 : $__25.value;
         {
-          var normalizedFilter = normalizeFilter(filter, keyPath$__26);
+          var normalizedFilter = normalizeFilter(filter, keyPath$__28);
           if (normalizedFilter instanceof Function) {
             var isOptimizableFilter = (filter instanceof Object) && !(filter instanceof Date) && !(filter instanceof Array) && !(filter instanceof IDBKeyRange);
             if (isOptimizableFilter) {
-              var partialOptimization = partiallyOptimizeFilter(filter, keyPath$__26);
-              storageAndScore$__27.keyRange = partialOptimization.keyRange;
-              storageAndScore$__27.filter = partialOptimization.filter;
+              var partialOptimization = partiallyOptimizeFilter(filter, keyPath$__28);
+              storageAndScore$__29.keyRange = partialOptimization.keyRange;
+              storageAndScore$__29.filter = partialOptimization.filter;
               if (partialOptimization.score) {
-                storageAndScore$__27.score += 1 + partialOptimization.score;
+                storageAndScore$__29.score += 1 + partialOptimization.score;
               }
             } else {
-              storageAndScore$__27.filter = normalizedFilter;
+              storageAndScore$__29.filter = normalizedFilter;
             }
           } else {
-            storageAndScore$__27.keyRange = normalizedFilter;
-            storageAndScore$__27.score += 2;
+            storageAndScore$__29.keyRange = normalizedFilter;
+            storageAndScore$__29.score += 2;
           }
         }
       }
-    } catch ($__17) {
-      $__15 = true;
-      $__16 = $__17;
+    } catch ($__19) {
+      $__17 = true;
+      $__18 = $__19;
     } finally {
       try {
-        if (!$__14 && $__11.return != null) {
-          $__11.return();
+        if (!$__16 && $__13.return != null) {
+          $__13.return();
         }
       } finally {
-        if ($__15) {
-          throw $__16;
+        if ($__17) {
+          throw $__18;
         }
       }
     }
@@ -312,7 +316,7 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     var chosenStorage = chosenStorageDetails.storage;
     var chosenStorageKeyPath = normalizeKeyPath(chosenStorage.keyPath);
     var storageKeyPathSlice = chosenStorageKeyPath.slice(0, simplifiedOrderFieldPaths.length);
-    var optimizeSorting = canSortingBeOptimized && (indexedDB.cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0);
+    var optimizeSorting = canSortingBeOptimized && (idbProvider().cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0);
     return {
       storage: chosenStorage,
       direction: optimizeSorting ? (CursorDirection[expectedSortingDirection ? "PREVIOUS" : "NEXT"]) : CursorDirection.NEXT,
@@ -327,30 +331,30 @@ define(["./CursorDirection", "./utils"], function($__0,$__2) {
     });
   }
   function canOptimizeSorting(expectedSortingDirection, order) {
-    var $__7 = true;
-    var $__8 = false;
-    var $__9 = undefined;
+    var $__9 = true;
+    var $__10 = false;
+    var $__11 = undefined;
     try {
-      for (var $__5 = void 0,
-          $__4 = (order)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
-        var orderingFieldPath = $__5.value;
+      for (var $__7 = void 0,
+          $__6 = (order)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__9 = ($__7 = $__6.next()).done); $__9 = true) {
+        var orderingFieldPath = $__7.value;
         {
           if ((orderingFieldPath.charAt(0) === "!") !== expectedSortingDirection) {
             return false;
           }
         }
       }
-    } catch ($__10) {
-      $__8 = true;
-      $__9 = $__10;
+    } catch ($__12) {
+      $__10 = true;
+      $__11 = $__12;
     } finally {
       try {
-        if (!$__7 && $__4.return != null) {
-          $__4.return();
+        if (!$__9 && $__6.return != null) {
+          $__6.return();
         }
       } finally {
-        if ($__8) {
-          throw $__9;
+        if ($__10) {
+          throw $__11;
         }
       }
     }

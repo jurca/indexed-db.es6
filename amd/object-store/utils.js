@@ -1,8 +1,11 @@
-define(["./KeyRange"], function($__0) {
+define(["../NativeDBAccessor", "./KeyRange"], function($__0,$__2) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
-  var KeyRange = $__0.default;
+  if (!$__2 || !$__2.__esModule)
+    $__2 = {default: $__2};
+  var idbProvider = $__0.idbProvider;
+  var KeyRange = $__2.default;
   function keyRangeToFieldRangeObject(keyRange, keyPath) {
     var fieldRangeObject = {};
     if (!(keyPath instanceof Array)) {
@@ -65,9 +68,9 @@ define(["./KeyRange"], function($__0) {
         score: 0
       };
     }
-    var $__9 = splitFilteringObject(filter, fieldPaths, keyPath),
-        fieldsToOptimize = $__9.fieldsToOptimize,
-        fieldsToCompile = $__9.fieldsToCompile;
+    var $__11 = splitFilteringObject(filter, fieldPaths, keyPath),
+        fieldsToOptimize = $__11.fieldsToOptimize,
+        fieldsToCompile = $__11.fieldsToCompile;
     return {
       keyRange: convertFieldMapToKeyRange(fieldsToOptimize, keyPath),
       filter: compileFieldRangeFilter(fieldsToCompile),
@@ -107,6 +110,7 @@ define(["./KeyRange"], function($__0) {
   }
   function compileFieldRangeFilter(filter) {
     var fieldPaths = getFieldPaths(filter, false);
+    var idb = idbProvider();
     var fieldFilters = fieldPaths.map(function(fieldPath) {
       var fieldRange = getFieldValue(filter, fieldPath);
       if (!(fieldRange instanceof IDBKeyRange)) {
@@ -121,7 +125,7 @@ define(["./KeyRange"], function($__0) {
         }
         if (fieldRange.lower !== undefined) {
           var lowerComparison;
-          lowerComparison = indexedDB.cmp(fieldRange.lower, fieldValue);
+          lowerComparison = idb.cmp(fieldRange.lower, fieldValue);
           var failedTest = (lowerComparison > 0) || (fieldRange.lowerOpen && (lowerComparison === 0));
           if (failedTest) {
             return false;
@@ -129,9 +133,9 @@ define(["./KeyRange"], function($__0) {
         }
         if (fieldRange.upper !== undefined) {
           var upperComparison;
-          upperComparison = indexedDB.cmp(fieldRange.upper, fieldValue);
-          var failedTest$__10 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
-          if (failedTest$__10) {
+          upperComparison = idb.cmp(fieldRange.upper, fieldValue);
+          var failedTest$__12 = (upperComparison < 0) || (fieldRange.upperOpen && (upperComparison === 0));
+          if (failedTest$__12) {
             return false;
           }
         }
@@ -153,13 +157,13 @@ define(["./KeyRange"], function($__0) {
     }
     var inverted = [];
     var getters = [];
-    var $__5 = true;
-    var $__6 = false;
-    var $__7 = undefined;
+    var $__7 = true;
+    var $__8 = false;
+    var $__9 = undefined;
     try {
-      for (var $__3 = void 0,
-          $__2 = (orderingFieldPaths)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__5 = ($__3 = $__2.next()).done); $__5 = true) {
-        var fieldPath = $__3.value;
+      for (var $__5 = void 0,
+          $__4 = (orderingFieldPaths)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
+        var fieldPath = $__5.value;
         {
           if (fieldPath.charAt(0) === "!") {
             inverted.push(true);
@@ -170,20 +174,21 @@ define(["./KeyRange"], function($__0) {
           }
         }
       }
-    } catch ($__8) {
-      $__6 = true;
-      $__7 = $__8;
+    } catch ($__10) {
+      $__8 = true;
+      $__9 = $__10;
     } finally {
       try {
-        if (!$__5 && $__2.return != null) {
-          $__2.return();
+        if (!$__7 && $__4.return != null) {
+          $__4.return();
         }
       } finally {
-        if ($__6) {
-          throw $__7;
+        if ($__8) {
+          throw $__9;
         }
       }
     }
+    var idb = idbProvider();
     var gettersCount = getters.length;
     return function(record1, record2) {
       for (var i = 0; i < gettersCount; i++) {
@@ -192,9 +197,9 @@ define(["./KeyRange"], function($__0) {
         var value2 = getter(record2);
         var comparison;
         if (inverted[i]) {
-          comparison = indexedDB.cmp(value2, value1);
+          comparison = idb.cmp(value2, value1);
         } else {
-          comparison = indexedDB.cmp(value1, value2);
+          comparison = idb.cmp(value1, value2);
         }
         if (comparison !== 0) {
           return comparison;
@@ -207,13 +212,13 @@ define(["./KeyRange"], function($__0) {
     var fields = fieldPath.split(".");
     return function(record) {
       var value = record;
-      var $__5 = true;
-      var $__6 = false;
-      var $__7 = undefined;
+      var $__7 = true;
+      var $__8 = false;
+      var $__9 = undefined;
       try {
-        for (var $__3 = void 0,
-            $__2 = (fields)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__5 = ($__3 = $__2.next()).done); $__5 = true) {
-          var field = $__3.value;
+        for (var $__5 = void 0,
+            $__4 = (fields)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__7 = ($__5 = $__4.next()).done); $__7 = true) {
+          var field = $__5.value;
           {
             if (!(value instanceof Object) || !value.hasOwnProperty(field)) {
               return undefined;
@@ -221,17 +226,17 @@ define(["./KeyRange"], function($__0) {
             value = value[field];
           }
         }
-      } catch ($__8) {
-        $__6 = true;
-        $__7 = $__8;
+      } catch ($__10) {
+        $__8 = true;
+        $__9 = $__10;
       } finally {
         try {
-          if (!$__5 && $__2.return != null) {
-            $__2.return();
+          if (!$__7 && $__4.return != null) {
+            $__4.return();
           }
         } finally {
-          if ($__6) {
-            throw $__7;
+          if ($__8) {
+            throw $__9;
           }
         }
       }

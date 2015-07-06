@@ -1,4 +1,4 @@
-define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function($__0,$__2,$__4) {
+define(["./Database", "./NativeDBAccessor", "./PromiseSync", "./migration/DatabaseMigrator"], function($__0,$__2,$__4,$__6) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -6,17 +6,20 @@ define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function
     $__2 = {default: $__2};
   if (!$__4 || !$__4.__esModule)
     $__4 = {default: $__4};
+  if (!$__6 || !$__6.__esModule)
+    $__6 = {default: $__6};
   var Database = $__0.default;
-  var PromiseSync = $__2.default;
-  var DatabaseMigrator = $__4.default;
+  var NativeDBAccessor = $__2.default;
+  var PromiseSync = $__4.default;
+  var DatabaseMigrator = $__6.default;
   var migrationListeners = new Set();
   var DBFactory = function() {
     function DBFactory() {}
     return ($traceurRuntime.createClass)(DBFactory, {}, {
       open: function(databaseName) {
         for (var schemaDescriptors = [],
-            $__14 = 1; $__14 < arguments.length; $__14++)
-          schemaDescriptors[$__14 - 1] = arguments[$__14];
+            $__16 = 1; $__16 < arguments.length; $__16++)
+          schemaDescriptors[$__16 - 1] = arguments[$__16];
         if (!schemaDescriptors.length) {
           throw new Error("The list of schema descriptors must not be empty");
         }
@@ -26,7 +29,7 @@ define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function
         return openConnection(databaseName, sortedSchemaDescriptors);
       },
       deleteDatabase: function(databaseName) {
-        var request = indexedDB.deleteDatabase(databaseName);
+        var request = NativeDBAccessor.indexedDB.deleteDatabase(databaseName);
         return new Promise(function(resolve, reject) {
           request.onsuccess = function(event) {
             return resolve(event.oldVersion);
@@ -41,13 +44,19 @@ define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function
       },
       removeMigrationListener: function(listener) {
         migrationListeners.delete(listener);
+      },
+      set nativeIndexedDB(indexedDBImplementation) {
+        NativeDBAccessor.indexedDB = indexedDBImplementation;
+      },
+      get nativeIndexedDB() {
+        return NativeDBAccessor.indexedDB;
       }
     });
   }();
   var $__default = DBFactory;
   function openConnection(databaseName, sortedSchemaDescriptors) {
     var version = sortedSchemaDescriptors.slice().pop().version;
-    var request = indexedDB.open(databaseName, version);
+    var request = NativeDBAccessor.indexedDB.open(databaseName, version);
     return new Promise(function(resolve, reject) {
       var wasBlocked = false;
       var upgradeTriggered = false;
@@ -109,13 +118,13 @@ define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function
     });
   }
   function executeMigrationListeners(databaseName, oldVersion, newVersion, completionPromise) {
-    var $__10 = true;
-    var $__11 = false;
-    var $__12 = undefined;
+    var $__12 = true;
+    var $__13 = false;
+    var $__14 = undefined;
     try {
-      for (var $__8 = void 0,
-          $__7 = (migrationListeners)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__10 = ($__8 = $__7.next()).done); $__10 = true) {
-        var listener = $__8.value;
+      for (var $__10 = void 0,
+          $__9 = (migrationListeners)[$traceurRuntime.toProperty(Symbol.iterator)](); !($__12 = ($__10 = $__9.next()).done); $__12 = true) {
+        var listener = $__10.value;
         {
           try {
             listener(databaseName, oldVersion, newVersion, completionPromise);
@@ -124,17 +133,17 @@ define(["./Database", "./PromiseSync", "./migration/DatabaseMigrator"], function
           }
         }
       }
-    } catch ($__13) {
-      $__11 = true;
-      $__12 = $__13;
+    } catch ($__15) {
+      $__13 = true;
+      $__14 = $__15;
     } finally {
       try {
-        if (!$__10 && $__7.return != null) {
-          $__7.return();
+        if (!$__12 && $__9.return != null) {
+          $__9.return();
         }
       } finally {
-        if ($__11) {
-          throw $__12;
+        if ($__13) {
+          throw $__14;
         }
       }
     }

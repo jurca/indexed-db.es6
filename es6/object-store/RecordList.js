@@ -1,4 +1,5 @@
 
+import {idbProvider} from "../NativeDBAccessor"
 import KeyRange from "./KeyRange"
 import CursorDirection from "./CursorDirection"
 
@@ -188,21 +189,22 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
   let nextItems = []
 
   return new Promise((resolve, reject) => {
+    let idb = idbProvider()
     let cursorFactory = storage.createCursorFactory(
       keyRange,
       cursorDirection,
       unique
     )
-    
+
     cursorFactory((cursor) => {
       if (!unique) {
         let shouldSkip =
           (
             (cursorDirection === CursorDirection.NEXT) &&
-            (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) > 0)
+            (idb.cmp(firstPrimaryKey, cursor.primaryKey) > 0)
           ) || (
             (cursorDirection === CursorDirection.PREVIOUS) &&
-            (indexedDB.cmp(firstPrimaryKey, cursor.primaryKey) < 0)
+            (idb.cmp(firstPrimaryKey, cursor.primaryKey) < 0)
           )
 
         if (shouldSkip) {
@@ -219,7 +221,7 @@ function fetchNextPage(storageFactory, keyRange, cursorDirection, unique,
           nextItems.push(cursor.record)
         }
       }
-      
+
       cursor.continue()
     }).then(() => finalize(false, null, null)).catch(error => reject(error))
 

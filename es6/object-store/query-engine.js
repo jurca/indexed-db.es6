@@ -1,4 +1,5 @@
 
+import {idbProvider} from "../NativeDBAccessor"
 import CursorDirection from "./CursorDirection"
 import {normalizeFilter, compileOrderingFieldPaths, partiallyOptimizeFilter}
     from "./utils"
@@ -377,9 +378,10 @@ function prepareQuery(thisStorage, filter, order) {
  *        exclamation mark prefix stripped from them.
  */
 function prepareSortingOptimization(storages, simplifiedOrderFieldPaths) {
+  let idb = idbProvider()
   for (let [keyPath, storageAndScore] of storages) {
     let keyPathSlice = keyPath.slice(0, simplifiedOrderFieldPaths.length)
-    if (indexedDB.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
+    if (idb.cmp(keyPathSlice, simplifiedOrderFieldPaths) === 0) {
       storageAndScore.score += 4 // optimizing the sorting is more important
     }
   }
@@ -474,7 +476,7 @@ function chooseStorageForQuery(storages, order, simplifiedOrderFieldPaths,
     simplifiedOrderFieldPaths.length
   )
   let optimizeSorting = canSortingBeOptimized &&
-      (indexedDB.cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0)
+      (idbProvider().cmp(storageKeyPathSlice, simplifiedOrderFieldPaths) === 0)
 
   return {
     storage: chosenStorage,

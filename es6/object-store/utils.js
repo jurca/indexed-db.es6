@@ -1,4 +1,5 @@
 
+import {idbProvider} from "../NativeDBAccessor"
 import KeyRange from "./KeyRange"
 
 /**
@@ -220,6 +221,7 @@ function splitFilteringObject(filter, filterFieldPaths, storageKeyPath) {
  */
 export function compileFieldRangeFilter(filter) {
   let fieldPaths = getFieldPaths(filter, false)
+  let idb = idbProvider()
 
   let fieldFilters = fieldPaths.map((fieldPath) => {
     let fieldRange = getFieldValue(filter, fieldPath)
@@ -237,7 +239,7 @@ export function compileFieldRangeFilter(filter) {
 
       if (fieldRange.lower !== undefined) {
         let lowerComparison
-        lowerComparison = indexedDB.cmp(fieldRange.lower, fieldValue)
+        lowerComparison = idb.cmp(fieldRange.lower, fieldValue)
 
         let failedTest = (lowerComparison > 0) ||
             (fieldRange.lowerOpen && (lowerComparison === 0))
@@ -248,7 +250,7 @@ export function compileFieldRangeFilter(filter) {
 
       if (fieldRange.upper !== undefined) {
         let upperComparison
-        upperComparison = indexedDB.cmp(fieldRange.upper, fieldValue)
+        upperComparison = idb.cmp(fieldRange.upper, fieldValue)
 
         let failedTest = (upperComparison < 0) ||
             (fieldRange.upperOpen && (upperComparison === 0))
@@ -302,9 +304,10 @@ export function compileOrderingFieldPaths(orderingFieldPaths) {
       getters.push(compileFieldGetter(fieldPath))
     }
   }
-  
+
+  let idb = idbProvider()
   let gettersCount = getters.length
-  
+
   return (record1, record2) => {
     for (let i = 0; i < gettersCount; i++) {
       let getter = getters[i]
@@ -313,9 +316,9 @@ export function compileOrderingFieldPaths(orderingFieldPaths) {
       
       let comparison
       if (inverted[i]) {
-        comparison = indexedDB.cmp(value2, value1)
+        comparison = idb.cmp(value2, value1)
       } else {
-        comparison = indexedDB.cmp(value1, value2)
+        comparison = idb.cmp(value1, value2)
       }
       
       if (comparison !== 0) {
