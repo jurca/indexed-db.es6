@@ -1,4 +1,4 @@
-define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./utils"], function($__0,$__2,$__4,$__6,$__8,$__10) {
+define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirection", "./Index", "./query-engine", "./utils"], function($__0,$__2,$__4,$__6,$__8,$__10,$__12) {
   "use strict";
   if (!$__0 || !$__0.__esModule)
     $__0 = {default: $__0};
@@ -12,12 +12,15 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
     $__8 = {default: $__8};
   if (!$__10 || !$__10.__esModule)
     $__10 = {default: $__10};
+  if (!$__12 || !$__12.__esModule)
+    $__12 = {default: $__12};
   var PromiseSync = $__0.default;
   var ReadOnlyObjectStore = $__2.default;
   var Cursor = $__4.default;
   var CursorDirection = $__6.default;
   var Index = $__8.default;
-  var normalizeFilter = $__10.normalizeFilter;
+  var executeQuery = $__10.default;
+  var normalizeFilter = $__12.normalizeFilter;
   var FIELDS = Object.freeze({
     objectStore: Symbol("objectStore"),
     indexes: Symbol("indexes"),
@@ -43,7 +46,7 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         return PromiseSync.resolve(request);
       },
       delete: function(filter) {
-        var $__12 = this;
+        var $__14 = this;
         filter = normalizeFilter(filter, this.keyPath);
         if (filter instanceof IDBKeyRange) {
           var request = this[FIELDS.objectStore].delete(filter);
@@ -51,9 +54,9 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         }
         return new PromiseSync(function(resolve, reject) {
           var progressPromise = PromiseSync.resolve(null);
-          $__12.forEach(filter, CursorDirection.NEXT, function(record, primaryKey) {
+          $__14.forEach(filter, CursorDirection.NEXT, function(record, primaryKey) {
             progressPromise = progressPromise.then(function() {
-              return $__12.delete(primaryKey);
+              return $__14.delete(primaryKey);
             }, reject);
           }).then(function() {
             return resolve(progressPromise);
@@ -80,6 +83,33 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         var keyRange = arguments[0];
         var direction = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
         return $traceurRuntime.superGet(this, ObjectStore.prototype, "createCursorFactory").call(this, keyRange, direction);
+      },
+      updateQuery: function() {
+        var filter = arguments[0] !== (void 0) ? arguments[0] : null;
+        var order = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
+        var offset = arguments[2] !== (void 0) ? arguments[2] : 0;
+        var limit = arguments[3] !== (void 0) ? arguments[3] : null;
+        var $__14 = this;
+        return function(recordCallback) {
+          return executeQuery($__14, filter, order, offset, limit, function(record, id) {
+            var newRecord = recordCallback(record, id);
+            if ($__14.keyPath) {
+              $__14.put(newRecord);
+            } else {
+              $__14.put(newRecord, id);
+            }
+          });
+        };
+      },
+      deleteQuery: function() {
+        var filter = arguments[0] !== (void 0) ? arguments[0] : null;
+        var order = arguments[1] !== (void 0) ? arguments[1] : CursorDirection.NEXT;
+        var offset = arguments[2] !== (void 0) ? arguments[2] : 0;
+        var limit = arguments[3] !== (void 0) ? arguments[3] : null;
+        var $__14 = this;
+        return executeQuery(this, filter, order, offset, limit, function(record, id) {
+          $__14.delete(id);
+        });
       }
     }, {}, $__super);
   }(ReadOnlyObjectStore);

@@ -1,5 +1,6 @@
 
 import DBFactory from "../../amd/DBFactory"
+import PromiseSync from "../../amd/PromiseSync"
 import CursorDirection from "../../amd/object-store/CursorDirection"
 import KeyRange from "../../amd/object-store/KeyRange"
 import DatabaseSchema from "../../amd/schema/DatabaseSchema"
@@ -174,6 +175,69 @@ describe("ObjectStore", () => {
         
         done()
       })
+    })
+  })
+
+  it("should execute an update query", (done) => {
+    objectStore.updateQuery({ id: 14 })((record, id) => {
+      expect(id).toBe(14)
+      expect(record).toEqual({
+        id: 14,
+        name: "Adam",
+        keyField: 2,
+        otherKey: "a"
+      })
+
+      return {
+        id: 14,
+        name: "Big boy"
+      }
+    })
+
+    transaction.completionPromise.then(() => {
+      return database.runTransaction(OBJECT_STORE_NAME, (objectStore) => {
+        return objectStore.get(14)
+      })
+    }).then((updatedRecord) => {
+      expect(updatedRecord).toEqual({
+        id: 14,
+        name: "Big boy"
+      })
+
+      done()
+    }).catch((error) => {
+      fail(error)
+      done()
+    })
+  })
+
+  it("should execute a delete query", (done) => {
+    objectStore.deleteQuery(null, "!id", 1, 1)
+
+    transaction.completionPromise.then(() => {
+      return database.runTransaction(OBJECT_STORE_NAME, (objectStore) => {
+        return objectStore.getAll()
+      })
+    }).then((records) => {
+      expect(records).toEqual([
+        {
+          id: 11,
+          name: "John",
+          keyField: 1,
+          otherKey: "a"
+        },
+        {
+          id: 17,
+          name: "Joshua",
+          keyField: 3,
+          otherKey: ["c", "d"]
+        }
+      ])
+    }).then(() => {
+      done()
+    }).catch((error) => {
+      fail(error)
+      done()
     })
   })
   

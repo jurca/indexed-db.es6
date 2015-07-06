@@ -281,11 +281,30 @@ myObjectStore.put({
 
 ```
 
+To update multiple records, use the `updateQuery` method:
+
+```
+myObjectStore.updateQuery(filter, sortBy, offset, limit)((record, id) => {
+  // modify the record or create a new one with the same ID
+  return modifiedRecord
+}).then(() => {
+  // query finished
+})
+```
+
 Records may be deleted using the `delete` method:
 
 ```
 myObjectStore.delete(primaryKeyOrFilter).then(() => {
   // the record(s) will be deleted when the transaction completes
+})
+```
+
+To delete multiple records, it is preferable to use the `deleteQuery` method:
+
+```
+myObjectStore.deleteQuery(filter, sortBy, offset, limit).then(() => {
+  // query finished
 })
 ```
 
