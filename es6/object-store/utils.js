@@ -148,7 +148,7 @@ export function partiallyOptimizeFilter(filter, keyPath) {
  *        expected values for those fields.
  * @param {string[]} keyPath The key path of the storage for which the filter
  *        is to be optimized.
- * @returns {{keyRange: IDBKeyRange, filter: ?function(*, (number|string|Date|Array)): boolean, score: number}}
+ * @return {{keyRange: IDBKeyRange, filter: ?function(*, (number|string|Date|Array)): boolean, score: number}}
  *         The IndexedDB key range to use with the native API, additional
  *         filtering predicate, and optimization score as a floating point
  *         number within the range [0, 1]. The score is set to 1 if all filter
@@ -183,7 +183,7 @@ function partiallyOptimizeKeyPathMatchingFilter(filter, keyPath) {
  * @param {string[]} filterFieldPaths All field paths in the filtering object.
  * @param {string[]} storageKeyPath The key path(s) of the storage for which
  *        the filtering object is being split.
- * @returns {{fieldsToOptimize: Object<string, *>, fieldsToCompile: Object<string, *>}}
+ * @return {{fieldsToOptimize: Object<string, *>, fieldsToCompile: Object<string, *>}}
  *          The {@code fieldsToOptimize} filter object will contain only the
  *          field paths specified in the {@code storageKeyPath}, while the
  *          {@code fieldsToCompile} will contain the remaining field paths of
