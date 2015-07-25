@@ -160,7 +160,7 @@ export default class UpgradedDatabaseSchema {
      * probably end up with a half-way done database schema migration if this
      * is not the schema of the greatest defined database version.
      *
-     * @type {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?Promise<undefined>}
+     * @type {function(Transaction, Object<string, {key: (number|string|Date|Array), record: *}[]>): ?PromiseSync<undefined>}
      */
     this.after = after || (() => {})
 
