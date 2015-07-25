@@ -212,7 +212,8 @@ export default class Database {
    * The object store accessor will be available for use only as long as the
    * created transaction is active.
    *
-   * @param {ReadOnlyObjectStore} A read-only access to the specified object
+   * @param {string} objectStoreName The name of the object store.
+   * @return {ReadOnlyObjectStore} A read-only access to the specified object
    *        store using a new read-only transaction.
    * @see startReadOnlyTransaction(...objectStoreNames)
    */
