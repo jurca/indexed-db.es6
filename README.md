@@ -29,6 +29,10 @@ the native IndexedDB:
 
 ## Quickstart
 
+Here you will find the basic information on how to use the indexed-db.es6
+library. Please check the [Wiki](https://github.com/jurca/indexed-db.es6/wiki)
+for a more detailed description and examples.
+
 You can install the indexed-db.es6 library into your project using bower:
 
 ```
