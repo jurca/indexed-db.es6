@@ -270,25 +270,29 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {?number} limit The maximum number of records to modify. The limit
    *        must be a positive integer, or {@code null} if no limit should be
    *        imposed.
-   * @return {function(function(*, (number|string|Date|Array)): *): PromiseSync<undefined>}
+   * @return {function(function(*, (number|string|Date|Array)): *): PromiseSync<number>}
    *         A factory function that accepts a callback that will be executed
    *         on each record and its primary key. The value returned by the
    *         callback will be saved in place of the original record. The
    *         factory function returns a promise that will resolve once all
-   *         records have been processed.
+   *         records have been processed. The promise resolves to the number of
+   *         updated records.
    */
   updateQuery(filter = null, order = CursorDirection.NEXT, offset = 0,
       limit = null) {
     return (recordCallback) => {
+      let recordCount = 0
+
       return executeQuery(this, filter, order, offset, limit, (record, id) => {
         let newRecord = recordCallback(record, id)
+        recordCount++
 
         if (this.keyPath) {
           this.put(newRecord)
         } else {
           this.put(newRecord, id)
         }
-      })
+      }).then(() => recordCount)
     }
   }
 
@@ -354,13 +358,17 @@ export default class ObjectStore extends ReadOnlyObjectStore {
    * @param {?number} limit The maximum number of records to delete. The limit
    *        must be a positive integer, or {@code null} if no limit should be
    *        imposed.
-   * @return {PromiseSync<undefined>} A promise resolved when the records have
-   *         been deleted.
+   * @return {PromiseSync<number>} A promise resolved when the records have
+   *         been deleted. The promise resolves to the number of deleted
+   *         records.
    */
   deleteQuery(filter = null, order = CursorDirection.NEXT, offset = 0,
       limit = null) {
+    let recordCount = 0
+
     return executeQuery(this, filter, order, offset, limit, (record, id) => {
       this.delete(id)
-    })
+      recordCount++
+    }).then(() => recordCount)
   }
 }

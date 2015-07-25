@@ -91,13 +91,17 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         var limit = arguments[3] !== (void 0) ? arguments[3] : null;
         var $__14 = this;
         return function(recordCallback) {
+          var recordCount = 0;
           return executeQuery($__14, filter, order, offset, limit, function(record, id) {
             var newRecord = recordCallback(record, id);
+            recordCount++;
             if ($__14.keyPath) {
               $__14.put(newRecord);
             } else {
               $__14.put(newRecord, id);
             }
+          }).then(function() {
+            return recordCount;
           });
         };
       },
@@ -107,8 +111,12 @@ define(["../PromiseSync", "./ReadOnlyObjectStore", "./Cursor", "./CursorDirectio
         var offset = arguments[2] !== (void 0) ? arguments[2] : 0;
         var limit = arguments[3] !== (void 0) ? arguments[3] : null;
         var $__14 = this;
+        var recordCount = 0;
         return executeQuery(this, filter, order, offset, limit, function(record, id) {
           $__14.delete(id);
+          recordCount++;
+        }).then(function() {
+          return recordCount;
         });
       }
     }, {}, $__super);

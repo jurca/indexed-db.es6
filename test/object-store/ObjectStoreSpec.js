@@ -192,6 +192,8 @@ describe("ObjectStore", () => {
         id: 14,
         name: "Big boy"
       }
+    }).then((recordCount) => {
+      expect(recordCount).toBe(1)
     })
 
     transaction.completionPromise.then(() => {
@@ -212,7 +214,9 @@ describe("ObjectStore", () => {
   })
 
   it("should execute a delete query", (done) => {
-    objectStore.deleteQuery(null, "!id", 1, 1)
+    objectStore.deleteQuery(null, "!id", 1, 1).then((recordCount) => {
+      expect(recordCount).toBe(1)
+    })
 
     transaction.completionPromise.then(() => {
       return database.runTransaction(OBJECT_STORE_NAME, (objectStore) => {
