@@ -60,7 +60,7 @@ bower install --save requirejs
 To use indexed-db.es6 to create and connect to a database, use the `DBFactory`
 class:
 
-```
+```javascript
 import DBFactory from "bower_components/indexed-db.es6/DBFactory"
 
 DBFactory.open("my database", {
@@ -89,7 +89,7 @@ the default value is meant to be used (see the schema classes).
 Alternatively, if you preffer, you may use the following syntax to specify your
 database schema:
 
-```
+```javascript
 import DBFactory from "bower_components/indexed-db.es6/DBFactory"
 import DatabaseSchema from
     "bower_components/indexed-db.es6/schema/DatabaseSchema"
@@ -119,8 +119,8 @@ To start a transaction, you need to specify whether the transaction should be
 a read-only or read-write transaction, and the names of the object stores you
 want to access in the transaction:
 
-```
-database.runReadOnlyTransaction(["foo", "bar], (foo, bar, abort) => {
+```javascript
+database.runReadOnlyTransaction(["foo", "bar"], (foo, bar, abort) => {
   // do some stuff, or abort the transaction by calling abort()
 }).then((result) => {
   // Do something with the result of the promise returned from the transaction
@@ -158,7 +158,7 @@ access to only a single object store.
 To fetch records from object stores (or through indexes), you can either fetch
 single records:
 
-```
+```javascript
 myObjectStore.get(primaryKey).then((record) => {
   // do something
 })
@@ -167,7 +167,7 @@ myObjectStore.get(primaryKey).then((record) => {
 ...or execute a query (the API will attempt to use the defined indexes to
 optimize the performance):
 
-```
+```javascript
 myObjectStore.query(filter, sortBy, offset, limit).then((records) => {
   // do something
 })
@@ -176,7 +176,7 @@ myObjectStore.query(filter, sortBy, offset, limit).then((records) => {
 If that is too fancy for you, you can go more low-level to iterate through the
 records:
 
-```
+```javascript
 import CursorDirection from
     "bower_components/indexed-db.es6/object-store/CursorDirection"
 // or you can import the NEXT and PREVIOUS constants like this:
@@ -203,7 +203,7 @@ myObjectStore.forEach(someFilter, "previous", (record) => {
 
 ...or fetch all records to an array:
 
-```
+```javascript
 myObjectStore.getAll(optionalFilter, optionalDirection).then((allRecords) => {
   // do something
 })
@@ -211,7 +211,7 @@ myObjectStore.getAll(optionalFilter, optionalDirection).then((allRecords) => {
 
 ...or just count records matching a filter:
 
-```
+```javascript
 myObjectStore.count(optionalFilter).then((recordCount) => {
   // do something with the record count
 })
@@ -222,7 +222,7 @@ which allows processing the records in "pages", allowing you to fetch the next
 page of records lazily even if the original transaction has already been
 terminated:
 
-```
+```javascript
 import CursorDirection from
     "bower_components/indexed-db.es6/object-store/CursorDirection"
 
@@ -251,7 +251,7 @@ All operations listed here are available only within a read-write transaction.
 
 New records can be created in an object store using the `add` method:
 
-```
+```javascript
 myObjectStore.add("this is a record").then((primaryKey) => {
   // record will be added when the transaction completes
 })
@@ -266,7 +266,7 @@ myObjectStore.add({
 
 Existing records may be updated using the `put` method:
 
-```
+```javascript
 myObjectStore.put({
   id: 123,
   updated: new Date(),
@@ -289,7 +289,7 @@ myObjectStore.put({
 
 To update multiple records, use the `updateQuery` method:
 
-```
+```javascript
 myObjectStore.updateQuery(filter, sortBy, offset, limit)((record, id) => {
   // modify the record or create a new one with the same ID
   return modifiedRecord
@@ -300,7 +300,7 @@ myObjectStore.updateQuery(filter, sortBy, offset, limit)((record, id) => {
 
 Records may be deleted using the `delete` method:
 
-```
+```javascript
 myObjectStore.delete(primaryKeyOrFilter).then(() => {
   // the record(s) will be deleted when the transaction completes
 })
@@ -308,7 +308,7 @@ myObjectStore.delete(primaryKeyOrFilter).then(() => {
 
 To delete multiple records, it is preferable to use the `deleteQuery` method:
 
-```
+```javascript
 myObjectStore.deleteQuery(filter, sortBy, offset, limit).then(() => {
   // query finished
 })
@@ -317,7 +317,7 @@ myObjectStore.deleteQuery(filter, sortBy, offset, limit).then(() => {
 Finally, you may delete all records in an object store using the `clear`
 method:
 
-```
+```javascript
 myObjectStore.clear().then(() => {
   // the object store will be empty when the transaction completes
 })
