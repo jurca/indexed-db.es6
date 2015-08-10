@@ -37,5 +37,10 @@
   },
   "dependencies": {
     "traceur": "0.0.90"
+  },
+  "browserify": {
+    "transform": [
+      "babelify"
+    ]
   }
 }
