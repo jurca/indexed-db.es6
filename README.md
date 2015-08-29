@@ -33,7 +33,13 @@ Here you will find the basic information on how to use the indexed-db.es6
 library. Please check the [Wiki](https://github.com/jurca/indexed-db.es6/wiki)
 for a more detailed description and examples.
 
-You can install the indexed-db.es6 library into your project using bower:
+You can install the indexed-db.es6 library into your project using npm:
+
+```
+npm install --save indexed-db.es6
+```
+
+...or using bower:
 
 ```
 bower install --save indexed-db.es6
@@ -46,6 +52,8 @@ install traceur into your project by running either the following command:
 ```
 npm install --save traceur
 ```
+
+...or you can use Babel instead and transpile the ES6 sources yourself.
 
 Aditionally, if you want to use indexed-db.es6 with
 [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules instead of ES6, you
