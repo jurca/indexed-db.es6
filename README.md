@@ -45,19 +45,22 @@ npm install --save indexed-db.es6
 bower install --save indexed-db.es6
 ```
 
-You will need the Traceur compiler (at least the runtime) to use
-indexed-db.es6. Since there is no official bower package for this, you can
-install traceur into your project by running either the following command:
+Next you can choose to use either the ES6 modules (located in `es6/`), or the
+precompiled ES5 AMD modules (located in `amd/`), or you may use any transpiler
+you like (for example Traceur or Babel) to transpile the ES6 modules to a
+module system of your choice.
+
+To use the bundled AMD modules, you will need the Traceur compiler (at least
+the runtime). Since there is no official bower package for this, you can
+install Traceur into your project by running the following command:
 
 ```
 npm install --save traceur
 ```
 
-...or you can use Babel instead and transpile the ES6 sources yourself.
-
-Aditionally, if you want to use indexed-db.es6 with
-[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules instead of ES6, you
-will need an AMD module loader, for example requirejs:
+Note that if you want to use indexed-db.es6 with
+[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules, you will need an
+AMD module loader, for example requirejs:
 
 ```
 bower install --save requirejs
