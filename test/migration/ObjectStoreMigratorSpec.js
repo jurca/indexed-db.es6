@@ -1,8 +1,8 @@
 
-import PromiseSync from "../../es6/PromiseSync"
-import ObjectStoreMigrator from "../../es6/migration/ObjectStoreMigrator"
-import IndexSchema from "../../es6/schema/IndexSchema"
-import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
+import PromiseSync from "../../es2015/PromiseSync"
+import ObjectStoreMigrator from "../../es2015/migration/ObjectStoreMigrator"
+import IndexSchema from "../../es2015/schema/IndexSchema"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
 
 describe("ObjectStoreMigrator", () => {
   

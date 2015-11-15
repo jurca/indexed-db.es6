@@ -5,7 +5,7 @@
 [![Bower](http://img.shields.io/bower/v/indexed-db.es6.svg)](http://bower.io/search/?q=indexed-db.es6)
 [![License](https://img.shields.io/npm/l/indexed-db.es6.svg)](LICENSE)
 
-The indexed-db.es6 is ES6-style wrapper of the native
+The indexed-db.es6 is ES2015-style wrapper of the native
 [IndexedDB](http://www.w3.org/TR/IndexedDB/) HTML5
 [document-oriented database](http://en.wikipedia.org/wiki/Document-oriented_database).
 
@@ -23,7 +23,7 @@ the native IndexedDB:
 - advanced query API
 - record lists allowing lazy-fetching of "pages" of records
 - very-well documented code :)
-- API split into ES6 modules
+- API split into ES2015 modules
 - practically all native IndexedDB features are available through the API
 
 ## Quickstart
@@ -44,9 +44,9 @@ npm install --save indexed-db.es6
 bower install --save indexed-db.es6
 ```
 
-Next you can choose to use either the ES6 modules (located in `es6/`), or you
-may use any transpiler you like (for example Babel or Traceur) to transpile the
-ES6 modules to a module system of your choice.
+Next you can choose to use either the ES2015 modules (located in `es2015/`), or
+you may use any transpiler you like (for example Babel or Traceur) to transpile
+the ES2015 modules to a module system of your choice.
 
 ### Connecting to a database
 
@@ -54,7 +54,7 @@ To use indexed-db.es6 to create and connect to a database, use the `DBFactory`
 class:
 
 ```javascript
-import DBFactory from "indexed-db.es6/es6/DBFactory"
+import DBFactory from "indexed-db.es6/es2015/DBFactory"
 
 DBFactory.open("my database", {
   version: 1,
@@ -79,14 +79,14 @@ DBFactory.open("my database", {
 When using plain objects to describe the schema, many fields may be left out if
 the default value is meant to be used (see the schema classes).
 
-Alternatively, if you preffer, you may use the following syntax to specify your
+Alternatively, if you prefer, you may use the following syntax to specify your
 database schema:
 
 ```javascript
-import DBFactory from "indexed-db.es6/es6/DBFactory"
-import DatabaseSchema from "indexed-db.es6/es6/schema/DatabaseSchema"
-import ObjectStoreSchema from "indexed-db.es6/es6/schema/ObjectStoreSchema"
-import IndexSchema from "indexed-db.es6/es6/schema/IndexSchema"
+import DBFactory from "indexed-db.es6/es2015/DBFactory"
+import DatabaseSchema from "indexed-db.es6/es2015/schema/DatabaseSchema"
+import ObjectStoreSchema from "indexed-db.es6/es2015/schema/ObjectStoreSchema"
+import IndexSchema from "indexed-db.es6/es2015/schema/IndexSchema"
 
 DBFactory.open("my database",
   new DatabaseSchema(1,
@@ -168,10 +168,11 @@ If that is too fancy for you, you can go more low-level to iterate through the
 records:
 
 ```javascript
-import CursorDirection from "indexed-db.es6/es6/object-store/CursorDirection"
+import CursorDirection
+    from "indexed-db.es6/es2015/object-store/CursorDirection"
 // or you can import the NEXT and PREVIOUS constants like this:
 // import {NEXT, PREVIOUS}
-//     from "indexed-db.es6/es6/object-store/CursorDirection"
+//     from "indexed-db.es6/es2015/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
@@ -213,7 +214,8 @@ page of records lazily even if the original transaction has already been
 terminated:
 
 ```javascript
-import CursorDirection from "indexed-db.es6/es6/object-store/CursorDirection"
+import CursorDirection
+    from "indexed-db.es6/es2015/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
@@ -320,7 +322,7 @@ native Indexed DB API.
 
 The source code is well documented using [JSDoc](http://usejsdoc.org/) docblock
 comments. Go ahead and
-[take a look](https://github.com/jurca/indexed-db.es6/tree/master/es6)!
+[take a look](https://github.com/jurca/indexed-db.es6/tree/master/es2015)!
 
 ## Browser support
 

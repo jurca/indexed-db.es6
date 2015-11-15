@@ -1,9 +1,9 @@
 
-import PromiseSync from "../../es6/PromiseSync"
+import PromiseSync from "../../es2015/PromiseSync"
 import DatabaseVersionMigrator
-    from "../../es6/migration/DatabaseVersionMigrator"
-import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
-import IndexSchema from "../../es6/schema/IndexSchema"
+    from "../../es2015/migration/DatabaseVersionMigrator"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
+import IndexSchema from "../../es2015/schema/IndexSchema"
 
 describe("DatabaseVersionMigrator", () => {
   
