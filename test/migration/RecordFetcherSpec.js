@@ -1,6 +1,6 @@
 
-import RecordFetcher from "../../amd/migration/RecordFetcher"
-import UpgradedDatabaseSchema from "../../amd/schema/UpgradedDatabaseSchema"
+import RecordFetcher from "../../es6/migration/RecordFetcher"
+import UpgradedDatabaseSchema from "../../es6/schema/UpgradedDatabaseSchema"
 
 describe("RecordFetcher", () => {
   

@@ -1,10 +1,10 @@
 
-import DatabaseMigrator from "../../amd/migration/DatabaseMigrator"
-import DatabaseSchema from "../../amd/schema/DatabaseSchema"
-import DBFactory from "../../amd/DBFactory"
-import PromiseSync from "../../amd/PromiseSync"
-import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema from "../../amd/schema/UpgradedDatabaseSchema"
+import DatabaseMigrator from "../../es6/migration/DatabaseMigrator"
+import DatabaseSchema from "../../es6/schema/DatabaseSchema"
+import DBFactory from "../../es6/DBFactory"
+import PromiseSync from "../../es6/PromiseSync"
+import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
+import UpgradedDatabaseSchema from "../../es6/schema/UpgradedDatabaseSchema"
 
 describe("DatabaseMigrator", () => {
   

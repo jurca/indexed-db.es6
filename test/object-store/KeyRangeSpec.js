@@ -1,6 +1,6 @@
 
-import KeyRange from "../../amd/object-store/KeyRange"
-import {range} from "../../amd/object-store/KeyRange"
+import KeyRange from "../../es6/object-store/KeyRange"
+import {range} from "../../es6/object-store/KeyRange"
 
 describe("KeyRange", () => {
 

@@ -1,11 +1,11 @@
 
-import DBFactory from "../../amd/DBFactory"
-import PromiseSync from "../../amd/PromiseSync"
-import CursorDirection from "../../amd/object-store/CursorDirection"
-import KeyRange from "../../amd/object-store/KeyRange"
-import DatabaseSchema from "../../amd/schema/DatabaseSchema"
-import IndexSchema from "../../amd/schema/IndexSchema"
-import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
+import DBFactory from "../../es6/DBFactory"
+import PromiseSync from "../../es6/PromiseSync"
+import CursorDirection from "../../es6/object-store/CursorDirection"
+import KeyRange from "../../es6/object-store/KeyRange"
+import DatabaseSchema from "../../es6/schema/DatabaseSchema"
+import IndexSchema from "../../es6/schema/IndexSchema"
+import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
 
 describe("ObjectStore", () => {
 

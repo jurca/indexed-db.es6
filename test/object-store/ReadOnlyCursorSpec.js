@@ -1,8 +1,8 @@
 
-import DBFactory from "../../amd/DBFactory"
-import CursorDirection from "../../amd/object-store/CursorDirection"
-import DatabaseSchema from "../../amd/schema/DatabaseSchema"
-import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
+import DBFactory from "../../es6/DBFactory"
+import CursorDirection from "../../es6/object-store/CursorDirection"
+import DatabaseSchema from "../../es6/schema/DatabaseSchema"
+import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
 
 describe("ReadOnlyCursor", () => {
 

@@ -1,9 +1,9 @@
 
-import PromiseSync from "../../amd/PromiseSync"
+import PromiseSync from "../../es6/PromiseSync"
 import DatabaseVersionMigrator
-    from "../../amd/migration/DatabaseVersionMigrator"
-import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
-import IndexSchema from "../../amd/schema/IndexSchema"
+    from "../../es6/migration/DatabaseVersionMigrator"
+import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
+import IndexSchema from "../../es6/schema/IndexSchema"
 
 describe("DatabaseVersionMigrator", () => {
   

@@ -1,8 +1,8 @@
 
-import PromiseSync from "../../amd/PromiseSync"
-import ObjectStoreMigrator from "../../amd/migration/ObjectStoreMigrator"
-import IndexSchema from "../../amd/schema/IndexSchema"
-import ObjectStoreSchema from "../../amd/schema/ObjectStoreSchema"
+import PromiseSync from "../../es6/PromiseSync"
+import ObjectStoreMigrator from "../../es6/migration/ObjectStoreMigrator"
+import IndexSchema from "../../es6/schema/IndexSchema"
+import ObjectStoreSchema from "../../es6/schema/ObjectStoreSchema"
 
 describe("ObjectStoreMigrator", () => {
   

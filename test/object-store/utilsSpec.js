@@ -1,11 +1,11 @@
 
-import KeyRange from "../../amd/object-store/KeyRange"
+import KeyRange from "../../es6/object-store/KeyRange"
 import {
   keyRangeToFieldRangeObject,
   compileFieldRangeFilter,
   normalizeFilter,
   compileOrderingFieldPaths
-} from "../../amd/object-store/utils"
+} from "../../es6/object-store/utils"
 
 describe("utils", () => {
   

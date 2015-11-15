@@ -1,5 +1,5 @@
 
-import PromiseSync from "../amd/PromiseSync"
+import PromiseSync from "../es6/PromiseSync"
 
 describe("PromiseSync", () => {
   
