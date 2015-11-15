@@ -13,6 +13,7 @@
   "keywords": [
     "indexeddb",
     "es6",
+    "es2015",
     "promise",
     "db",
     "html5"
@@ -23,20 +24,15 @@
     "url": "https://github.com/jurca/indexed-db.es6/issues"
   },
   "devDependencies": {
-    "grunt": "^0.4.5",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-traceur": "^0.5.2",
     "jasmine-core": "^2.2.0",
     "karma": "^0.12.31",
     "karma-chrome-launcher": "^0.1.7",
     "karma-firefox-launcher": "^0.1.4",
     "karma-jasmine": "^0.3.5",
     "karma-requirejs": "^0.2.2",
-    "karma-traceur-preprocessor": "^0.4.0",
-    "requirejs": "^2.1.16"
+    "karma-traceur-preprocessor": "^0.4.0"
   },
   "dependencies": {
-    "traceur": "0.0.90"
   },
   "browserify": {
     "transform": [

@@ -21,10 +21,9 @@ the native IndexedDB:
 - read-only transactions expose only read-only API
 - support for advanced record filtering
 - advanced query API
-- record lists with lazy-fetching of "pages" of records
+- record lists allowing lazy-fetching of "pages" of records
 - very-well documented code :)
-- API split into ES6 modules in the source code, available as ES6 modules or
-  AMD modules
+- API split into ES6 modules
 - practically all native IndexedDB features are available through the API
 
 ## Quickstart
@@ -45,26 +44,9 @@ npm install --save indexed-db.es6
 bower install --save indexed-db.es6
 ```
 
-Next you can choose to use either the ES6 modules (located in `es6/`), or the
-precompiled ES5 AMD modules (located in `amd/`), or you may use any transpiler
-you like (for example Traceur or Babel) to transpile the ES6 modules to a
-module system of your choice.
-
-To use the bundled AMD modules, you will need the Traceur compiler (at least
-the runtime). Since there is no official bower package for this, you can
-install Traceur into your project by running the following command:
-
-```
-npm install --save traceur
-```
-
-Note that if you want to use indexed-db.es6 with
-[AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) modules, you will need an
-AMD module loader, for example requirejs:
-
-```
-bower install --save requirejs
-```
+Next you can choose to use either the ES6 modules (located in `es6/`), or you
+may use any transpiler you like (for example Babel or Traceur) to transpile the
+ES6 modules to a module system of your choice.
 
 ### Connecting to a database
 
@@ -72,7 +54,7 @@ To use indexed-db.es6 to create and connect to a database, use the `DBFactory`
 class:
 
 ```javascript
-import DBFactory from "bower_components/indexed-db.es6/DBFactory"
+import DBFactory from "indexed-db.es6/DBFactory"
 
 DBFactory.open("my database", {
   version: 1,
@@ -101,12 +83,10 @@ Alternatively, if you preffer, you may use the following syntax to specify your
 database schema:
 
 ```javascript
-import DBFactory from "bower_components/indexed-db.es6/DBFactory"
-import DatabaseSchema from
-    "bower_components/indexed-db.es6/schema/DatabaseSchema"
-import ObjectStoreSchema from
-    "bower_components/indexed-db.es6/schema/ObjectStoreSchema"
-import IndexSchema from "bower_components/indexed-db.es6/schema/IndexSchema"
+import DBFactory from "indexed-db.es6/DBFactory"
+import DatabaseSchema from "indexed-db.es6/schema/DatabaseSchema"
+import ObjectStoreSchema from "indexed-db.es6/schema/ObjectStoreSchema"
+import IndexSchema from "indexed-db.es6/schema/IndexSchema"
 
 DBFactory.open("my database",
   new DatabaseSchema(1,
@@ -188,11 +168,9 @@ If that is too fancy for you, you can go more low-level to iterate through the
 records:
 
 ```javascript
-import CursorDirection from
-    "bower_components/indexed-db.es6/object-store/CursorDirection"
+import CursorDirection from "indexed-db.es6/object-store/CursorDirection"
 // or you can import the NEXT and PREVIOUS constants like this:
-// import {NEXT, PREVIOUS} from
-//     "bower_components/indexed-db.es6/object-store/CursorDirection"
+// import {NEXT, PREVIOUS} from "indexed-db.es6/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
@@ -234,8 +212,7 @@ page of records lazily even if the original transaction has already been
 terminated:
 
 ```javascript
-import CursorDirection from
-    "bower_components/indexed-db.es6/object-store/CursorDirection"
+import CursorDirection from "indexed-db.es6/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
@@ -361,11 +338,8 @@ The following browsers are theoretically compatible (each seems to use engine
 of one of the supported browsers), but not tested:
 
 - Android Browser (4.4+)
-- Chrome for iOS
-- Firefox for iOS
-- Opera for iOS
 
-The following browsers are not supported at the moment:
+The following browsers are not fully supported at the moment:
 
 - Internet Explorer: Does not support compound keys and key paths and no new
   versions are expected to be released
@@ -374,10 +348,16 @@ The following browsers are not supported at the moment:
     primary key, the next version should fix this
   - Requires Apple hardware to run legally
 - iOS Safari: same issues as Safari
+- Chrome for iOS: uses Safari-like UIWebView (due to Apple's App Store terms),
+  same issues as Safari
+- Firefox for iOS: uses Safari-like UIWebView (due to Apple's App Store terms),
+  same issues as Safari
+- Opera for iOS: uses Safari-like UIWebView (due to Apple's App Store terms),
+  same issues as Safari
 
 You can still use these browsers with `indexed-db.es6`, or any browser without
 any native IndexedDB support that supports
-[WebSQL](http://www.w3.org/TR/webdatabase/) using the
+[WebSQL](http://www.w3.org/TR/webdatabase/), using the
 [IndexedDBShim](https://github.com/axemclion/IndexedDBShim) polyfill.
 
 ## The current state of this project
