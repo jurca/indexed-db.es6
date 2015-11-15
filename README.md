@@ -54,7 +54,7 @@ To use indexed-db.es6 to create and connect to a database, use the `DBFactory`
 class:
 
 ```javascript
-import DBFactory from "indexed-db.es6/DBFactory"
+import DBFactory from "indexed-db.es6/es6/DBFactory"
 
 DBFactory.open("my database", {
   version: 1,
@@ -83,10 +83,10 @@ Alternatively, if you preffer, you may use the following syntax to specify your
 database schema:
 
 ```javascript
-import DBFactory from "indexed-db.es6/DBFactory"
-import DatabaseSchema from "indexed-db.es6/schema/DatabaseSchema"
-import ObjectStoreSchema from "indexed-db.es6/schema/ObjectStoreSchema"
-import IndexSchema from "indexed-db.es6/schema/IndexSchema"
+import DBFactory from "indexed-db.es6/es6/DBFactory"
+import DatabaseSchema from "indexed-db.es6/es6/schema/DatabaseSchema"
+import ObjectStoreSchema from "indexed-db.es6/es6/schema/ObjectStoreSchema"
+import IndexSchema from "indexed-db.es6/es6/schema/IndexSchema"
 
 DBFactory.open("my database",
   new DatabaseSchema(1,
@@ -168,9 +168,10 @@ If that is too fancy for you, you can go more low-level to iterate through the
 records:
 
 ```javascript
-import CursorDirection from "indexed-db.es6/object-store/CursorDirection"
+import CursorDirection from "indexed-db.es6/es6/object-store/CursorDirection"
 // or you can import the NEXT and PREVIOUS constants like this:
-// import {NEXT, PREVIOUS} from "indexed-db.es6/object-store/CursorDirection"
+// import {NEXT, PREVIOUS}
+//     from "indexed-db.es6/es6/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
@@ -212,7 +213,7 @@ page of records lazily even if the original transaction has already been
 terminated:
 
 ```javascript
-import CursorDirection from "indexed-db.es6/object-store/CursorDirection"
+import CursorDirection from "indexed-db.es6/es6/object-store/CursorDirection"
 
 // connect to the database, start a transaction
 
