@@ -1,6 +1,6 @@
 {
   "name": "indexed-db.es6",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "homepage": "https://github.com/jurca/indexed-db.es6",
   "authors": [
     "Martin Jurča <mjurca@centrum.cz>"
@@ -14,6 +14,7 @@
   "keywords": [
     "indexeddb",
     "es6",
+    "es2015",
     "promise",
     "db",
     "html5"
