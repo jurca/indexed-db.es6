@@ -5,39 +5,39 @@ module.exports = function(config) {
   config.set({
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '..',
+    basePath: "..",
 
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine', 'requirejs', 'traceur'],
+    frameworks: ["jasmine", "requirejs", "traceur"],
 
 
     // list of files / patterns to load in the browser
     files: [
-      {pattern: 'amd/**/*.js', included: false},
-      {pattern: 'test/**/*Spec.js', included: false},
-      'test/test-main.js'
+      {pattern: "amd/**/*.js", included: false},
+      {pattern: "test/**/*Spec.js", included: false},
+      "test/test-main.js"
     ],
 
 
     // list of files to exclude
     exclude: [
-      '**/*.swp'
+      "**/*.swp"
     ],
 
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'test/**/*Spec.js': ['traceur']
+      "test/**/*Spec.js": ["traceur"]
     },
 
 
     // test results reporter to use
-    // possible values: 'dots', 'progress'
+    // possible values: "dots", "progress"
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ["progress"],
 
 
     // web server port
@@ -59,7 +59,7 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Firefox'],
+    browsers: ["Firefox"],
 
 
     // Continuous Integration mode
