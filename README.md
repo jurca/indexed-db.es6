@@ -20,7 +20,7 @@ the native IndexedDB:
 - API does not expose the native schema-manipulation methods
 - read-only transactions expose only read-only API
 - support for advanced record filtering
-- advanced query API 
+- advanced query API
 - record lists with lazy-fetching of "pages" of records
 - very-well documented code :)
 - API split into ES6 modules in the source code, available as ES6 modules or
