@@ -15,8 +15,8 @@ the native IndexedDB:
 - declarative schema with data-migration support
 - [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)-oriented
   API
-- renaming of some declaratively-named methods (for example transaction) to
-  imperative names (startTransaction).
+- renaming of some declaratively-named methods (for example `transaction`) to
+  imperative names (`startTransaction`).
 - API does not expose the native schema-manipulation methods
 - read-only transactions expose only read-only API
 - support for advanced record filtering
