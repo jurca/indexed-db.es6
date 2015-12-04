@@ -38,9 +38,13 @@ describe("ReadOnlyTransaction", () => {
   })
   
   it("should provide promise rejected on abort", (done) => {
-    transaction.completionPromise.
-        then(() => fail("The transaction cannot complete if aborted")).
-        catch(() => done())
+    transaction.completionPromise.then(() => {
+      fail("The transaction cannot complete if aborted")
+      done()
+    }).catch((error) => {
+      expect(error.name).toBe("AbortError")
+      done()
+    })
         
     transaction.abort()
   })

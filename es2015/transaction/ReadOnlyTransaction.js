@@ -82,7 +82,9 @@ export default class ReadOnlyTransaction {
     this.completionPromise = new Promise((resolve, reject) => {
       this.addCompleteListener(resolve)
       this.addAbortListener(() => {
-        reject(new Error("The transaction has been aborted"))
+        let abortError = new Error("The transaction has been aborted")
+        abortError.name = "AbortError"
+        reject(abortError)
       })
       this.addErrorListener(reject)
     })
