@@ -11,7 +11,8 @@ const FIELDS = Object.freeze({
   objectStores: Symbol("objectStores"),
   completeListeners: Symbol("completeListeners"),
   abortListeners: Symbol("abortListeners"),
-  errorListeners: Symbol("errorListeners")
+  errorListeners: Symbol("errorListeners"),
+  flags: Symbol("flags")
 })
 
 /**
@@ -74,6 +75,15 @@ export default class ReadOnlyTransaction {
     this[FIELDS.errorListeners] = new Set()
 
     /**
+     * Flags used for tracking the state of the transaction.
+     *
+     * @type {{aborted: boolean}}
+     */
+    this[FIELDS.flags] = {
+      aborted: false
+    }
+
+    /**
      * A promise that resolves when the transaction is completed, and rejects
      * when it is aborted on encounters an unexpected error.
      *
@@ -86,7 +96,12 @@ export default class ReadOnlyTransaction {
         abortError.name = "AbortError"
         reject(abortError)
       })
-      this.addErrorListener(reject)
+      this.addErrorListener((error) => {
+        if (this[FIELDS.flags].aborted) {
+          return // the transaction has been manually aborted
+        }
+        reject(error)
+      })
     })
 
     transaction.oncomplete = () => {
@@ -175,6 +190,8 @@ export default class ReadOnlyTransaction {
    * the abort listeners registered on this transaction.
    */
   abort() {
+    this[FIELDS.flags].aborted = true
+    Object.freeze(this[FIELDS.flags])
     this[FIELDS.transaction].abort()
   }
 
