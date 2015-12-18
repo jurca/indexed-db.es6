@@ -61,8 +61,12 @@ describe("AbstractBaseStorage", () => {
     })
   })
   
-  it("should return undefined for nonexisting record", (done) => {
+  it("should return undefined for non-existing record", (done) => {
     objectStore.get(123).then((record) => {
+      expect(record).toBeUndefined()
+
+      return objectStore.get(new Date(123))
+    }).then((record) => {
       expect(record).toBeUndefined()
       
       return transaction.completionPromise

@@ -107,6 +107,7 @@ export default class AbstractBaseStorage {
    */
   get(key) {
     let isCompoundKeyObject = (key instanceof Object) &&
+        !(key instanceof Date) &&
         !(key instanceof IDBKeyRange)
     if (isCompoundKeyObject) {
       if (!(this.keyPath instanceof Array)) {
