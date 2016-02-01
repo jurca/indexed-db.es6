@@ -2,7 +2,7 @@
   "name": "indexed-db.es6",
   "version": "0.5.3",
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
-  "main": "es6/DBFactory.js",
+  "main": "es2015/DBFactory.js",
   "scripts": {
     "test": "./node_modules/karma/bin/karma start test/production.conf.js --single-run"
   },
@@ -31,8 +31,6 @@
     "karma-jasmine": "^0.3.5",
     "karma-requirejs": "^0.2.2",
     "karma-traceur-preprocessor": "^0.4.0"
-  },
-  "dependencies": {
   },
   "browserify": {
     "transform": [
