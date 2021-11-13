@@ -6,7 +6,7 @@
     "Martin Jurča <mjurca@centrum.cz>"
   ],
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
-  "main": "es6/DBFactory.js",
+  "main": "es2015/DBFactory.js",
   "moduleType": [
     "amd",
     "es6"
