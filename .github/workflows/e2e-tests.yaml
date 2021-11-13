@@ -1,0 +1,24 @@
+name: PageSentiment web browser extension package build automation
+on:
+  push:
+    branches:
+    - main
+  create:
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+"
+    - "[0-9]+.[0-9]+.[0-9]+-[0-9a-z]+"
+jobs:
+  run-e2e-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+        cache: npm
+        cache-dependency-path: package-lock.json
+    - run: test ! -d node_modules && npm ci
+    - name: Run E2E tests
+      uses: GabrielBB/xvfb-action@v1
+      with:
+        run: npm test
