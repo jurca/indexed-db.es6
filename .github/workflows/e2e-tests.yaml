@@ -1,4 +1,4 @@
-name: PageSentiment web browser extension package build automation
+name: Run E2E tests on headless Firefox
 on:
   push:
     branches:
