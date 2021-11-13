@@ -24,13 +24,13 @@
     "url": "https://github.com/jurca/indexed-db.es6/issues"
   },
   "devDependencies": {
-    "jasmine-core": "^2.2.0",
-    "karma": "^0.12.31",
-    "karma-chrome-launcher": "^0.1.7",
-    "karma-firefox-launcher": "^0.1.4",
-    "karma-jasmine": "^0.3.5",
-    "karma-requirejs": "^0.2.2",
-    "karma-traceur-preprocessor": "^0.4.0"
+    "jasmine-core": "^3.10.1",
+    "karma": "^6.3.8",
+    "karma-chrome-launcher": "^3.1.0",
+    "karma-firefox-launcher": "^2.1.2",
+    "karma-jasmine": "^4.0.1",
+    "karma-requirejs": "^1.1.0",
+    "karma-traceur-preprocessor": "^1.0.0"
   },
   "browserify": {
     "transform": [
