@@ -1,7 +1,7 @@
 
-import {idbProvider} from "../NativeDBAccessor"
-import KeyRange from "./KeyRange"
-import CursorDirection from "./CursorDirection"
+import {idbProvider} from "../NativeDBAccessor.js"
+import KeyRange from "./KeyRange.js"
+import CursorDirection from "./CursorDirection.js"
 
 /**
  * Private field symbols.

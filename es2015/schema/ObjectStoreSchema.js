@@ -1,6 +1,6 @@
 
-import IndexSchema from "./IndexSchema"
-import {getDuplicateNames} from "./validation"
+import IndexSchema from "./IndexSchema.js"
+import {getDuplicateNames} from "./validation.js"
 
 /**
  * Database object store schema descriptor.

@@ -1,8 +1,8 @@
 
-import PromiseSync from "../PromiseSync"
-import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage"
-import CursorDirection from "./CursorDirection"
-import ReadOnlyCursor from "./ReadOnlyCursor"
+import PromiseSync from "../PromiseSync.js"
+import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage.js"
+import CursorDirection from "./CursorDirection.js"
+import ReadOnlyCursor from "./ReadOnlyCursor.js"
 
 /**
  * Values allowed as cursor directions.

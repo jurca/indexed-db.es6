@@ -1,8 +1,8 @@
 
-import PromiseSync from "../PromiseSync"
-import CursorDirection from "../object-store/CursorDirection"
-import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema"
-import Transaction from "../transaction/Transaction"
+import PromiseSync from "../PromiseSync.js"
+import CursorDirection from "../object-store/CursorDirection.js"
+import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema.js"
+import Transaction from "../transaction/Transaction.js"
 
 /**
  * Utility for fetching (and deleting) records from a database for the purpose

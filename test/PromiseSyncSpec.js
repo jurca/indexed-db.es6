@@ -1,5 +1,5 @@
 
-import PromiseSync from "../es2015/PromiseSync"
+import PromiseSync from "../es2015/PromiseSync.js"
 
 describe("PromiseSync", () => {
   

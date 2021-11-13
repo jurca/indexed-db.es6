@@ -1,8 +1,8 @@
 
-import {idbProvider} from "../NativeDBAccessor"
-import CursorDirection from "./CursorDirection"
+import {idbProvider} from "../NativeDBAccessor.js"
+import CursorDirection from "./CursorDirection.js"
 import {normalizeFilter, compileOrderingFieldPaths, partiallyOptimizeFilter}
-    from "./utils"
+    from "./utils.js"
 
 /**
  * Allowed cursor direction values.

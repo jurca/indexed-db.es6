@@ -1,11 +1,11 @@
 
-import PromiseSync from "../PromiseSync"
-import ReadOnlyObjectStore from "./ReadOnlyObjectStore"
-import Cursor from "./Cursor"
-import CursorDirection from "./CursorDirection"
-import Index from "./Index"
-import executeQuery from "./query-engine"
-import {normalizeFilter} from "./utils"
+import PromiseSync from "../PromiseSync.js"
+import ReadOnlyObjectStore from "./ReadOnlyObjectStore.js"
+import Cursor from "./Cursor.js"
+import CursorDirection from "./CursorDirection.js"
+import Index from "./Index.js"
+import executeQuery from "./query-engine.js"
+import {normalizeFilter} from "./utils.js"
 
 /**
  * Private field symbols.

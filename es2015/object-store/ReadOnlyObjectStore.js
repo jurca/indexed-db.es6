@@ -1,8 +1,8 @@
 
-import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage"
-import CursorDirection from "./CursorDirection"
-import ReadOnlyIndex from "./ReadOnlyIndex"
-import executeQuery from "./query-engine"
+import AbstractReadOnlyStorage from "./AbstractReadOnlyStorage.js"
+import CursorDirection from "./CursorDirection.js"
+import ReadOnlyIndex from "./ReadOnlyIndex.js"
+import executeQuery from "./query-engine.js"
 
 /**
  * Private field symbols.

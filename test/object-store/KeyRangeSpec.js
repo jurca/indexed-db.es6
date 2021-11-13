@@ -1,6 +1,6 @@
 
-import KeyRange from "../../es2015/object-store/KeyRange"
-import {range} from "../../es2015/object-store/KeyRange"
+import KeyRange from "../../es2015/object-store/KeyRange.js"
+import {range} from "../../es2015/object-store/KeyRange.js"
 
 describe("KeyRange", () => {
 

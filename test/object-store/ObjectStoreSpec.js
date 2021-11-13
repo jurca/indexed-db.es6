@@ -1,11 +1,11 @@
 
-import DBFactory from "../../es2015/DBFactory"
-import PromiseSync from "../../es2015/PromiseSync"
-import CursorDirection from "../../es2015/object-store/CursorDirection"
-import KeyRange from "../../es2015/object-store/KeyRange"
-import DatabaseSchema from "../../es2015/schema/DatabaseSchema"
-import IndexSchema from "../../es2015/schema/IndexSchema"
-import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
+import DBFactory from "../../es2015/DBFactory.js"
+import PromiseSync from "../../es2015/PromiseSync.js"
+import CursorDirection from "../../es2015/object-store/CursorDirection.js"
+import KeyRange from "../../es2015/object-store/KeyRange.js"
+import DatabaseSchema from "../../es2015/schema/DatabaseSchema.js"
+import IndexSchema from "../../es2015/schema/IndexSchema.js"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema.js"
 
 describe("ObjectStore", () => {
 

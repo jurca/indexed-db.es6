@@ -1,14 +1,14 @@
 
-import PromiseSync from "../PromiseSync"
-import AbstractBaseStorage from "./AbstractBaseStorage"
-import CursorDirection from "./CursorDirection"
-import KeyRange from "./KeyRange"
-import RecordList from "./RecordList"
+import PromiseSync from "../PromiseSync.js"
+import AbstractBaseStorage from "./AbstractBaseStorage.js"
+import CursorDirection from "./CursorDirection.js"
+import KeyRange from "./KeyRange.js"
+import RecordList from "./RecordList.js"
 import {
   compileFieldRangeFilter,
   normalizeFilter,
   keyRangeToFieldRangeObject
-} from "./utils"
+} from "./utils.js"
 
 /**
  * Private field symbols.

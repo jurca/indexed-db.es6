@@ -1,5 +1,5 @@
 
-import {isVersionValid, getDuplicateNames} from "./validation"
+import {isVersionValid, getDuplicateNames} from "./validation.js"
 
 /**
  * Record preprocessors (used in the {@linkcode fetchBefore}) return this token

@@ -1,8 +1,8 @@
 
-import DBFactory from "../../es2015/DBFactory"
-import CursorDirection from "../../es2015/object-store/CursorDirection"
-import DatabaseSchema from "../../es2015/schema/DatabaseSchema"
-import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
+import DBFactory from "../../es2015/DBFactory.js"
+import CursorDirection from "../../es2015/object-store/CursorDirection.js"
+import DatabaseSchema from "../../es2015/schema/DatabaseSchema.js"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema.js"
 
 describe("ReadOnlyCursor", () => {
 

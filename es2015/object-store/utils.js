@@ -1,6 +1,6 @@
 
-import {idbProvider} from "../NativeDBAccessor"
-import KeyRange from "./KeyRange"
+import {idbProvider} from "../NativeDBAccessor.js"
+import KeyRange from "./KeyRange.js"
 
 /**
  * Converts the provided key range object into a field range map object.

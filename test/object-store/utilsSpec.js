@@ -1,11 +1,11 @@
 
-import KeyRange from "../../es2015/object-store/KeyRange"
+import KeyRange from "../../es2015/object-store/KeyRange.js"
 import {
   keyRangeToFieldRangeObject,
   compileFieldRangeFilter,
   normalizeFilter,
   compileOrderingFieldPaths
-} from "../../es2015/object-store/utils"
+} from "../../es2015/object-store/utils.js"
 
 describe("utils", () => {
   

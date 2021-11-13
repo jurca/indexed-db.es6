@@ -1,6 +1,6 @@
 
-import PromiseSync from "../PromiseSync"
-import CursorDirection from "./CursorDirection"
+import PromiseSync from "../PromiseSync.js"
+import CursorDirection from "./CursorDirection.js"
 
 /**
  * Private field symbols.

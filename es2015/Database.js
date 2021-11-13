@@ -1,6 +1,6 @@
 
-import ReadOnlyTransaction from "./transaction/ReadOnlyTransaction"
-import Transaction from "./transaction/Transaction"
+import ReadOnlyTransaction from "./transaction/ReadOnlyTransaction.js"
+import Transaction from "./transaction/Transaction.js"
 
 /**
  * Constants representing the available transaction modes.

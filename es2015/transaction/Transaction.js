@@ -1,6 +1,6 @@
 
-import ObjectStore from "../object-store/ObjectStore"
-import ReadOnlyTransaction from "./ReadOnlyTransaction"
+import ObjectStore from "../object-store/ObjectStore.js"
+import ReadOnlyTransaction from "./ReadOnlyTransaction.js"
 
 /**
  * Private field symbols.

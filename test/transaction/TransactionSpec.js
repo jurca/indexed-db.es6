@@ -1,7 +1,7 @@
 
-import DBFactory from "../../es2015/DBFactory"
-import DatabaseSchema from "../../es2015/schema/DatabaseSchema"
-import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
+import DBFactory from "../../es2015/DBFactory.js"
+import DatabaseSchema from "../../es2015/schema/DatabaseSchema.js"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema.js"
 
 describe("Transaction", () => {
   const DB_NAME = "testing database"

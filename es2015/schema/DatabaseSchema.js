@@ -1,5 +1,5 @@
 
-import {isVersionValid, getDuplicateNames} from "./validation"
+import {isVersionValid, getDuplicateNames} from "./validation.js"
 
 /**
  * Descriptor of database schema used to describe the schema ONLY FOR the

@@ -1,7 +1,7 @@
 
-import PromiseSync from "../PromiseSync"
-import Transaction from "../transaction/Transaction"
-import ObjectStoreMigrator from "./ObjectStoreMigrator"
+import PromiseSync from "../PromiseSync.js"
+import Transaction from "../transaction/Transaction.js"
+import ObjectStoreMigrator from "./ObjectStoreMigrator.js"
 
 /**
  * Private field symbols.

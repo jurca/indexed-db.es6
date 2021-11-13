@@ -54,7 +54,7 @@ To use indexed-db.es6 to create and connect to a database, use the `DBFactory`
 class:
 
 ```javascript
-import DBFactory from "indexed-db.es6/es2015/DBFactory"
+import DBFactory from "indexed-db.es6/es2015/DBFactory.js"
 
 DBFactory.open("my database", {
   version: 1,
@@ -83,10 +83,10 @@ Alternatively, if you prefer, you may use the following syntax to specify your
 database schema:
 
 ```javascript
-import DBFactory from "indexed-db.es6/es2015/DBFactory"
-import DatabaseSchema from "indexed-db.es6/es2015/schema/DatabaseSchema"
-import ObjectStoreSchema from "indexed-db.es6/es2015/schema/ObjectStoreSchema"
-import IndexSchema from "indexed-db.es6/es2015/schema/IndexSchema"
+import DBFactory from "indexed-db.es6/es2015/DBFactory.js"
+import DatabaseSchema from "indexed-db.es6/es2015/schema/DatabaseSchema.js"
+import ObjectStoreSchema from "indexed-db.es6/es2015/schema/ObjectStoreSchema.js"
+import IndexSchema from "indexed-db.es6/es2015/schema/IndexSchema.js"
 
 DBFactory.open("my database",
   new DatabaseSchema(1,
@@ -169,7 +169,7 @@ records:
 
 ```javascript
 import CursorDirection
-    from "indexed-db.es6/es2015/object-store/CursorDirection"
+    from "indexed-db.es6/es2015/object-store/CursorDirection.js"
 // or you can import the NEXT and PREVIOUS constants like this:
 // import {NEXT, PREVIOUS}
 //     from "indexed-db.es6/es2015/object-store/CursorDirection"
@@ -215,7 +215,7 @@ terminated:
 
 ```javascript
 import CursorDirection
-    from "indexed-db.es6/es2015/object-store/CursorDirection"
+    from "indexed-db.es6/es2015/object-store/CursorDirection.js"
 
 // connect to the database, start a transaction
 

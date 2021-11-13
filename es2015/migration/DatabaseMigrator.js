@@ -1,9 +1,9 @@
 
-import PromiseSync from "../PromiseSync"
-import RecordFetcher from "./RecordFetcher"
-import DatabaseVersionMigrator from "./DatabaseVersionMigrator"
-import DatabaseSchema from "../schema/DatabaseSchema"
-import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema"
+import PromiseSync from "../PromiseSync.js"
+import RecordFetcher from "./RecordFetcher.js"
+import DatabaseVersionMigrator from "./DatabaseVersionMigrator.js"
+import DatabaseSchema from "../schema/DatabaseSchema.js"
+import UpgradedDatabaseSchema from "../schema/UpgradedDatabaseSchema.js"
 
 /**
  * Private field symbols.

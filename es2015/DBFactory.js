@@ -1,8 +1,8 @@
 
-import Database from "./Database"
-import NativeDBAccessor from "./NativeDBAccessor"
-import PromiseSync from "./PromiseSync"
-import DatabaseMigrator from "./migration/DatabaseMigrator"
+import Database from "./Database.js"
+import NativeDBAccessor from "./NativeDBAccessor.js"
+import PromiseSync from "./PromiseSync.js"
+import DatabaseMigrator from "./migration/DatabaseMigrator.js"
 
 /**
  * Registered listeners to be executed when a database schema migration is

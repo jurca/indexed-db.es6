@@ -1,8 +1,8 @@
 
-import DBFactory from "../es2015/DBFactory"
-import DatabaseSchema from "../es2015/schema/DatabaseSchema"
-import ObjectStoreSchema from "../es2015/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema from "../es2015/schema/UpgradedDatabaseSchema"
+import DBFactory from "../es2015/DBFactory.js"
+import DatabaseSchema from "../es2015/schema/DatabaseSchema.js"
+import ObjectStoreSchema from "../es2015/schema/ObjectStoreSchema.js"
+import UpgradedDatabaseSchema from "../es2015/schema/UpgradedDatabaseSchema.js"
 
 describe("Database", () => {
   

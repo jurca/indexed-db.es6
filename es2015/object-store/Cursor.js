@@ -1,6 +1,6 @@
 
-import PromiseSync from "../PromiseSync"
-import ReadOnlyCursor from "./ReadOnlyCursor"
+import PromiseSync from "../PromiseSync.js"
+import ReadOnlyCursor from "./ReadOnlyCursor.js"
 
 /**
  * Private field symbols.

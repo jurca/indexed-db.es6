@@ -1,7 +1,7 @@
 
-import ReadOnlyIndex from "./ReadOnlyIndex"
-import Cursor from "./Cursor"
-import CursorDirection from "./CursorDirection"
+import ReadOnlyIndex from "./ReadOnlyIndex.js"
+import Cursor from "./Cursor.js"
+import CursorDirection from "./CursorDirection.js"
 
 /**
  * Read-write accessor to an index.

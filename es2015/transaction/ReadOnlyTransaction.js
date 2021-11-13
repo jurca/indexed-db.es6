@@ -1,6 +1,6 @@
 
-import ReadOnlyObjectStore from "../object-store/ReadOnlyObjectStore"
-import ReadOnlyCursor from "../object-store/ReadOnlyCursor"
+import ReadOnlyObjectStore from "../object-store/ReadOnlyObjectStore.js"
+import ReadOnlyCursor from "../object-store/ReadOnlyCursor.js"
 
 /**
  * Private field symbols.

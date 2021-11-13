@@ -1,10 +1,11 @@
 
-import DatabaseMigrator from "../../es2015/migration/DatabaseMigrator"
-import DatabaseSchema from "../../es2015/schema/DatabaseSchema"
-import DBFactory from "../../es2015/DBFactory"
-import PromiseSync from "../../es2015/PromiseSync"
-import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema"
-import UpgradedDatabaseSchema from "../../es2015/schema/UpgradedDatabaseSchema"
+import DatabaseMigrator from "../../es2015/migration/DatabaseMigrator.js"
+import DatabaseSchema from "../../es2015/schema/DatabaseSchema.js"
+import DBFactory from "../../es2015/DBFactory.js"
+import PromiseSync from "../../es2015/PromiseSync.js"
+import ObjectStoreSchema from "../../es2015/schema/ObjectStoreSchema.js"
+import UpgradedDatabaseSchema
+    from "../../es2015/schema/UpgradedDatabaseSchema.js"
 
 describe("DatabaseMigrator", () => {
   
