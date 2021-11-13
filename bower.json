@@ -8,7 +8,6 @@
   "description": "Flexible wrapper of IndexedDB APIs utilizing the features provided by ES6.",
   "main": "es2015/DBFactory.js",
   "moduleType": [
-    "amd",
     "es6"
   ],
   "keywords": [
