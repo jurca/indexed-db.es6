@@ -6,8 +6,8 @@
   "module": "es2015/DBFactory.js",
   "type": "module",
   "scripts": {
-    "test": "./node_modules/karma/bin/karma start test/production.conf.cjs --single-run",
-    "test:dev": "CHROME_BIN=chromium ./node_modules/karma/bin/karma start test/dev.conf.cjs"
+    "test": "karma start test/production.conf.cjs --single-run",
+    "test:dev": "CHROME_BIN=chromium karma start test/dev.conf.cjs"
   },
   "repository": {
     "type": "git",
